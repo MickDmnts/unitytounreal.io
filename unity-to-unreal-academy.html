@@ -1,0 +1,2025 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bridge — Unity → Unreal Academy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+<style>
+:root{
+  --bg:#0A0D14; --panel:#121724; --panel2:#182033; --panel3:#1E2740;
+  --line:#232D48; --line2:#2C3A5E;
+  --text:#E9EEF7; --muted:#8C96AC; --dim:#5E6880;
+  --ue:#4FA8FF; --ue-soft:rgba(79,168,255,.14); --ue-line:rgba(79,168,255,.45);
+  --unity:#9DC549; --unity-soft:rgba(157,197,73,.12); --unity-line:rgba(157,197,73,.4);
+  --gold:#F3B84B; --gold-soft:rgba(243,184,75,.14);
+  --ok:#45D07E; --ok-soft:rgba(69,208,126,.12);
+  --bad:#EF6A6A;
+  --code-bg:#0C111D;
+  --r:10px;
+  --disp:'Chakra Petch',sans-serif;
+  --body:'IBM Plex Sans',system-ui,sans-serif;
+  --mono:'JetBrains Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scrollbar-color:#2C3A5E var(--bg)}
+body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:15px;line-height:1.6;min-height:100vh}
+button{font-family:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--ue);outline-offset:2px;border-radius:4px}
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.001s!important;transition-duration:.001s!important}}
+
+/* ===== layout ===== */
+.app{display:grid;grid-template-columns:236px 1fr;min-height:100vh}
+.sidebar{background:var(--panel);border-right:1px solid var(--line);padding:20px 14px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:4px;z-index:40}
+.main{min-width:0;display:flex;flex-direction:column}
+.content{padding:26px clamp(16px,4vw,44px) 80px;max-width:1060px;width:100%;margin:0 auto}
+
+/* ===== sidebar ===== */
+.logo{font-family:var(--disp);font-weight:700;font-size:19px;letter-spacing:.5px;padding:4px 10px 18px;display:flex;align-items:center;gap:9px}
+.logo .mark{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--unity) 0%,var(--unity) 42%,var(--ue) 58%,var(--ue) 100%);display:grid;place-items:center;font-size:14px;color:#0A0D14;font-weight:700}
+.logo small{display:block;font-family:var(--body);font-weight:400;font-size:10.5px;color:var(--muted);letter-spacing:1.4px;text-transform:uppercase}
+.navlabel{font-size:10.5px;letter-spacing:1.6px;text-transform:uppercase;color:var(--muted);padding:14px 10px 6px}
+.navbtn{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:none;color:var(--muted);padding:9px 10px;border-radius:8px;font-size:14px;font-weight:500;transition:background .15s,color .15s;position:relative}
+.navbtn:hover{background:var(--panel2);color:var(--text)}
+.navbtn.active{background:var(--ue-soft);color:var(--ue)}
+.navbtn.active::before{content:"";position:absolute;left:-14px;top:8px;bottom:8px;width:3px;border-radius:0 3px 3px 0;background:var(--ue)}
+.navbtn .ic{width:18px;text-align:center;font-size:15px}
+.navbtn .pct{margin-left:auto;font-size:11px;font-family:var(--disp);color:var(--muted)}
+.side-foot{margin-top:auto;padding:12px 10px 0;border-top:1px solid var(--line);font-size:11.5px;color:var(--muted)}
+.side-foot b{color:var(--gold);font-family:var(--disp)}
+
+/* ===== topbar ===== */
+.topbar{display:flex;align-items:center;gap:16px;padding:14px clamp(16px,4vw,44px);border-bottom:1px solid var(--line);background:rgba(10,13,20,.85);backdrop-filter:blur(8px);position:sticky;top:0;z-index:30}
+.hamb{display:none;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:8px;width:38px;height:38px;font-size:17px}
+.lvlbadge{display:flex;align-items:center;gap:10px}
+.lvlnum{width:38px;height:38px;border-radius:9px;background:linear-gradient(160deg,var(--panel3),var(--panel2));border:1px solid var(--ue-line);display:grid;place-items:center;font-family:var(--disp);font-weight:700;font-size:16px;color:var(--ue)}
+.lvlmeta{line-height:1.25}
+.lvlmeta .rank{font-family:var(--disp);font-weight:600;font-size:13.5px}
+.lvlmeta .xptext{font-size:11px;color:var(--muted)}
+.xpwrap{flex:1;max-width:340px}
+.xpbar{height:8px;background:var(--panel3);border-radius:99px;overflow:hidden}
+.xpbar>div{height:100%;background:linear-gradient(90deg,var(--ue),#8ED0FF);border-radius:99px;transition:width .6s cubic-bezier(.2,.8,.2,1)}
+.streak{margin-left:auto;display:flex;align-items:center;gap:7px;background:var(--panel2);border:1px solid var(--line);padding:7px 13px;border-radius:99px;font-family:var(--disp);font-weight:600;font-size:14px}
+.streak.on{border-color:var(--gold);color:var(--gold);box-shadow:0 0 14px rgba(243,184,75,.15)}
+
+/* ===== generic ===== */
+h1.page{font-family:var(--disp);font-size:26px;font-weight:700;letter-spacing:.3px;margin-bottom:4px}
+.sub{color:var(--muted);margin-bottom:24px;font-size:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:20px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.pbar{height:7px;background:var(--panel3);border-radius:99px;overflow:hidden}
+.pbar>div{height:100%;background:var(--ue);border-radius:99px;transition:width .5s}
+.pbar.gold>div{background:var(--gold)}
+.tag{display:inline-block;font-size:10.5px;font-family:var(--disp);font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:3px 9px;border-radius:99px;border:1px solid var(--line2);color:var(--muted)}
+.tag.ue{color:var(--ue);border-color:var(--ue-line);background:var(--ue-soft)}
+.tag.gold{color:var(--gold);border-color:rgba(243,184,75,.4);background:var(--gold-soft)}
+.tag.ok{color:var(--ok);border-color:rgba(69,208,126,.4);background:var(--ok-soft)}
+.btn{background:var(--ue);color:#06121F;border:none;border-radius:8px;padding:10px 18px;font-weight:600;font-size:14px;font-family:var(--disp);letter-spacing:.4px;transition:transform .12s,box-shadow .12s}
+.btn:hover{box-shadow:0 4px 18px rgba(79,168,255,.35);transform:translateY(-1px)}
+.btn:disabled{opacity:.4;cursor:not-allowed;box-shadow:none;transform:none}
+.btn.ghost{background:var(--panel2);color:var(--text);border:1px solid var(--line2)}
+.btn.ghost:hover{box-shadow:none;border-color:var(--ue-line)}
+.crumb{font-size:12.5px;color:var(--muted);margin-bottom:14px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.crumb a{color:var(--ue);text-decoration:none;cursor:pointer}
+.crumb a:hover{text-decoration:underline}
+
+/* ===== dashboard hero: the bridge ===== */
+.hero{background:linear-gradient(120deg,var(--panel) 0%,var(--panel2) 100%);border:1px solid var(--line);border-radius:14px;padding:28px;position:relative;overflow:hidden;margin-bottom:22px}
+.hero::after{content:"";position:absolute;inset:0;background:radial-gradient(600px 200px at 85% 0%,rgba(79,168,255,.12),transparent)}
+.bridge{display:flex;align-items:center;gap:14px;font-family:var(--disp);font-weight:700;font-size:clamp(20px,3.4vw,30px);margin-bottom:8px;position:relative;z-index:1}
+.bridge .u{color:var(--unity)}
+.bridge .e{color:var(--ue)}
+.bridge .arrow{flex:0 0 clamp(46px,7vw,84px);height:3px;background:linear-gradient(90deg,var(--unity),var(--ue));border-radius:99px;position:relative}
+.bridge .arrow::after{content:"";position:absolute;right:-2px;top:50%;translate:0 -50%;border-left:9px solid var(--ue);border-top:6px solid transparent;border-bottom:6px solid transparent}
+.bridge .arrow::before{content:"";position:absolute;top:-3px;left:0;width:26%;height:9px;border-radius:99px;background:rgba(255,255,255,.35);filter:blur(3px);animation:pulseArrow 2.6s ease-in-out infinite}
+@keyframes pulseArrow{0%{left:0;opacity:0}15%{opacity:1}85%{opacity:1}100%{left:74%;opacity:0}}
+.hero p{color:var(--muted);max-width:560px;position:relative;z-index:1}
+.hero .cta{margin-top:18px;position:relative;z-index:1;display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+
+/* path cards */
+.pathcard{display:flex;flex-direction:column;gap:12px;transition:border-color .2s,transform .2s;cursor:pointer}
+.pathcard:hover{border-color:var(--ue-line);transform:translateY(-2px)}
+.pathcard .ph{display:flex;align-items:center;gap:12px}
+.pathcard .pico{width:42px;height:42px;border-radius:10px;display:grid;place-items:center;font-size:20px;background:var(--ue-soft);border:1px solid var(--ue-line)}
+.pathcard h3{font-family:var(--disp);font-size:16.5px}
+.pathcard .pmeta{font-size:12px;color:var(--muted)}
+.statrow{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:22px 0}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px;text-align:center}
+.stat b{display:block;font-family:var(--disp);font-size:24px;color:var(--ue)}
+.stat.gold b{color:var(--gold)}.stat.ok b{color:var(--ok)}
+.stat span{font-size:11.5px;color:var(--muted);letter-spacing:.6px;text-transform:uppercase}
+
+/* ===== chapters / lessons list ===== */
+.chapter{margin-bottom:18px}
+.chap-head{display:flex;align-items:center;gap:12px;padding:16px 20px;cursor:pointer;user-select:none}
+.chap-head .num{font-family:var(--disp);font-weight:700;color:var(--ue);font-size:13px;letter-spacing:1px;min-width:74px}
+.chap-head h3{font-family:var(--disp);font-size:16px;flex:1}
+.chap-head .chev{transition:transform .25s;color:var(--muted)}
+.chapter.open .chev{transform:rotate(90deg)}
+.chap-body{display:none;border-top:1px solid var(--line);padding:10px 20px 18px}
+.chapter.open .chap-body{display:block;animation:fadeIn .25s}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1}}
+.lesson-row{display:flex;align-items:center;gap:12px;padding:11px 8px;border-radius:8px;transition:background .15s}
+.lesson-row:hover{background:var(--panel2)}
+.lesson-row .dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--line2);display:grid;place-items:center;font-size:11px;flex:none}
+.lesson-row.done .dot{border-color:var(--ok);background:var(--ok-soft);color:var(--ok)}
+.lesson-row .lt{flex:1;font-weight:500;cursor:pointer}
+.lesson-row .lt:hover{color:var(--ue)}
+.lesson-row.locked{opacity:.45}
+.lesson-row.locked .lt{cursor:not-allowed}
+.lesson-row .min{font-size:11.5px;color:var(--muted);font-family:var(--disp)}
+.chap-lock{font-size:12.5px;color:var(--muted);padding:10px 12px;background:var(--panel2);border-radius:8px;margin-top:8px}
+.skillcheck{margin-top:12px;border-top:1px dashed var(--line);padding-top:12px}
+.skillcheck h4{font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.skillcheck ul{list-style:none;display:flex;flex-wrap:wrap;gap:7px}
+.skillcheck li{font-size:12px;padding:4px 11px;border-radius:99px;border:1px solid var(--line2);color:var(--muted)}
+.skillcheck li.got{border-color:rgba(69,208,126,.5);color:var(--ok);background:var(--ok-soft)}
+
+/* ===== lesson view ===== */
+.lesson-hd{margin-bottom:20px}
+.lesson-hd h1{font-family:var(--disp);font-size:24px;margin:6px 0 4px}
+.lesson-meta{font-size:12.5px;color:var(--muted);display:flex;gap:14px}
+.lesson-body p{margin-bottom:14px;color:#CBD4E4}
+.lesson-body strong{color:var(--text)}
+.lesson-body code, .gl-def code{font-family:var(--mono);font-size:12.8px;background:var(--code-bg);border:1px solid var(--line);padding:1.5px 6px;border-radius:5px;color:#9CC6FF}
+.codeblock{background:var(--code-bg);border:1px solid var(--line);border-left:3px solid var(--ue);border-radius:8px;padding:15px 17px;font-family:var(--mono);font-size:12.8px;line-height:1.65;overflow-x:auto;margin:16px 0;white-space:pre;color:#C4D3EE}
+.codeblock .cm{color:#5E7290}.codeblock .kw{color:#7CC4FF}.codeblock .mc{color:#F3B84B}.codeblock .st{color:#8FDB9E}
+
+/* signature: translation strip */
+.xlate{margin:18px 0;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.xlate .xh{display:grid;grid-template-columns:1fr 42px 1fr;font-family:var(--disp);font-size:11px;letter-spacing:1.4px;text-transform:uppercase;background:var(--panel2);border-bottom:1px solid var(--line)}
+.xlate .xh div{padding:8px 14px}
+.xlate .xh .hu{color:var(--unity)}
+.xlate .xh .he{color:var(--ue);text-align:right}
+.xrow{display:grid;grid-template-columns:1fr 42px 1fr;align-items:center;border-bottom:1px solid var(--line);background:var(--panel)}
+.xrow:last-child{border-bottom:none}
+.xrow .xu{padding:10px 14px;font-size:13.5px;border-left:3px solid var(--unity-line)}
+.xrow .xe{padding:10px 14px;font-size:13.5px;text-align:right;border-right:3px solid var(--ue-line);color:#D7E6F8}
+.xrow .xa{color:var(--muted);text-align:center;font-size:14px}
+.xrow .xu small,.xrow .xe small{display:block;color:var(--muted);font-size:11.5px}
+
+/* pipeline diagram */
+.pipe{display:flex;flex-wrap:wrap;align-items:stretch;gap:0;margin:18px 0;font-family:var(--disp)}
+.pipe .pbox{background:var(--panel2);border:1px solid var(--line2);border-radius:8px;padding:10px 14px;font-size:12.5px;font-weight:600;text-align:center;display:flex;flex-direction:column;justify-content:center;min-width:90px}
+.pipe .pbox small{font-family:var(--body);font-weight:400;color:var(--muted);font-size:11px}
+.pipe .parr{align-self:center;color:var(--ue);padding:0 9px;font-size:16px}
+.diag-title{font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted);margin-top:16px}
+
+.note{border:1px solid var(--line);border-left:3px solid var(--gold);background:var(--panel);border-radius:8px;padding:12px 16px;margin:16px 0;font-size:13.5px;color:#D8DFEC}
+.note b{color:var(--gold)}
+
+/* quiz */
+.quiz{margin-top:26px}
+.quiz h2,.taskbox h2{font-family:var(--disp);font-size:17px;margin-bottom:12px;display:flex;align-items:center;gap:9px}
+.qq{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin-bottom:12px}
+.qq .qt{font-weight:600;margin-bottom:10px}
+.opt{display:flex;gap:10px;align-items:flex-start;padding:9px 12px;border:1px solid var(--line);border-radius:8px;margin-bottom:8px;cursor:pointer;transition:border-color .15s,background .15s;font-size:14px}
+.opt:hover{border-color:var(--ue-line)}
+.opt.sel{border-color:var(--ue);background:var(--ue-soft)}
+.opt.right{border-color:var(--ok);background:var(--ok-soft)}
+.opt.wrong{border-color:var(--bad);background:rgba(239,106,106,.1)}
+.opt input{margin-top:4px;accent-color:var(--ue)}
+.qx{font-size:13px;color:var(--muted);border-top:1px dashed var(--line);margin-top:10px;padding-top:9px;display:none}
+.qq.graded .qx{display:block}
+.quiz-result{font-family:var(--disp);font-size:15px;margin:14px 0}
+.taskbox{margin-top:26px;border:1px solid var(--gold);border-radius:10px;background:linear-gradient(135deg,var(--panel),rgba(243,184,75,.05));padding:18px 20px}
+.taskbox p{color:#D8DFEC;margin-bottom:12px}
+.taskbox label{display:flex;gap:10px;align-items:center;font-size:14px;cursor:pointer}
+.taskbox input{accent-color:var(--gold);width:16px;height:16px}
+.lesson-nav{display:flex;justify-content:space-between;margin-top:30px;gap:12px}
+
+/* glossary / translator */
+.search{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:9px;color:var(--text);padding:11px 15px;font-size:14px;font-family:var(--body);margin-bottom:18px}
+.search:focus{outline:none;border-color:var(--ue)}
+.gl-item{border-bottom:1px solid var(--line);padding:14px 4px}
+.gl-item h3{font-family:var(--disp);font-size:15px;color:var(--ue)}
+.gl-item .gl-eq{font-size:12px;color:var(--unity);margin:2px 0 6px}
+.gl-def{font-size:13.5px;color:#C3CCDC}
+.tr-cat{font-family:var(--disp);font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);margin:26px 0 10px}
+
+/* achievements */
+.ach-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.ach{display:flex;gap:14px;align-items:center;opacity:.45;filter:grayscale(.8)}
+.ach.got{opacity:1;filter:none;border-color:var(--gold)}
+.ach .aico{width:46px;height:46px;border-radius:12px;background:var(--gold-soft);border:1px solid rgba(243,184,75,.4);display:grid;place-items:center;font-size:22px;flex:none}
+.ach h4{font-family:var(--disp);font-size:14px}
+.ach p{font-size:12px;color:var(--muted)}
+.ach .axp{margin-left:auto;font-family:var(--disp);color:var(--gold);font-size:12.5px;flex:none}
+
+/* toast */
+.toasts{position:fixed;right:22px;bottom:22px;z-index:100;display:flex;flex-direction:column;gap:10px}
+.toast{display:flex;gap:13px;align-items:center;background:var(--panel2);border:1px solid var(--gold);border-radius:12px;padding:13px 18px;min-width:280px;box-shadow:0 10px 40px rgba(0,0,0,.5),0 0 24px rgba(243,184,75,.12);animation:toastIn .45s cubic-bezier(.2,.9,.3,1.2)}
+.toast.xp{border-color:var(--ue);box-shadow:0 10px 40px rgba(0,0,0,.5)}
+.toast .tico{font-size:24px}
+.toast h5{font-family:var(--disp);font-size:13px;color:var(--gold);letter-spacing:.8px;text-transform:uppercase}
+.toast.xp h5{color:var(--ue)}
+.toast p{font-size:13px;color:var(--text)}
+.toast.out{animation:toastOut .35s forwards}
+@keyframes toastIn{from{transform:translateX(120%);opacity:0}to{transform:none;opacity:1}}
+@keyframes toastOut{to{transform:translateX(120%);opacity:0}}
+
+/* level-up overlay */
+.lvlup{position:fixed;inset:0;background:rgba(6,9,15,.8);backdrop-filter:blur(4px);display:grid;place-items:center;z-index:110;animation:fadeIn .3s}
+.lvlup .box{text-align:center;background:var(--panel2);border:1px solid var(--ue);border-radius:16px;padding:44px 60px;box-shadow:0 0 80px rgba(79,168,255,.25);animation:popIn .5s cubic-bezier(.2,.9,.3,1.3)}
+@keyframes popIn{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}
+.lvlup .big{font-family:var(--disp);font-size:52px;font-weight:700;color:var(--ue);line-height:1}
+.lvlup .rk{font-family:var(--disp);font-size:19px;color:var(--gold);margin:8px 0 4px}
+
+/* ===== C++ lab ===== */
+.lab-layout{display:grid;grid-template-columns:250px 1fr;gap:16px;align-items:start}
+.lab-list{position:sticky;top:82px;padding:10px}
+.lab-cat{font-family:var(--disp);font-size:10.5px;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted);padding:10px 8px 4px}
+.lab-ex{display:flex;align-items:center;gap:9px;width:100%;text-align:left;background:none;border:none;color:var(--muted);padding:8px 9px;border-radius:8px;font-size:13px;font-weight:500;font-family:var(--body);transition:background .15s,color .15s}
+.lab-ex:hover{background:var(--panel2);color:var(--text)}
+.lab-ex.active{background:var(--ue-soft);color:var(--ue)}
+.lab-ex .ldot{width:16px;height:16px;border-radius:50%;border:2px solid var(--line2);display:grid;place-items:center;font-size:9px;flex:none}
+.lab-ex.solved .ldot{border-color:var(--ok);background:var(--ok-soft);color:var(--ok)}
+.lab-prompt{margin-bottom:14px}
+.lab-prompt p{color:#CBD4E4;font-size:14px;margin-bottom:8px}
+.cm-wrap{border:1px solid var(--line);border-radius:10px;overflow:hidden;margin:14px 0}
+.cm-wrap .cmhead{display:flex;align-items:center;gap:10px;background:var(--panel2);border-bottom:1px solid var(--line);padding:8px 14px;font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+.cm-wrap .cmhead .fdot{width:9px;height:9px;border-radius:50%;background:var(--line2)}
+.CodeMirror{height:auto;min-height:300px;background:var(--code-bg)!important;color:#C4D3EE!important;font-family:var(--mono)!important;font-size:12.8px;line-height:1.65;padding:6px 0}
+.CodeMirror-gutters{background:var(--code-bg)!important;border-right:1px solid var(--line)!important}
+.CodeMirror-linenumber{color:#3A4665!important}
+.CodeMirror-cursor{border-left:2px solid var(--ue)!important}
+.CodeMirror-selected{background:rgba(79,168,255,.16)!important}
+.CodeMirror-focused .CodeMirror-selected{background:rgba(79,168,255,.22)!important}
+.cm-s-default .cm-keyword{color:#7CC4FF}.cm-s-default .cm-def{color:#E9EEF7}
+.cm-s-default .cm-variable{color:#C4D3EE}.cm-s-default .cm-variable-2{color:#C4D3EE}
+.cm-s-default .cm-type{color:#6FD3C7}.cm-s-default .cm-builtin{color:#6FD3C7}
+.cm-s-default .cm-string{color:#8FDB9E}.cm-s-default .cm-number{color:#F3B84B}
+.cm-s-default .cm-comment{color:#5E7290}.cm-s-default .cm-meta{color:#D89BF5}
+.cm-s-default .cm-operator{color:#9AB0D8}.cm-s-default .cm-atom{color:#F3B84B}
+.lab-fallback{width:100%;min-height:300px;background:var(--code-bg);color:#C4D3EE;border:none;font-family:var(--mono);font-size:12.8px;line-height:1.6;padding:12px 14px;resize:vertical}
+.lab-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:4px 0 14px}
+.lab-status{font-size:12.5px;font-family:var(--disp);letter-spacing:.4px}
+.lab-status.run{color:var(--ue)}.lab-status.pass{color:var(--ok)}.lab-status.fail{color:var(--bad)}
+.console{background:#05080F;border:1px solid var(--line);border-radius:10px;font-family:var(--mono);font-size:12.5px;line-height:1.6;padding:13px 16px;min-height:64px;white-space:pre-wrap;word-break:break-word;color:#AFC2E2}
+.console .c-ok{color:var(--ok)}.console .c-err{color:#FF9B9B}.console .c-dim{color:#5E7290}.console .c-warn{color:var(--gold)}
+.checkline{display:flex;gap:9px;align-items:flex-start;font-size:13px;padding:4px 0}
+.checkline .ci{flex:none}
+.checkline.ok{color:var(--ok)}.checkline.no{color:var(--muted)}
+.lab-hint{margin-top:10px}
+.lab-hint summary{cursor:pointer;color:var(--gold);font-size:13px}
+.lab-hint p{font-size:13px;color:var(--muted);padding:8px 0 0}
+@media (max-width:1020px){.lab-layout{grid-template-columns:1fr}.lab-list{position:static;display:flex;flex-wrap:wrap;gap:4px}.lab-cat{width:100%}}
+
+/* responsive */
+@media (max-width:880px){
+  .app{grid-template-columns:1fr}
+  .sidebar{position:fixed;left:0;top:0;bottom:0;width:250px;transform:translateX(-105%);transition:transform .28s;box-shadow:10px 0 40px rgba(0,0,0,.5)}
+  .sidebar.open{transform:none}
+  .hamb{display:block}
+  .grid3,.grid2{grid-template-columns:1fr}
+  .statrow{grid-template-columns:repeat(2,1fr)}
+  .xrow,.xlate .xh{grid-template-columns:1fr 30px 1fr}
+  .lvlmeta .rank{display:none}
+  .xpwrap{max-width:none}
+}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:35;display:none}
+.scrim.on{display:block}
+</style>
+</head>
+<body>
+<div class="app">
+  <nav class="sidebar" id="sidebar" aria-label="Main navigation">
+    <div class="logo"><span class="mark">⇄</span><span>BRIDGE<small>Unity → Unreal</small></span></div>
+    <div class="navlabel">Overview</div>
+    <button class="navbtn" data-view="dash"><span class="ic">◈</span>Dashboard</button>
+    <div class="navlabel">Learning paths</div>
+    <button class="navbtn" data-view="path:ue"><span class="ic">🏰</span>Unreal Engine<span class="pct" id="pct-ue"></span></button>
+    <button class="navbtn" data-view="path:cpp"><span class="ic">⟬⟭</span>C++ for Unreal<span class="pct" id="pct-cpp"></span></button>
+    <button class="navbtn" data-view="path:int"><span class="ic">⚙</span>Unreal + C++<span class="pct" id="pct-int"></span></button>
+    <div class="navlabel">Practice</div>
+    <button class="navbtn" data-view="lab"><span class="ic">⌨</span>C++ Lab<span class="pct" id="pct-lab"></span></button>
+    <div class="navlabel">Reference</div>
+    <button class="navbtn" data-view="translator"><span class="ic">⇄</span>Unity → Unreal map</button>
+    <button class="navbtn" data-view="glossary"><span class="ic">📖</span>Glossary</button>
+    <button class="navbtn" data-view="achievements"><span class="ic">🏆</span>Achievements</button>
+    <div class="side-foot">Total XP earned<br><b id="side-xp">0 XP</b></div>
+  </nav>
+  <div class="scrim" id="scrim"></div>
+  <div class="main">
+    <header class="topbar">
+      <button class="hamb" id="hamb" aria-label="Open menu">☰</button>
+      <div class="lvlbadge">
+        <div class="lvlnum" id="lvl-num">1</div>
+        <div class="lvlmeta"><div class="rank" id="lvl-rank">Unity Expat</div><div class="xptext" id="lvl-xp">0 / 100 XP</div></div>
+      </div>
+      <div class="xpwrap"><div class="xpbar"><div id="xp-fill" style="width:0%"></div></div></div>
+      <div class="streak" id="streak-pill" title="Daily streak">🔥 <span id="streak-n">0</span></div>
+    </header>
+    <main class="content" id="content" tabindex="-1"></main>
+  </div>
+</div>
+<div class="toasts" id="toasts"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/clike/clike.min.js"></script>
+<script>
+/* ============================================================
+   DATA — curriculum. "u|sub" strings split into label + subtext.
+   ============================================================ */
+const PATHS = [
+{
+id:"ue", icon:"🏰", title:"Unreal Engine", blurb:"The editor, Actors, the Gameplay Framework, Blueprints, and every engine system — mapped from Unity.",
+chapters:[
+{id:"ue1", t:"Orientation: Your New Editor", skills:["Navigate the UE editor","Explain Actor vs GameObject","Use components in Unreal","Work with Levels & the Level Blueprint"], lessons:[
+{id:"ue1a", t:"Editor & project anatomy", min:6,
+body:`<p>Unreal's editor is your Unity editor with the furniture rearranged and a few extra rooms. The <strong>Viewport</strong> is the Scene view, the <strong>Outliner</strong> is the Hierarchy, the <strong>Details panel</strong> is the Inspector, and the <strong>Content Browser</strong> is the Project window. Two habits change immediately: navigation is right-mouse + WASD by default (like Unity's flythrough, but it is the primary mode), and there is no persistent "Game view" tab — you press <strong>Play In Editor (PIE)</strong> and the viewport becomes the game.</p>
+<p>On disk, a project is also familiar but stricter: <code>Content/</code> is your Assets folder, and every asset is a binary <code>.uasset</code> — no loose <code>.meta</code> files, but also no meaningful text diffs for assets. <code>Config/</code> holds INI files (roughly ProjectSettings), and <code>Source/</code> appears only once you add C++. <code>Saved/</code> and <code>Intermediate/</code> are disposable, like Unity's Library.</p>
+<p>One conceptual shift: Unreal separates <strong>Editor preferences</strong> (per-user) from <strong>Project Settings</strong> (shipped with the game) very explicitly, and almost everything you'd find in Unity's Project Settings lives under <em>Edit → Project Settings</em>, backed by those INI files.</p>`,
+cmp:[["Scene view / Game view","Viewport + PIE|Play In Editor takes over the viewport"],["Hierarchy","World Outliner"],["Inspector","Details panel"],["Project window","Content Browser"],["Assets/ + .meta files","Content/ with binary .uasset files"],["Library/","Intermediate/ + Saved/|safe to delete"]],
+task:"Create a Third Person template project. Find the equivalents of Hierarchy, Inspector and Project window, then locate where Project Settings are stored on disk (Config/*.ini).",
+quiz:[
+{q:"The closest equivalent of Unity's Inspector is…",o:["The Outliner","The Details panel","The Content Drawer","World Settings"],a:1,x:"Details shows the properties of whatever is selected — exactly the Inspector's job."},
+{q:"Where do your imported assets live on disk?",o:["Assets/ as source files","Content/ as binary .uasset files","Saved/","Intermediate/"],a:1,x:"Everything in the Content Browser is a .uasset under Content/. Diffing them as text doesn't work — plan source control accordingly."},
+{q:"Which folders can you safely delete to 'reimport the Library'?",o:["Config + Source","Content + Config","Saved + Intermediate","Binaries + Content"],a:2,x:"Saved/ and Intermediate/ are regenerated, like Unity's Library folder."}]},
+{id:"ue1b", t:"Actors vs GameObjects", min:7,
+body:`<p>Here is the single most important mapping of the whole course: a Unity <strong>GameObject</strong> is an empty container that gains behaviour purely through components. An Unreal <strong>Actor</strong> is a real class with inheritance. In Unity you compose a player from GameObject + components; in Unreal you often <em>subclass</em>: <code>AActor → APawn → ACharacter</code>, each level adding built-in behaviour, and then add components on top.</p>
+<p>So Unreal is <strong>inheritance-first, composition-second</strong>, while Unity is composition-only. An Actor without components isn't even visible — its transform actually comes from a <strong>Root Component</strong> (a <code>USceneComponent</code>). That's the second surprise: in Unity the Transform lives on the GameObject; in Unreal the transform lives on the root component, and other scene components attach <em>under it</em> in a tree inside a single Actor.</p>
+<p>Practical consequence: where a Unity prefab is often a hierarchy of several GameObjects, an Unreal "thing" is usually <em>one Actor</em> containing a component tree. Reserve child Actors for genuinely independent objects.</p>`,
+cmp:[["GameObject|empty container","AActor|a class you can subclass"],["Transform on the GameObject","Transform on the Root Component"],["Child GameObjects","Attached Scene Components|inside one Actor"],["gameObject.SetActive(false)","Actor hidden + collision/tick disabled|no single exact switch"],["Destroy(gameObject)","Actor->Destroy()"]],
+diagTitle:"The common Actor hierarchy",diag:["AActor|anything placeable","APawn|possessable by a controller","ACharacter|humanoid movement built in"],
+task:"In your template project, open BP_ThirdPersonCharacter and study its component tree: find the root (Capsule), the Mesh, the SpringArm and the Camera — one Actor, four components.",
+quiz:[
+{q:"The biggest philosophical difference between Actors and GameObjects is…",o:["Actors can't have components","Unreal favours inheritance; you subclass Actor types","Actors have no transform","GameObjects are faster"],a:1,x:"Unreal ships a deep, useful Actor hierarchy (Pawn, Character, etc.) and expects you to subclass it; components complement it."},
+{q:"Where does an Actor's transform live?",o:["On the Actor itself","On its Root Component","In the Level","On the GameMode"],a:1,x:"The root USceneComponent carries the transform; the Actor delegates to it."},
+{q:"A lamp made of a base mesh, a bulb mesh and a light should usually be…",o:["Three Actors parented together","One Actor with a component tree","A Level per lamp","A GameMode"],a:1,x:"One Actor, multiple attached components — the Unreal idiom for what would be a multi-GameObject prefab in Unity."}]},
+{id:"ue1c", t:"Components, the Unreal way", min:6,
+body:`<p>Unreal components come in two families. <strong>USceneComponent</strong> has a transform and can attach to other scene components (meshes, cameras, colliders, audio). <strong>UActorComponent</strong> is transform-less pure behaviour — the closest thing to a plain Unity <code>MonoBehaviour</code> doing logic (health, inventory).</p>
+<p>The mental shift: in Unity, <em>everything</em> is a component and scripts are components too. In Unreal, gameplay logic usually goes <em>on the Actor class itself</em> (Blueprint graph or C++), and components are used for reusable capabilities. You won't write a "PlayerMovement component" — you'll subclass <code>ACharacter</code>, which already owns a <code>UCharacterMovementComponent</code>.</p>
+<p>Getting components also feels familiar: <code>GetComponentByClass</code> ≈ <code>GetComponent&lt;T&gt;()</code>. But because logic lives on Actors, you'll reach for it far less than in Unity.</p>`,
+cmp:[["MonoBehaviour with logic","Logic on the Actor itself|or a UActorComponent if reusable"],["Transform-affecting component","USceneComponent|attachable, has transform"],["GetComponent<T>()","FindComponentByClass<T>() / GetComponentByClass"],["AddComponent<T>()","AddComponentByClass|or CreateDefaultSubobject in C++ constructors"],["RequireComponent attribute","Constructor-created default subobjects"]],
+task:"Add a RotatingMovement component to any placed Actor and watch it spin in PIE — no code, behaviour via component, exactly like Unity.",
+quiz:[
+{q:"UActorComponent vs USceneComponent — the difference is…",o:["Scene components can't tick","Scene components have a transform and can attach","Actor components render meshes","There is none"],a:1,x:"SceneComponent = transform + attachment. ActorComponent = pure behaviour."},
+{q:"Where does typical gameplay logic live in Unreal?",o:["Always in components","On the Actor class (BP or C++)","In the Level Blueprint only","In GameInstance"],a:1,x:"Actors are real classes, so their logic lives on them; components are for reusable capabilities."},
+{q:"The rough Unreal equivalent of GetComponent<T>() is…",o:["FindObjectOfType","FindComponentByClass<T>()","GetActorOfClass","LoadObject"],a:1,x:"Same idea: query the owner for a component of a class."}]},
+{id:"ue1d", t:"Levels, Maps & the Level Blueprint", min:6,
+body:`<p>A Unity Scene is an Unreal <strong>Level</strong> (asset type <code>.umap</code>). Loading works similarly (<code>Open Level</code> ≈ <code>SceneManager.LoadScene</code>), and additive loading exists as <strong>Level Streaming</strong> / streaming sublevels — Unreal has done "additive scenes" natively for decades.</p>
+<p>Each Level owns a <strong>Level Blueprint</strong>: a script graph bound to that specific map. It's the sanctioned home for one-off scripted moments ("when the player enters this trigger, open that exact door"). Unity has no direct equivalent — you'd create a scene-specific manager GameObject. Keep reusable logic <em>out</em> of it; anything generic belongs in Actor Blueprints or C++.</p>
+<p>Also note <strong>World Settings</strong>: a per-level panel that picks the GameMode and other rules — think of it as a scene-scoped slice of Unity's Project Settings. It matters as soon as we hit the Gameplay Framework in Chapter 2.</p>`,
+cmp:[["Scene (.unity)","Level / Map (.umap)"],["SceneManager.LoadScene","Open Level (by name/reference)"],["Additive scene loading","Level Streaming / streaming sublevels"],["Scene-specific manager object","Level Blueprint"],["DontDestroyOnLoad singleton","GameInstance|persists across level loads"]],
+task:"Open the Level Blueprint of your map and wire BeginPlay → Print String('Hello from this level'). Then find World Settings and see which GameMode the map uses.",
+quiz:[
+{q:"The Level Blueprint is best used for…",o:["All gameplay logic","One-off scripting tied to that specific map","Reusable enemy AI","Input handling"],a:1,x:"It's map-bound by design — great for set pieces, terrible for anything reusable."},
+{q:"Unity's additive scene loading maps to…",o:["World Partition only","Level Streaming","Data Layers","Open Level"],a:1,x:"Streaming sublevels load additively into a persistent level."},
+{q:"What survives a level load, like a DontDestroyOnLoad object?",o:["GameMode","GameInstance","PlayerController","Level Blueprint"],a:1,x:"GameInstance is created at game start and lives until shutdown — the canonical cross-level object."}]}
+]},
+{id:"ue2", t:"The Gameplay Framework", skills:["Choose Pawn vs Character","Use PlayerController correctly","Pick the right class: GameMode vs GameState vs PlayerState","Explain possession"], lessons:[
+{id:"ue2a", t:"Pawns & Characters", min:7,
+body:`<p>Unity has no opinion about what a "player" is — you build one from a GameObject, a CharacterController and your own script. Unreal ships the opinion: a <strong>Pawn</strong> is any Actor that can be <em>possessed</em> by a Controller (player or AI), and a <strong>Character</strong> is a Pawn specialised for humanoids: capsule collider, skeletal mesh and the mighty <code>UCharacterMovementComponent</code> with walking, falling, swimming, crouching and — crucially — <strong>network prediction</strong> built in.</p>
+<p>Rule of thumb: humanoid on legs → subclass <code>ACharacter</code>. Vehicle, turret, drone, chess piece → subclass <code>APawn</code> and supply your own movement (e.g. <code>FloatingPawnMovement</code>). Rewriting CharacterMovement from scratch is the classic newcomer mistake — it's years of engineering, especially for multiplayer.</p>
+<p><strong>Possession</strong> is the concept Unity lacks entirely: a Controller can possess and unpossess Pawns at runtime. Switching from human to vehicle isn't "disable one script, enable another" — the PlayerController simply possesses the car Pawn.</p>`,
+cmp:[["Player GameObject + CharacterController + your script","ACharacter|capsule + mesh + CharacterMovementComponent"],["Custom vehicle rig","APawn + a movement component"],["Enabling/disabling player scripts to switch control","Controller possession|Possess() / UnPossess()"],["CharacterController.Move","CharacterMovement: AddMovementInput|handles physics states + net prediction"]],
+task:"In PIE, press F8 to eject from your possessed pawn and fly freely, then repossess. You just experienced possession first-hand.",
+quiz:[
+{q:"When should you subclass APawn instead of ACharacter?",o:["Never","For non-humanoid controllables like vehicles or turrets","For NPCs only","When you need a camera"],a:1,x:"Character = humanoid locomotion package. Anything else controllable = Pawn."},
+{q:"What does 'possession' mean?",o:["Spawning a Pawn","A Controller taking control of a Pawn","Attaching a camera","Loading a level"],a:1,x:"Controllers possess Pawns; swapping bodies at runtime is a one-node/one-call operation."},
+{q:"The strongest reason to keep UCharacterMovementComponent is…",o:["It's required by the editor","Built-in movement modes plus network prediction","It renders the mesh","It's faster than physics"],a:1,x:"Replicated, predicted movement is enormously hard to write; the component gives it to you free."}]},
+{id:"ue2b", t:"PlayerController: the brain outside the body", min:6,
+body:`<p>In Unity, input and camera logic usually live on the player object itself. Unreal splits identity from body: the <strong>PlayerController</strong> is the persistent "will" of the player, and the Pawn is a disposable body. The Controller survives when the Pawn dies or changes — respawning means spawning a new Pawn and possessing it, without losing input bindings, camera management or UI references.</p>
+<p>What belongs where: <em>Pawn/Character</em> → how the body moves and reacts. <em>PlayerController</em> → input routing (it owns the Enhanced Input subsystem), camera management (<code>PlayerCameraManager</code>), HUD/UI, mouse cursor, and anything that should outlive a body. AI has the same split — <code>AIController</code> possesses Pawns just like players do, so an enemy body can be driven by AI or by a player without changes.</p>`,
+cmp:[["Input code on the player MonoBehaviour","Input bound on PlayerController (or Pawn)|Controller is the canonical home"],["Camera script on player","PlayerCameraManager via PlayerController"],["Respawn: re-instantiate prefab, rewire references","Spawn new Pawn → Possess()|Controller state persists"],["NavMeshAgent + AI script","AIController possessing the same Pawn class"]],
+task:"Find your project's PlayerController class in World Settings → GameMode. Note that the ThirdPerson template binds input on the Character instead — a shortcut, not a law.",
+quiz:[
+{q:"Your player 'dies' and respawns. What persists naturally?",o:["The Pawn","The PlayerController","The mesh","Nothing"],a:1,x:"The Controller persists; bodies come and go via possession."},
+{q:"Which class conceptually owns camera management?",o:["GameMode","PlayerController (PlayerCameraManager)","GameState","The Level"],a:1,x:"The controller decides what the player sees."},
+{q:"Enemy AI drives its body through…",o:["A MonoBehaviour-style tick script","An AIController possessing a Pawn","GameMode","Level Blueprint"],a:1,x:"Same possession mechanism as players — bodies are interchangeable."}]},
+{id:"ue2c", t:"GameMode, GameState, PlayerState", min:8,
+body:`<p>In Unity you invent managers: GameManager, ScoreManager, MatchManager singletons. Unreal ships the manager architecture, split by <em>who needs to know</em> — a split designed for multiplayer but valuable everywhere:</p>
+<p><strong>GameMode</strong> — the rules referee. Exists <em>only on the server</em>. Decides what to spawn for each player (default Pawn, Controller, HUD classes), when the match starts/ends, respawn logic. Set per-level in World Settings. <strong>GameState</strong> — replicated match facts everyone should see: time remaining, team scores, phase. <strong>PlayerState</strong> — replicated facts about one player: name, score, ping. Per-player data that must be public goes here, not on the Pawn (Pawns die; PlayerState persists). And from Chapter 1, <strong>GameInstance</strong> — one object for the whole app session, across levels: settings, save handles, meta-progression.</p>
+<p>Even in a single-player game, using these buckets keeps you honest and makes a later co-op mode survivable.</p>`,
+cmp:[["GameManager singleton (rules)","AGameModeBase|server-only referee, per level"],["Match/score manager visible to all","AGameState|replicated to everyone"],["Per-player score dictionary","APlayerState|replicated, outlives the Pawn"],["DontDestroyOnLoad app singleton","UGameInstance"],["Prefab wiring for 'what spawns for a player'","GameMode class defaults|DefaultPawnClass, PlayerControllerClass, HUDClass"]],
+diagTitle:"Who spawns whom (game start)",diag:["GameMode|reads World Settings","PlayerController|one per player","Pawn/Character|possessed body","PlayerState|created alongside the Controller"],
+task:"Create a Blueprint GameMode, set its Default Pawn Class to your character, assign it in World Settings, and confirm PIE still spawns you. You've replaced template wiring with your own.",
+quiz:[
+{q:"Which class exists only on the server in multiplayer?",o:["GameState","PlayerState","GameMode","GameInstance"],a:2,x:"GameMode is authoritative rules — clients never have it; they read GameState instead."},
+{q:"A player's score that must survive death and be visible to others belongs in…",o:["The Pawn","PlayerState","GameMode","Level Blueprint"],a:1,x:"PlayerState persists across Pawn respawns and replicates."},
+{q:"The closest thing to a cross-level DontDestroyOnLoad singleton is…",o:["GameMode","GameState","GameInstance","PlayerController"],a:2,x:"GameInstance spans the whole session including level loads."}]}
+]},
+{id:"ue3", t:"Blueprints & Input", skills:["Read & write Blueprint graphs","Communicate between Blueprints","Cast safely","Set up Enhanced Input"], lessons:[
+{id:"ue3a", t:"Blueprint scripting essentials", min:8,
+body:`<p><strong>Blueprints are not 'Unreal's visual scripting toy' — they are half the engine's API surface.</strong> A Blueprint class is a real class: it subclasses a C++ class (or another Blueprint), adds variables, functions and components, and compiles to bytecode. Think of a Blueprint as <em>prefab + script in one asset</em>: what took a prefab plus a MonoBehaviour in Unity is one BP asset in Unreal.</p>
+<p>The graph vocabulary maps cleanly to C#: <strong>Event BeginPlay</strong> ≈ <code>Start()</code>, <strong>Event Tick</strong> ≈ <code>Update()</code> (with DeltaSeconds as a pin), white <em>exec</em> wires are statement order, coloured wires are data. Functions vs <strong>Macros</strong> vs <strong>Custom Events</strong>: functions return values and are callable; events are fire-and-forget and can be replicated; macros are inline graph snippets.</p>
+<p>Performance reality check: Blueprint is roughly 10× slower than C++ per node-call, which matters in Tick and tight loops — and almost nowhere else. The professional pattern (Chapter theme of the Integration path) is C++ for systems, Blueprint for content and glue.</p>`,
+cmp:[["Prefab + MonoBehaviour pair","One Blueprint class asset"],["Start() / Update()","Event BeginPlay / Event Tick"],["[SerializeField] private field","Variable, 'Instance Editable' ticked"],["public method","BlueprintCallable function"],["UnityEvent wired in Inspector","Event Dispatcher bound in graph"]],
+task:"In your Character BP, add a float variable 'Health', make it Instance Editable, and on BeginPlay print it. Change the value on the placed instance (not the class) and see per-instance data — Blueprint's 'prefab override'.",
+quiz:[
+{q:"A Blueprint class is closest to…",o:["A Unity scene","A prefab and its script fused into one asset","A shader graph","An INI file"],a:1,x:"Components + data + logic in a single subclassable asset."},
+{q:"Event Tick's DeltaSeconds pin corresponds to…",o:["Time.fixedTime","Time.deltaTime","Time.timeScale","frameCount"],a:1,x:"Same per-frame delta concept."},
+{q:"Where does Blueprint's speed penalty actually bite?",o:["Everywhere, avoid BP","In per-frame Tick and tight loops","Only in shipping builds","In the editor only"],a:1,x:"Node overhead is per-call; event-driven BP logic is effectively free."}]},
+{id:"ue3b", t:"Blueprint communication & casting", min:7,
+body:`<p>"How do I make object A talk to object B?" — Unreal's most-asked question. The toolbox: <strong>direct reference</strong> (a variable of the target type, set via an exposed variable or spawn result), <strong>Casting</strong>, <strong>Interfaces</strong>, and <strong>Event Dispatchers</strong>.</p>
+<p><strong>Cast To X</strong> is C#'s <code>as</code> operator with a built-in null-check branch: overlap gives you an <code>Actor</code>, you cast to <code>BP_Player</code>, and take the failed pin gracefully. But heavy casting to specific Blueprint classes creates hard load-time dependencies (casting to a BP loads that BP and everything it references) — the Unreal version of Unity's "everything references everything" prefab hell. The cure is the same instinct you have from C#: prefer <strong>interfaces</strong> ("does it implement Damageable?") over concrete casts, and use <strong>Event Dispatchers</strong> (≈ C# events/UnityEvents) so the sender never knows the listener.</p>
+<p>Global lookups exist (<code>Get All Actors Of Class</code> ≈ <code>FindObjectsOfType</code>) and carry the same warning label: fine on BeginPlay, criminal in Tick.</p>`,
+cmp:[["other as PlayerScript + null check","Cast To BP_Player node|failed pin = null branch"],["C# interface check (is IDamageable)","Blueprint Interface message call|works without knowing the class"],["event Action / UnityEvent","Event Dispatcher"],["FindObjectsOfType<T>()","Get All Actors Of Class|same perf warning"],["Singleton.Instance","Get Game Instance / GameMode / subsystems"]],
+task:"Make a trigger-box Actor with an Event Dispatcher 'OnActivated'. In the Level Blueprint, bind to it and print a message. Sender knows nothing about the listener — decoupled, like a C# event.",
+quiz:[
+{q:"Cast To BP_Enemy is most like C#'s…",o:["typeof()","'as' cast with a null-check branch","reflection","boxing"],a:1,x:"Succeeds → typed reference; fails → take the Cast Failed pin."},
+{q:"Why avoid casting to specific Blueprint classes everywhere?",o:["Casts crash in packaged builds","Each cast creates a hard asset dependency chain at load time","Casts don't work on Pawns","They're not replicated"],a:1,x:"Referencing a BP class pulls it (and its references) into memory; interfaces break the chain."},
+{q:"The Blueprint equivalent of a C# event is…",o:["Custom Event","Event Dispatcher","Macro","Timeline"],a:1,x:"Dispatchers are multicast: many listeners bind, sender broadcasts."}]},
+{id:"ue3c", t:"Enhanced Input", min:7,
+body:`<p>Forget the old <code>Input.GetAxis("Horizontal")</code> stringly-typed world — Unreal's <strong>Enhanced Input</strong> is the moral twin of Unity's <em>new</em> Input System package, and it's the default since UE5.1. Three asset types: an <strong>Input Action</strong> (IA_Jump, IA_Move — an action with a value type: bool, 1D, 2D axis), an <strong>Input Mapping Context</strong> (IMC — binds physical keys to actions; equivalent of an Action Map), and bindings in your Pawn/Controller.</p>
+<p>Its two superpowers over raw input: <strong>Triggers</strong> (Pressed, Hold, Tap, Pulse — "hold to charge" is configuration, not code) and <strong>Modifiers</strong> (deadzone, negate, swizzle — WASD→2D-vector conversion happens in the asset). Mapping Contexts stack with priorities at runtime: add IMC_Driving when entering a car, remove IMC_OnFoot — no if-state spaghetti.</p>
+<p>Binding: get the Enhanced Input subsystem from the PlayerController, add the context, then bind events per action.</p>`,
+cmp:[["Input System package InputAction","Input Action asset|typed value: bool / Axis1D / Axis2D"],["Action Map","Input Mapping Context (IMC)"],["Interactions (hold, tap)","Triggers"],["Processors (deadzone, invert)","Modifiers"],["SwitchCurrentActionMap()","Add/Remove Mapping Context|stackable with priority"]],
+task:"Add IA_Sprint (bool) to the template's IMC bound to Left Shift, then in the Character BP set Max Walk Speed on Started and reset it on Completed.",
+quiz:[
+{q:"The Input Mapping Context corresponds to Unity's…",o:["Input Manager axes","Action Map","PlayerInput component","Control scheme"],a:1,x:"A set of key→action bindings you can swap at runtime."},
+{q:"'Hold button 0.5s to interact' is implemented with…",o:["A timer in Tick","A Hold Trigger on the Input Action","A Modifier","Level Blueprint"],a:1,x:"Triggers move press-semantics into data."},
+{q:"Turning WASD keys into one 2D movement vector is done by…",o:["Code in the Pawn","Swizzle/negate Modifiers in the IMC","The GameMode","A macro"],a:1,x:"Modifiers massage raw input into the action's value type."}]}
+]},
+{id:"ue4", t:"Visuals: Materials, Animation, Niagara", skills:["Author materials & instances","Read an Animation Blueprint","Build a state machine","Create a Niagara effect"], lessons:[
+{id:"ue4a", t:"Materials vs shaders", min:7,
+body:`<p>In Unity you pick or write a shader, then create Materials exposing its properties. Unreal fuses these: a <strong>Material asset</strong> <em>is</em> the shader — a node graph (think Shader Graph, but the native and only workflow) feeding a physically-based output node (Base Color, Metallic, Roughness, Normal, Emissive). Roughness is the big rename: it's the inverse of Unity's Smoothness.</p>
+<p>The role of "Unity material" is played by the <strong>Material Instance</strong>: a cheap child of a Material that overrides exposed parameters <em>without recompiling the shader</em>. Workflow law: build few master Materials with parameters, then instance them everywhere. Editing an instance updates live; editing the master recompiles.</p>
+<p>For runtime changes (<code>material.SetColor</code>), create a <strong>Dynamic Material Instance</strong> on the mesh and set scalar/vector parameters by name. And where Unity requires care about material instancing at runtime, Unreal makes the same distinction explicit in the type system.</p>`,
+cmp:[["Shader / Shader Graph","Material|node graph, is the shader"],["Material asset","Material Instance|parameter overrides, no recompile"],["Smoothness","Roughness (inverted)"],["renderer.material.SetColor","Create Dynamic Material Instance → Set Vector Parameter"],["Standard/URP Lit shader","Default lit shading model + PBR pins"]],
+task:"Make a master material with a Vector Parameter 'Tint' and a Scalar 'Roughness'; create two instances with different values and apply them to meshes.",
+quiz:[
+{q:"Unreal's Material asset is closest to Unity's…",o:["Material","Shader Graph shader","Texture","Render pipeline asset"],a:1,x:"The Material graph compiles into the shader itself."},
+{q:"You need 50 colour variants of one surface. You create…",o:["50 Materials","1 Material + 50 Material Instances","50 shaders","Dynamic instances only"],a:1,x:"Instances share the compiled shader; only parameters differ."},
+{q:"Unity Smoothness 0.9 ≈ Unreal Roughness…",o:["0.9","0.1","1.0","0.5"],a:1,x:"Roughness is inverted smoothness."}]},
+{id:"ue4b", t:"Animation Blueprints", min:8,
+body:`<p>Unity's Animator Controller is a state machine with parameters; logic to feed those parameters lives in a script calling <code>animator.SetFloat("Speed", …)</code>. Unreal's <strong>Animation Blueprint</strong> merges both halves into one asset with two graphs: the <strong>Event Graph</strong> gathers data every frame (read the owning Pawn's velocity, falling state) into variables, and the <strong>AnimGraph</strong> consumes them in <strong>State Machines</strong> and blend nodes to produce the final pose.</p>
+<p>Mappings: Animator Controller → AnimBP; Blend Tree → <strong>Blend Space</strong> (a separate asset — e.g. speed × direction → locomotion pose); transitions with conditions exist identically; Avatar → <strong>Skeleton asset</strong> (animations are bound to a Skeleton, and retargeting between skeletons is via IK Rig/IK Retargeter in UE5). Layered avatar masks → <strong>Layered blend per bone</strong> ("upper body aims, legs run"). Animation events on clips → <strong>Anim Notifies</strong>.</p>
+<p>Cultural difference: the AnimBP <em>pulls</em> data from the Pawn, rather than gameplay code <em>pushing</em> parameters in. Keep the pull cheap — cache the Pawn once, read a few floats.</p>`,
+cmp:[["Animator Controller","Animation Blueprint (AnimGraph + Event Graph)"],["Blend Tree","Blend Space asset"],["animator.SetFloat from a script","AnimBP Event Graph reads the Pawn|pull, not push"],["Avatar / retargeting","Skeleton asset + IK Retargeter"],["Animation Events","Anim Notifies"],["Avatar mask layers","Layered blend per bone"]],
+task:"Open the template's ABP_Manny: find where the Event Graph reads velocity, then find the state machine transition rule Idle→Run. Change the run threshold and feel it in PIE.",
+quiz:[
+{q:"The AnimBP's Event Graph replaces which Unity habit?",o:["Animation clips","Scripts calling animator.SetFloat/SetBool","State machines","Root motion"],a:1,x:"Parameter-feeding logic lives inside the AnimBP, pulling from the Pawn."},
+{q:"A 2D locomotion Blend Tree (speed × direction) becomes a…",o:["State machine","Blend Space asset","Montage","Notify"],a:1,x:"Blend Spaces map N-D inputs to blended poses."},
+{q:"Hit events at frame 12 of an attack clip are done with…",o:["Timelines","Anim Notifies","Tick polling","Delegates"],a:1,x:"Notifies fire events at points in an animation — Unity's Animation Events."}]},
+{id:"ue4c", t:"Niagara VFX", min:6,
+body:`<p><strong>Niagara</strong> is Unreal's particle system — conceptually closest to Unity's <em>VFX Graph</em> rather than Shuriken: fully programmable, simulation on CPU or GPU, driven by user parameters. (The legacy system, Cascade, is dead; ignore it.)</p>
+<p>Structure: a Niagara <strong>System</strong> contains <strong>Emitters</strong>; each emitter runs stacks of <strong>Modules</strong> in stages — Spawn, Initialize Particle, Update, Render. Modules are the analog of Shuriken's modules (Shape, Velocity over Lifetime…) but each is itself an editable graph. You expose <strong>User Parameters</strong> on the System and set them from gameplay (<code>Set Niagara Variable</code>) — the equivalent of tweaking a ParticleSystem's modules from script, but cleanly data-driven.</p>
+<p>Spawning: <code>Spawn System at Location</code> ≈ <code>Instantiate(particlePrefab)</code>, or add a NiagaraComponent to an Actor for looping effects.</p>`,
+cmp:[["Shuriken ParticleSystem","Niagara System|via emitters + module stacks"],["VFX Graph","Niagara|closest conceptual match"],["Modules (Shape, Noise…)","Niagara Modules|each an editable graph"],["Exposed VFX Graph properties","User Parameters + Set Niagara Variable"],["Instantiate(effectPrefab, pos, rot)","Spawn System at Location"]],
+task:"Create a Niagara System from the Fountain template, expose a User Parameter for spawn rate, and set it from a Blueprint on BeginPlay.",
+quiz:[
+{q:"Niagara's closest Unity relative is…",o:["Shuriken","VFX Graph","Line Renderer","Trail Renderer"],a:1,x:"Both are programmable, parameter-driven, GPU-capable graph systems."},
+{q:"A Niagara System is composed of…",o:["Materials","Emitters running module stacks","Levels","Montages"],a:1,x:"System → Emitters → Modules per stage."},
+{q:"Gameplay changes an effect's intensity via…",o:["Editing the asset at runtime","User Parameters (Set Niagara Variable)","Recompiling","Console commands"],a:1,x:"Expose a parameter, drive it from BP/C++."}]}
+]},
+{id:"ue5", t:"Architecture & Data", skills:["Choose Data Asset vs DataTable","Use Gameplay Tags","Design with BP interfaces","Explain World Partition"], lessons:[
+{id:"ue5a", t:"Data Assets & DataTables", min:6,
+body:`<p>Your ScriptableObject instincts transfer almost 1:1. A <strong>Primary Data Asset</strong> (subclass <code>UPrimaryDataAsset</code>, or a Blueprint of it) is a typed data container asset: WeaponDefinition, EnemyArchetype — exactly a ScriptableObject. Reference it from Actors instead of duplicating numbers on prefabs.</p>
+<p>For spreadsheet-shaped data, Unreal adds <strong>DataTables</strong>: rows of one struct type, importable from CSV/JSON — the thing Unity teams usually hand-roll. Look up rows by <strong>row name</strong> (an <code>FName</code>).</p>
+<p>Two Unreal-specific upgrades: <strong>soft references</strong> (<code>TSoftObjectPtr</code> / Soft Object Reference) point to an asset <em>without loading it</em> — the built-in answer to Unity's Addressables problem of hard reference chains; and the <strong>Asset Manager</strong> can scan, bundle and async-load Primary Data Assets by type and tag.</p>`,
+cmp:[["ScriptableObject","Primary Data Asset"],["Hand-rolled CSV importer","DataTable|struct rows, CSV/JSON import"],["Addressables (load-on-demand refs)","Soft Object References + Asset Manager"],["Direct asset reference in prefab","Hard reference|loads with the referencer, same pitfalls"],["Resources.Load","LoadObject / async load via soft refs|Resources-style folder loading discouraged in both"]],
+task:"Create a WeaponData Primary Data Asset BP with Damage and FireRate, make two weapon assets, and print their values from a test Actor.",
+quiz:[
+{q:"The Unreal ScriptableObject is…",o:["DataTable","Primary Data Asset","GameInstance","SaveGame"],a:1,x:"Typed, referenced, designer-editable data asset."},
+{q:"200 item definitions maintained in a spreadsheet belong in…",o:["200 Data Assets","A DataTable imported from CSV","Config INI","The Level Blueprint"],a:1,x:"DataTables are made for row-based bulk data."},
+{q:"A soft reference differs from a hard one because…",o:["It's read-only","It doesn't load the asset until you ask","It's faster to dereference","It can't be saved"],a:1,x:"Soft refs store a path; you async-load on demand — Addressables energy, built in."}]},
+{id:"ue5b", t:"Gameplay Tags", min:5,
+body:`<p>Unity tags: one string per GameObject, flat, typo-prone. <strong>Gameplay Tags</strong> are the opposite: a project-wide <em>hierarchical</em> registry (<code>Status.Debuff.Burning</code>, <code>Weapon.Ranged.Bow</code>), attachable in <em>containers</em> (many tags per thing), queried with hierarchy awareness — asking "has <code>Status.Debuff</code>?" matches any child tag.</p>
+<p>Use them wherever you'd reach for enums-that-keep-growing or string constants: damage types, ability states, AI states, item categories. They serialize, replicate, and edit with autocomplete. Combined with tag <em>queries</em> ("ANY of (A,B) AND NOT C") they replace towers of boolean flags. They're also the backbone of the Gameplay Ability System, so learning them pays forward.</p>`,
+cmp:[["GameObject.tag (single string)","Gameplay Tag Container|many hierarchical tags"],["CompareTag('Enemy')","Has Tag / Has Any / matching with hierarchy"],["Ever-growing enum EDamageType","Tag family Damage.*|extend without recompiling users"],["Layers for logic grouping","Tags + tag queries|layers in UE stay for collision/rendering channels"]],
+task:"Add tags Status.Burning and Status.Frozen in Project Settings → Gameplay Tags, give an Actor a tag container, and branch on 'Has Tag Status.Burning'.",
+quiz:[
+{q:"The key structural upgrade over Unity tags is…",o:["They're faster","Hierarchy + multiple tags per object","They're colours","They're per-level"],a:1,x:"Hierarchical namespaces with container semantics and partial matching."},
+{q:"'Has tag Status.Debuff' on an object tagged Status.Debuff.Burning returns…",o:["False","True — parent matches children","Error","Only in C++"],a:1,x:"Hierarchical matching is the point."},
+{q:"Gameplay Tags best replace…",o:["Materials","Sprawling enums and magic strings for states/categories","Levels","Collision channels"],a:1,x:"Data-driven, extensible categorisation."}]},
+{id:"ue5c", t:"Interfaces & decoupling", min:5,
+body:`<p>You know interfaces from C#; Unreal has them in both worlds. A <strong>Blueprint Interface</strong> asset declares functions with no implementation; any Blueprint can implement it, and — the twist — you can <em>message</em> any Actor through an interface call without casting: if it implements the function it runs, otherwise the call is silently skipped. That's duck-typed messaging Unity never had natively (closest was the reviled <code>SendMessage</code>, minus type safety).</p>
+<p>Canonical use: <code>IInteractable</code> with <code>Interact(Instigator)</code>. Your player traces, sends the Interact message to whatever it hit — doors, chests, NPCs — zero knowledge of their classes, zero hard references. Prefer this over Cast-chains whenever behaviour, not data, is what you need from a stranger.</p>`,
+cmp:[["C# interface + 'is IInteractable' check","Blueprint Interface + message call|no cast needed"],["SendMessage('Interact')","Interface message|typed, safe, fails silently by design"],["Abstract base class for contracts","Interface or base class|UE has both; interfaces avoid the dependency chain"]],
+task:"Create BPI_Interactable with an Interact function; implement it on a door (opens) and a lamp (toggles light); make the player line-trace and send the message to anything hit.",
+quiz:[
+{q:"Calling an interface message on an Actor that doesn't implement it…",o:["Crashes","Does nothing, by design","Casts automatically","Logs an error"],a:1,x:"Safe no-op — that's what makes it great for 'try to interact with anything'."},
+{q:"Interfaces beat casting chains primarily because…",o:["They're faster","They remove hard class dependencies","They replicate","They're prettier"],a:1,x:"The caller depends only on the interface asset."},
+{q:"Unity's nearest (unsafe) analog to interface messages was…",o:["Invoke","SendMessage","Coroutines","Tags"],a:1,x:"Same 'call by name if present' spirit, now with types."}]},
+{id:"ue5d", t:"World Partition & big worlds", min:6,
+body:`<p>How do you stream a huge world in Unity? You cut the map into additive scenes and write a streaming manager. Unreal 5's <strong>World Partition</strong> deletes that job: one big persistent level, automatically split into a <strong>grid of cells</strong>, streamed in/out around streaming sources (usually the player). Actors opt in via their <em>Is Spatially Loaded</em> flag.</p>
+<p>Supporting cast: <strong>One File Per Actor (OFPA)</strong> stores each actor as its own file so a team can edit one map without merge wars (the answer to Unity's scene-merge nightmare); <strong>Data Layers</strong> group actors for conditional loading (quest states, day/night variants) — think scene-within-scene toggles; <strong>HLODs</strong> auto-generate merged low-poly proxies for unloaded cells, so distant cities still render.</p>
+<p>For small/medium levels, classic Level Streaming (Chapter 1) remains fine — World Partition shines at open-world scale.</p>`,
+cmp:[["Hand-rolled additive-scene streaming","World Partition|automatic grid streaming"],["Scene merge conflicts in teams","One File Per Actor"],["Enabling/disabling content sets per state","Data Layers"],["LOD Groups + manual impostors","HLOD|auto-built proxy meshes per cell"]],
+task:"Create a new Open World template map, enable the World Partition editor minimap, and watch cells load/unload as you PIE-run across the terrain.",
+quiz:[
+{q:"World Partition replaces which Unity chore?",o:["Lightmapping","Hand-built additive-scene streaming systems","Prefabs","NavMesh"],a:1,x:"Automatic cell-based streaming of one big level."},
+{q:"One File Per Actor exists to solve…",o:["Load times","Team collaboration / merge conflicts on maps","GPU memory","Shader compilation"],a:1,x:"Each actor is a separate file on disk; two people can edit the same map."},
+{q:"Data Layers are best described as…",o:["Rendering layers","Named actor groups you can load/activate conditionally","Physics channels","Save files"],a:1,x:"Quest variants, seasonal content, alternate set-dressing."}]}
+]},
+{id:"ue6", t:"Shipping: Save, Package, Optimize", skills:["Implement SaveGame","Package a build","Profile with stat & Insights","Use scalability settings"], lessons:[
+{id:"ue6a", t:"The Save System", min:6,
+body:`<p>Unity gives you <code>PlayerPrefs</code> and a shrug; real saves mean JSON + files. Unreal ships a real system: subclass <strong>USaveGame</strong> (in BP or C++), add the variables to persist, then <code>Create Save Game Object → set fields → Save Game to Slot("Slot1", 0)</code> and <code>Load Game from Slot</code> back. Serialization of the object's properties is automatic (in C++, anything marked <code>UPROPERTY(SaveGame)</code> with the right serializer).</p>
+<p>Architecture stays your job: a SaveGame object is a <em>snapshot struct</em>, not live state — on save you gather (player transform, inventory rows, quest tags), on load you re-apply. GameInstance is the natural owner of save/load orchestration since it survives level changes. Async variants exist for large saves.</p>`,
+cmp:[["PlayerPrefs","Save Game to Slot|but structured objects, not key-value strings"],["JsonUtility + File.WriteAllText","USaveGame subclass|auto property serialization"],["Custom save manager singleton","GameInstance orchestrating SaveGame objects"]],
+task:"Create BP_MySave (SaveGame) with PlayerLocation; save on key P, load and teleport on key L. Congratulations: persistent state with zero file I/O code.",
+quiz:[
+{q:"USaveGame is best thought of as…",o:["Live game state","A snapshot object you fill on save and read on load","A database","A config INI"],a:1,x:"Gather → save; load → re-apply."},
+{q:"Which class should typically own save/load flow?",o:["The Pawn","GameInstance","Level Blueprint","PlayerCameraManager"],a:1,x:"It persists across levels — ideal orchestrator."},
+{q:"In C++, a property persists in a SaveGame when marked…",o:["Transient","UPROPERTY(SaveGame)","EditAnywhere","Config"],a:1,x:"The SaveGame specifier opts the field into save serialization."}]},
+{id:"ue6b", t:"Packaging & builds", min:6,
+body:`<p>Unity's Build Settings dialog becomes <strong>Platforms → [Platform] → Package Project</strong>. Under the hood, packaging <strong>cooks</strong> content (converts editor-format assets to platform-optimized binary — Unity does this invisibly), <strong>stages</strong> it into <code>.pak</code> archives, and compiles a <strong>Shipping</strong> build of the code. Build configurations matter: <em>Development</em> keeps debugging and console; <em>Shipping</em> strips them — the Release analog.</p>
+<p>Which maps ship? Project Settings → Packaging → List of maps (≈ Scenes In Build). Set the Default/Game Default Map — the startup scene. Common gotchas for Unity refugees: assets only referenced by string paths don't get cooked (same spirit as Resources folder surprises) — force-include via "Additional Asset Directories to Cook"; and Shipping disables <code>Print String</code>-style debugging, so wean off early.</p>`,
+cmp:[["Build Settings → Build","Platforms → Package Project"],["Scenes In Build list","Packaging: List of Maps + Default Maps"],["Development Build checkbox","Development vs Shipping configuration"],["Invisible asset import pipeline","Cooking|explicit, per-platform"],["StreamingAssets/","Additional directories to cook / .pak staging"]],
+task:"Package a Windows (or your platform's) Development build of your project and run the executable outside the editor.",
+quiz:[
+{q:"'Cooking' is…",o:["Compiling C++","Converting assets to platform-optimized runtime formats","Lightmap baking","Shader warmup"],a:1,x:"Editor assets → runtime binary content, per platform."},
+{q:"The Shipping configuration ≈ Unity's…",o:["Debug build","Release build without dev tooling","Editor play mode","IL2CPP only"],a:1,x:"Optimized, stripped of debug features and console."},
+{q:"An asset loaded only by a runtime string path will…",o:["Always package fine","Possibly be excluded from cooking — force-include it","Crash the cook","Become a soft reference"],a:1,x:"The cooker follows references; pathless loads need explicit inclusion."}]},
+{id:"ue6c", t:"Performance & profiling", min:7,
+body:`<p>Your Unity profiler instincts port over; the tools are renamed. Quick on-screen numbers: console commands <code>stat fps</code>, <code>stat unit</code> (the crucial one — shows whether Game thread, Draw/RHI thread or GPU is the bottleneck ≈ CPU vs GPU bound in Unity's profiler), <code>stat gpu</code>, <code>stat scenerendering</code> (draw calls). Deep dives: <strong>Unreal Insights</strong> is the Profiler window/Timeline, and the <strong>GPU Visualizer</strong> (Ctrl+Shift+,) breaks down a frame's GPU cost.</p>
+<p>The usual suspects differ slightly from Unity: <strong>Tick abuse</strong> (disable tick on everything that can be event-driven — Actors tick by default in C++ unless you say otherwise!), Blueprint-heavy per-frame logic, too many <strong>dynamic lights with shadows</strong>, overdraw from translucent materials, and uncontrolled draw calls (Instanced Static Meshes ≈ GPU instancing). <strong>Scalability</strong> settings (Low→Epic presets driven by console variables) are Unity's Quality Settings, and they're your first lever on weaker hardware. UE5-specific: Nanite virtualizes mesh detail (rethinks LODs entirely) and Lumen replaces baked GI — both trade base GPU cost for scalability.</p>`,
+cmp:[["Profiler window / Timeline","Unreal Insights"],["Stats overlay (Game view)","stat fps / stat unit / stat gpu"],["Quality Settings presets","Scalability settings (sg.* console variables)"],["GPU instancing / SRP batcher","Instanced Static Mesh components"],["Baked GI + lightmaps","Lumen (dynamic) or baked lightmass"],["LOD Groups","Nanite (or classic LODs for non-Nanite)"]],
+task:"In PIE, run stat unit and identify your bottleneck thread; then run stat scenerendering and note your draw call count.",
+quiz:[
+{q:"Which command tells you Game-thread vs GPU bound at a glance?",o:["stat fps","stat unit","stat memory","showflag"],a:1,x:"stat unit shows frame, game, draw and GPU times side by side."},
+{q:"A dangerous C++ default Unity devs miss:",o:["Actors don't render","Actors tick every frame unless disabled","Materials recompile per frame","GC runs per tick"],a:1,x:"Set PrimaryActorTick.bCanEverTick=false (or disable in BP) for everything event-driven."},
+{q:"Unity's Quality Settings map to…",o:["World Settings","Scalability settings","Device profiles only","stat commands"],a:1,x:"Scalability groups (sg.*) drive preset quality tiers."}]}
+]}
+]},
+{
+id:"cpp", icon:"⟬⟭", title:"C++ for Unreal", blurb:"Modern C++ as Unreal actually uses it — headers, pointers, reflection macros, delegates and the build system, translated from C#.",
+chapters:[
+{id:"cpp1", t:"From C# to C++", skills:["Explain headers & the build model","Use pointers & references correctly","Reason about stack vs heap & ownership"], lessons:[
+{id:"cpp1a", t:"Headers, cpp files & the build model", min:7,
+body:`<p>C# compiles a project as one happy family: every class sees every other class, no declarations needed. C++ compiles each <code>.cpp</code> <em>in isolation</em> (a "translation unit"), so each file must be told what exists — via <strong>#include</strong> of <strong>header files</strong>. Hence the split you'll live with: <code>MyActor.h</code> declares the class (the promise), <code>MyActor.cpp</code> defines the bodies (the delivery).</p>
+<p>Two survival rules. One: headers get included into many files, so keep them lean — in headers, prefer a <strong>forward declaration</strong> (<code>class UCameraComponent;</code>) when you only use pointers/references to a type, and #include the full header in the .cpp. This slashes compile times and breaks circular includes, the C++ version of assembly-definition cycles. Two: every Unreal header starts with <code>#pragma once</code> (include guard) and your class's generated include (<code>MyActor.generated.h</code>) must be the <em>last</em> include in the file.</p>`,
+code:`<span class="cm">// MyActor.h — the promise</span>
+<span class="kw">#pragma once</span>
+<span class="kw">#include</span> <span class="st">"GameFramework/Actor.h"</span>
+<span class="kw">#include</span> <span class="st">"MyActor.generated.h"</span>  <span class="cm">// always last</span>
+
+<span class="kw">class</span> UCameraComponent;              <span class="cm">// forward declaration</span>
+
+<span class="mc">UCLASS</span>()
+<span class="kw">class</span> AMyActor : <span class="kw">public</span> AActor {
+    <span class="mc">GENERATED_BODY</span>()
+    <span class="kw">void</span> DoThing();                   <span class="cm">// declared here…</span>
+};
+
+<span class="cm">// MyActor.cpp — the delivery</span>
+<span class="kw">#include</span> <span class="st">"MyActor.h"</span>
+<span class="kw">#include</span> <span class="st">"Camera/CameraComponent.h"</span> <span class="cm">// full include only where used</span>
+<span class="kw">void</span> AMyActor::DoThing() { <span class="cm">/* …defined here */</span> }`,
+cmp:[["One .cs file per class, no declarations","Header (.h) declaration + source (.cpp) definition"],["using UnityEngine;","#include specific headers"],["Assembly definition cycles","Circular includes|solved by forward declarations"],["Roslyn compiles the project as a whole","Each .cpp compiles alone, then links"]],
+task:"Create a C++ Actor from the editor (Tools → New C++ Class) and study the generated .h/.cpp pair; identify the generated.h include and the UCLASS macro.",
+quiz:[
+{q:"Why do headers exist at all?",o:["Tradition","Each .cpp compiles in isolation and must be told what types exist","They're faster than .cpp","They hold assets"],a:1,x:"Translation units see nothing by default; #include pastes declarations in."},
+{q:"In a header you use UCameraComponent* as a member. You should…",o:["#include the camera header there","Forward-declare in the .h, include fully in the .cpp","Use void*","Avoid pointers"],a:1,x:"Pointers/references only need the name; keep headers lean."},
+{q:"MyActor.generated.h must be…",o:["First include","Anywhere","The last include in the header","In the .cpp only"],a:2,x:"UHT-generated code depends on everything above it — always last."}]},
+{id:"cpp1b", t:"Pointers & references", min:8,
+body:`<p>In C#, every class variable is secretly a reference; you never think about it. C++ makes the choice explicit, and Unreal code uses three flavours constantly. A <strong>pointer</strong> <code>AActor* Target</code> holds an address, can be <code>nullptr</code>, can be reseated; access members with <code>-></code>. A <strong>reference</strong> <code>AActor& A</code> is an alias that can never be null and never reseated — think of it as C#'s guarantee, made explicit. A plain <strong>value</strong> <code>FVector V</code> is a full copy (C# struct semantics).</p>
+<p>Parameter-passing idioms you'll write daily: pass big read-only things as <strong>const reference</strong> — <code>const FVector&amp; Location</code> ≈ "borrow, don't copy, don't modify" (C# <code>in</code>); pass outputs as non-const reference (C# <code>out/ref</code>); pass "maybe an object" as a pointer. <strong>const</strong> is a real compiler-enforced contract, sprinkled everywhere: <code>const</code> methods promise not to mutate the object.</p>
+<p>Null discipline: Unreal's <code>IsValid(Ptr)</code> beats a raw <code>Ptr != nullptr</code> for UObjects because it also checks <em>pending-kill</em> — the engine's equivalent of Unity's destroyed-but-not-null fake objects, except here checking is opt-in, not overloaded <code>==</code> magic.</p>`,
+code:`<span class="kw">void</span> Fire(<span class="kw">const</span> FVector& Origin,      <span class="cm">// borrow, read-only  (≈ in)</span>
+          FHitResult& OutHit,           <span class="cm">// caller's variable   (≈ out)</span>
+          AActor* OptionalIgnored)      <span class="cm">// may be nullptr</span>
+{
+    <span class="kw">if</span> (IsValid(OptionalIgnored)) { <span class="cm">/* safe UObject check */</span> }
+}`,
+cmp:[["Class variables (implicit references)","T* pointers|explicit, nullable, use ->"],["struct copies","Value types (FVector, FRotator…)|copied unless passed by ref"],["in parameter","const T&"],["out / ref parameter","T& (non-const reference)"],["if (obj == null) with Unity's fake-null","if (IsValid(Ptr))|checks null AND pending-kill"]],
+task:"Write a free function taking const FVector& and an FString& out-parameter that fills in a formatted description of the vector; call it from BeginPlay.",
+quiz:[
+{q:"const FVector& Location as a parameter means…",o:["Copy the vector","Borrow it read-only without copying","It can be null","It's static"],a:1,x:"Reference avoids the copy; const forbids mutation — the default for non-trivial read-only params."},
+{q:"A reference (T&) differs from a pointer because it…",o:["Is slower","Cannot be null and cannot be reseated","Uses -> syntax","Only works on structs"],a:1,x:"References are guaranteed-valid aliases."},
+{q:"For UObject pointers, prefer IsValid(Ptr) because…",o:["It's shorter","It also detects pending-kill (destroyed) objects","nullptr checks crash","It garbage collects"],a:1,x:"Like Unity's destroyed-object problem, but you check explicitly."}]},
+{id:"cpp1c", t:"Memory, stack & ownership", min:8,
+body:`<p>The scary part of C++ is "manual memory management." Here's the relief: <strong>in Unreal gameplay code you almost never call new/delete.</strong> Three territories: (1) <strong>Stack</strong> — locals like <code>FVector V;</code> live in the function frame and vanish at scope end; free and instant; most math/struct types live here. (2) <strong>UObjects</strong> (Actors, components, anything UCLASS) — created via engine factories (<code>SpawnActor</code>, <code>NewObject</code>, <code>CreateDefaultSubobject</code>) and <em>garbage collected</em>, just like C#… with one condition: the GC only sees references stored in <code>UPROPERTY</code> fields or engine containers. A raw C++ pointer to a UObject is invisible to GC — the object under it can be collected. Mark it <code>UPROPERTY()</code> (or use <code>TWeakObjectPtr</code> for non-owning). (3) <strong>Non-UObject heap data</strong> — owned by smart pointers: <code>TUniquePtr</code> (single owner), <code>TSharedPtr</code> (ref-counted). RAII means destruction is deterministic — the origin of C#'s <code>using</code>, but pervasive.</p>
+<p>So the C# habit "assign to a field and forget" survives — as long as the field is a UPROPERTY. That macro is not decoration; it's a lifetime contract.</p>`,
+cmp:[["GC handles everything","GC handles UObjects — only via UPROPERTY-visible refs"],["new MyClass() for plain classes","TUniquePtr / TSharedPtr / MakeShared|RAII ownership"],["struct on the stack (kind of)","True stack locals|deterministic, free"],["using / IDisposable","RAII destructors|automatic at scope exit"],["WeakReference","TWeakObjectPtr|non-owning UObject pointer"]],
+task:"In a test Actor, store a spawned Actor in (a) a raw member pointer and (b) a UPROPERTY() pointer; add a comment explaining which one the GC can see and why.",
+quiz:[
+{q:"Unreal UObjects are freed by…",o:["delete calls you write","Garbage collection, tracking UPROPERTY references","Reference counting always","The level"],a:1,x:"UObjects are GC'd; UPROPERTY is how the collector sees your reference."},
+{q:"A raw (non-UPROPERTY) member pointer to a UObject risks…",o:["Compile errors","The object being GC'd underneath it","Memory leaks","Slow access"],a:1,x:"GC can't see it, so the target may be collected — the classic Unreal dangling pointer."},
+{q:"For a plain C++ helper object with one owner, use…",o:["new/delete","TUniquePtr","UPROPERTY","static"],a:1,x:"Unique ownership, auto-destroyed — modern C++ default."}]}
+]},
+{id:"cpp2", t:"Unreal C++ Core: Reflection & Types", skills:["Use UCLASS/UPROPERTY/UFUNCTION","Explain the reflection system","Pick FString vs FName vs FText","Use TArray/TMap/TSet"], lessons:[
+{id:"cpp2a", t:"UCLASS, UPROPERTY, UFUNCTION & reflection", min:8,
+body:`<p>C# has reflection built into the runtime; C++ has none. Unreal builds its own: the <strong>Unreal Header Tool (UHT)</strong> scans your headers before compilation and generates metadata code for anything you mark with its macros. That metadata powers everything you took for granted in Unity: the Details panel, serialization, Blueprint exposure, networking, and GC.</p>
+<p>The trinity: <strong>UCLASS()</strong> on the class (plus <code>GENERATED_BODY()</code> inside) registers the type. <strong>UPROPERTY(...)</strong> on fields — with specifiers replacing Unity attributes: <code>EditAnywhere</code> ≈ serialized-and-editable, <code>VisibleAnywhere</code> ≈ shown read-only, <code>BlueprintReadWrite</code> exposes to BP graphs, <code>Category="Combat"</code> groups the Details panel. <strong>UFUNCTION(...)</strong> on methods: <code>BlueprintCallable</code> makes it a BP node; <code>BlueprintPure</code> ≈ a no-exec getter node.</p>
+<p>Mental model: <em>the macros are Unity's [SerializeField]/[Header]/public-method-magic — but explicit, and mandatory for engine visibility.</em> Unmarked members are invisible to editor, GC and Blueprint: private in the deepest sense.</p>`,
+code:`<span class="mc">UCLASS</span>()
+<span class="kw">class</span> AWeapon : <span class="kw">public</span> AActor {
+    <span class="mc">GENERATED_BODY</span>()
+
+    <span class="mc">UPROPERTY</span>(EditAnywhere, BlueprintReadWrite, Category=<span class="st">"Combat"</span>)
+    <span class="kw">float</span> Damage = 25.f;              <span class="cm">// [SerializeField] + inspector edit</span>
+
+    <span class="mc">UFUNCTION</span>(BlueprintCallable, Category=<span class="st">"Combat"</span>)
+    <span class="kw">void</span> Fire();                      <span class="cm">// callable node in Blueprint</span>
+
+    <span class="mc">UFUNCTION</span>(BlueprintPure)
+    <span class="kw">float</span> GetDPS() <span class="kw">const</span>;             <span class="cm">// pure getter node</span>
+};`,
+cmp:[["[SerializeField] float dmg;","UPROPERTY(EditAnywhere) float Damage;"],["[Header('Combat')]","Category=\"Combat\""],["public method visible to UnityEvents","UFUNCTION(BlueprintCallable)"],["C# runtime reflection","UHT-generated reflection|build-time code generation"],["[HideInInspector] public","UPROPERTY() with no Edit/Visible specifier|GC-visible, editor-hidden"]],
+task:"Add a UPROPERTY(EditAnywhere, Category=\"Stats\") float and a UFUNCTION(BlueprintCallable) to your C++ Actor; verify the field appears in Details and the function appears as a BP node.",
+quiz:[
+{q:"Who generates Unreal's reflection data?",o:["The C++ compiler","Unreal Header Tool, before compilation","The linker","Blueprint VM"],a:1,x:"UHT parses the macros and writes the .generated code."},
+{q:"EditAnywhere most resembles…",o:["[HideInInspector]","[SerializeField] with inspector editing","const","[Range]"],a:1,x:"Serialized and editable in the Details panel."},
+{q:"A UObject pointer field WITHOUT UPROPERTY is…",o:["Fine","Invisible to GC and editor — dangerous for ownership","Automatically replicated","A compile error"],a:1,x:"Reflection powers GC visibility; unmarked means unseen."}]},
+{id:"cpp2b", t:"Strings & core types: FString, FName, FText", min:6,
+body:`<p>C# has one <code>string</code>; Unreal deliberately has three. <strong>FString</strong> — mutable working string; concatenation, parsing, <code>FString::Printf(TEXT("HP: %f"), HP)</code> ≈ <code>$"HP: {hp}"</code>. <strong>FName</strong> — immutable, case-insensitive, <em>interned</em> identifier: comparisons are integer-fast; used for asset names, bones, sockets, tags, DataTable rows. Nearest Unity concept: the string IDs you hash with <code>Animator.StringToHash</code> — built into the type system. <strong>FText</strong> — display text for humans: localization-aware, the only correct type for UI. Rule: <em>identity → FName, computation → FString, screen → FText.</em></p>
+<p>Also meet the primitive conventions: <code>int32/uint8</code> instead of int/byte (sizes guaranteed), <code>float</code> widely used, and the <code>TEXT("...")</code> macro wrapping every literal (wide-char correctness). Prefix decoder while reading engine code: <code>A</code>ctor classes, <code>U</code>Objects, <code>F</code> plain structs/classes, <code>E</code>nums, <code>I</code>nterfaces, <code>T</code>emplates, and <code>b</code>Boolean fields.</p>`,
+cmp:[["string (all purposes)","FString / FName / FText|by purpose"],["$\"HP: {hp}\"","FString::Printf(TEXT(\"HP: %f\"), HP)"],["Animator.StringToHash IDs","FName|interned, int-fast comparison"],["Localization tables + string","FText|localization built into the type"],["int / byte","int32 / uint8|explicit sizes"]],
+task:"Create one variable of each string type in a C++ Actor and log all three; use an FName for a socket/row-style identifier and FText for a UI-facing label.",
+quiz:[
+{q:"A DataTable row identifier should be…",o:["FString","FName","FText","int32"],a:1,x:"Identity strings are FNames — interned and fast to compare."},
+{q:"Text shown to the player in UI must be…",o:["FString","FName","FText","char*"],a:2,x:"FText carries localization; the other two don't."},
+{q:"The b prefix (bIsDead) marks…",o:["Blueprint variables","Boolean fields, by convention","Bound delegates","Bytes"],a:1,x:"Epic coding standard — you'll see it everywhere."}]},
+{id:"cpp2c", t:"Containers: TArray, TMap, TSet", min:6,
+body:`<p>Direct swaps for your daily C# collections, with UHT-friendly powers: <strong>TArray&lt;T&gt;</strong> ≈ <code>List&lt;T&gt;</code> (<code>Add, Num()</code> ≈ Count, <code>Contains</code>, range-for works); <strong>TMap&lt;K,V&gt;</strong> ≈ <code>Dictionary</code> — note <code>Find</code> returns a <em>pointer</em> (nullptr if missing) rather than TryGetValue's bool+out; <strong>TSet&lt;T&gt;</strong> ≈ <code>HashSet</code>. All three can be UPROPERTYs: editable in Details, serialized, GC-tracked element pointers — the thing Unity's Dictionary famously couldn't do (no inspector, no serialization).</p>
+<p>Performance habits transfer: <code>Reserve(N)</code> ≈ Capacity to avoid re-allocations; <code>RemoveAtSwap</code> for order-irrelevant O(1) removal; iterate by <code>const T&</code> to avoid copies. For fixed sets of options, <code>UENUM(BlueprintType)</code> enums join the reflection party and appear as dropdowns.</p>`,
+cmp:[["List<T>","TArray<T>|Num(), Add, Contains, range-for"],["Dictionary<K,V>","TMap<K,V>|Find returns pointer-or-null"],["HashSet<T>","TSet<T>"],["Dictionary not serializable in Inspector","UPROPERTY TMap edits in Details|finally"],["enum + [SerializeField]","UENUM(BlueprintType)|dropdown + BP support"]],
+task:"Add a UPROPERTY TMap<FName, float> of item weights to an Actor, fill it in the Details panel, and log a lookup with Find (handling the miss case).",
+quiz:[
+{q:"TMap::Find returns…",o:["A bool","A pointer to the value, or nullptr","A copy always","An iterator only"],a:1,x:"Check the pointer before dereferencing — the TryGetValue idiom, C++-style."},
+{q:"A big UPROPERTY advantage of TMap over Unity's Dictionary:",o:["It's faster","It serializes and edits in the Details panel","It's thread-safe","It replicates automatically"],a:1,x:"Reflection makes engine containers first-class editor citizens."},
+{q:"Order doesn't matter and you remove mid-array often. Use…",o:["RemoveAt","RemoveAtSwap","Pop","A TSet instead"],a:1,x:"Swap-with-last removal avoids shifting — O(1)."}]}
+]},
+{id:"cpp3", t:"OOP the Unreal Way", skills:["Override virtuals with Super calls","Build UINTERFACEs","Declare & bind delegates"], lessons:[
+{id:"cpp3a", t:"Inheritance & virtual functions", min:7,
+body:`<p>C# made you write <code>virtual</code>/<code>override</code>; C++ is the language that invented the pattern, with two differences. First, methods are non-virtual by default and there's no <code>new</code>-style hiding safety net — Unreal code marks overrides with the <code>override</code> keyword (do it always; it turns typos into compile errors). Second, and critically: <strong>base calls are not automatic and not optional in spirit.</strong> When you override <code>BeginPlay</code>, <code>Tick</code>, or any engine virtual, call <code>Super::BeginPlay()</code> — Unreal's <code>base.Method()</code> — or the engine's own setup silently doesn't run. Forgotten Super calls are a top-3 newcomer bug.</p>
+<p>C++ has multiple inheritance; Unreal restricts you to <em>one UCLASS base</em> plus any number of interfaces — exactly the C# rule, enforced by convention. Constructors differ from Unity too: a UObject constructor runs for the <strong>Class Default Object</strong> at startup, not per-spawn gameplay setup — treat it like serialized-field initialization, and keep gameplay logic in BeginPlay (full story in Chapter 4).</p>`,
+code:`<span class="kw">void</span> AMyActor::BeginPlay()
+{
+    Super::BeginPlay();      <span class="cm">// ≈ base.BeginPlay() — NEVER forget</span>
+    <span class="cm">// your setup here</span>
+}`,
+cmp:[["override keyword (mandatory)","override keyword (optional but always use it)"],["base.Method()","Super::Method()|forgetting it breaks engine behaviour"],["Single class + interfaces","Same rule for UCLASSes"],["Awake/constructor confusion","Constructor = CDO setup; BeginPlay = gameplay setup"]],
+task:"Override Tick in your C++ Actor, deliberately remove the Super::Tick call, note nothing visibly breaks — then write a comment explaining why it's still wrong (parent tick logic, plugins, future-proofing).",
+quiz:[
+{q:"Overriding BeginPlay without calling Super::BeginPlay()…",o:["Won't compile","Compiles but skips engine/base setup — a classic bug","Is recommended","Only matters in Blueprints"],a:1,x:"The engine relies on its base implementations running."},
+{q:"Unreal's equivalent of base.TakeDamage() is…",o:["parent::TakeDamage()","Super::TakeDamage()","this->TakeDamage()","Base()"],a:1,x:"Super is a typedef for the parent class."},
+{q:"UObject constructors are best used for…",o:["Spawning actors","Default values & CreateDefaultSubobject — CDO setup","Input binding","Loading levels"],a:1,x:"They run for the Class Default Object; gameplay init belongs in BeginPlay."}]},
+{id:"cpp3b", t:"Interfaces in C++ (UINTERFACE)", min:6,
+body:`<p>A C# interface is one keyword. An Unreal C++ interface is a two-part ritual: a tiny <code>UINTERFACE</code> UObject stub (reflection bookkeeping — ignore it) and the real <code>IInteractable</code> class holding the functions. Implement by inheriting <code>public IInteractable</code> alongside your UCLASS base.</p>
+<p>The payoff is the same duck-typed superpower you met in Blueprints: check with <code>Ptr->Implements&lt;UInteractable&gt;()</code>, and — for BlueprintNativeEvent interface functions — call through <code>IInteractable::Execute_Interact(TargetActor, Instigator)</code>, which works whether the implementer is C++ or a Blueprint. That Execute_ prefix looks odd but it's what makes one interface span both worlds.</p>
+<p>Design guidance carries over from C#: interfaces for capabilities (Damageable, Interactable, Saveable), base classes for shared implementation.</p>`,
+code:`<span class="mc">UINTERFACE</span>(MinimalAPI, Blueprintable)
+<span class="kw">class</span> UInteractable : <span class="kw">public</span> UInterface { <span class="mc">GENERATED_BODY</span>() };
+
+<span class="kw">class</span> IInteractable {                <span class="cm">// the real interface</span>
+    <span class="mc">GENERATED_BODY</span>()
+<span class="kw">public</span>:
+    <span class="mc">UFUNCTION</span>(BlueprintNativeEvent)
+    <span class="kw">void</span> Interact(AActor* Instigator);
+};
+
+<span class="cm">// usage</span>
+<span class="kw">if</span> (Hit->Implements<UInteractable>())
+    IInteractable::Execute_Interact(Hit, <span class="kw">this</span>);`,
+cmp:[["interface IInteractable {}","UINTERFACE stub + IInteractable class pair"],["obj is IInteractable","Ptr->Implements<UInteractable>()"],["((IInteractable)obj).Interact()","IInteractable::Execute_Interact(Obj, ...)|works for BP implementers too"]],
+task:"Convert your Blueprint interaction system (Ch.5 of the Unreal path) to a C++ UINTERFACE, keeping the door Blueprint as an implementer — prove Execute_ reaches BP.",
+quiz:[
+{q:"Why two classes per Unreal interface?",o:["Legacy typo","The U-stub is reflection bookkeeping; the I-class is the real interface","Multiple inheritance","One is for structs"],a:1,x:"UINTERFACE registers with reflection; you implement and call via the I-side."},
+{q:"Calling interface functions via Execute_ matters because…",o:["It's faster","It dispatches correctly to Blueprint implementers as well","It avoids Super","It compiles headers"],a:1,x:"Direct virtual calls would miss BP implementations."},
+{q:"C#'s 'obj is IDamageable' becomes…",o:["Cast<IDamageable>","Ptr->Implements<UDamageable>()","dynamic_cast only","IsA<FDamageable>"],a:1,x:"Reflection-aware capability check."}]},
+{id:"cpp3c", t:"Delegates: events, evolved", min:7,
+body:`<p>C# events are delegates; Unreal reimplements the idea as a small zoo, declared with macros. The two you'll use daily: <strong>DECLARE_DYNAMIC_MULTICAST_DELEGATE_*</strong> — serializable, Blueprint-assignable (this is what an Event Dispatcher is under the hood), bind with <code>AddDynamic(this, &AMyActor::OnThing)</code>; and plain <strong>DECLARE_MULTICAST_DELEGATE_*</strong> — faster, C++-only, binds lambdas and raw methods. "Multicast" = many listeners, broadcast with <code>.Broadcast(args)</code> — precisely <code>event Action&lt;T&gt;</code> + <code>Invoke</code>.</p>
+<p>The engine speaks delegate fluently: <code>OnComponentBeginOverlap.AddDynamic(...)</code> replaces Unity's magic-named <code>OnTriggerEnter</code> — instead of the engine finding your method by name, <em>you subscribe explicitly</em>. Same for timers: <code>GetWorldTimerManager().SetTimer(Handle, this, &A::Fn, 2.f, true)</code> ≈ <code>InvokeRepeating</code>, with a handle you can cancel — and it's the standard replacement for simple time-based coroutines.</p>`,
+code:`<span class="cm">// declare (usually above the class)</span>
+<span class="mc">DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam</span>(FOnHealthChanged, <span class="kw">float</span>, NewHealth);
+
+<span class="mc">UPROPERTY</span>(BlueprintAssignable)      <span class="cm">// shows up as an Event Dispatcher</span>
+FOnHealthChanged OnHealthChanged;
+
+OnHealthChanged.Broadcast(Health);  <span class="cm">// ≈ OnHealthChanged?.Invoke(health)</span>
+
+<span class="cm">// engine events: subscribe explicitly, no magic names</span>
+Trigger->OnComponentBeginOverlap.AddDynamic(<span class="kw">this</span>, &AMyActor::OnOverlap);`,
+cmp:[["event Action<float> OnHealthChanged","DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam + UPROPERTY(BlueprintAssignable)"],["OnHealthChanged?.Invoke(h)",".Broadcast(h)"],["+= handler","AddDynamic / AddUObject / AddLambda"],["Magic OnTriggerEnter method","Explicit AddDynamic to OnComponentBeginOverlap"],["InvokeRepeating / simple wait-coroutines","TimerManager SetTimer with a handle"]],
+task:"Add an OnHealthChanged dynamic multicast delegate to a C++ health component, broadcast it on damage, and bind a Blueprint event to it that updates a Print String 'health bar'.",
+quiz:[
+{q:"An Event Dispatcher in Blueprint is, in C++ terms,…",o:["A UFUNCTION","A dynamic multicast delegate marked BlueprintAssignable","A timer","An interface"],a:1,x:"Same mechanism, two faces."},
+{q:"Unity finds OnTriggerEnter by method name. Unreal instead…",o:["Uses the same magic names","Has you explicitly AddDynamic to the component's overlap delegate","Polls in Tick","Uses SendMessage"],a:1,x:"Explicit subscription — nothing happens unless you bind."},
+{q:"Dynamic vs non-dynamic delegates: dynamic ones…",o:["Are faster","Support Blueprint binding & serialization at some speed cost","Can't multicast","Are deprecated"],a:1,x:"Dynamic = reflection-based (BP-friendly); plain = faster C++-only."}]}
+]},
+{id:"cpp4", t:"Actors & Components in C++", skills:["Explain the Actor lifecycle","Create components in constructors","Replace coroutines with timers/Timelines"], lessons:[
+{id:"cpp4a", t:"The Actor lifecycle", min:7,
+body:`<p>Unity's ritual order — Awake → OnEnable → Start → Update → OnDestroy — maps to a subtly different pipeline, with one big trap. The pipeline: <strong>Constructor</strong> (runs once for the Class Default Object at engine startup, and per-instance <em>before</em> properties load) → <strong>PostInitializeComponents</strong> (components exist; ≈ late-Awake) → <strong>BeginPlay</strong> (world is live; ≈ Start) → <strong>Tick(DeltaTime)</strong> (≈ Update) → <strong>EndPlay(Reason)</strong> (≈ OnDestroy/OnDisable, with a reason enum: destroyed, level change, PIE ended).</p>
+<p>The trap: <em>the constructor is not Awake.</em> Editor-set values aren't loaded yet, the world may not exist, and it also runs for the CDO. Constructor = create default subobjects and set defaults, nothing else. Gameplay setup, GetWorld() calls, spawning, timers → BeginPlay.</p>
+<p>The second trap you met in the performance lesson: C++ Actors default to <code>PrimaryActorTick.bCanEverTick = true</code> in generated templates — turn it off unless you truly tick.</p>`,
+cmp:[["Awake()","Constructor (CDO caveat) + PostInitializeComponents"],["Start()","BeginPlay()"],["Update()","Tick(float DeltaSeconds)"],["FixedUpdate()","Tick of physics via substepping / async physics tick|no direct twin"],["OnDestroy()","EndPlay(EEndPlayReason)|tells you WHY it's ending"]],
+diagTitle:"Actor lifetime pipeline",diag:["Constructor|CDO + instance defaults","PostInitComponents|components ready","BeginPlay|world is live","Tick|per frame (opt-in!)","EndPlay|with a reason"],
+task:"Log a message from Constructor, BeginPlay and EndPlay in a C++ Actor; run PIE and observe the constructor firing earlier (and more often) than you'd expect.",
+quiz:[
+{q:"Editor-edited property values are reliably available in…",o:["The constructor","BeginPlay (and PostInitializeComponents)","Static init","Never"],a:1,x:"The constructor runs before serialized properties are applied."},
+{q:"EndPlay improves on OnDestroy by…",o:["Running earlier","Providing the reason (destroyed / level change / quit)","Being optional","Being static"],a:1,x:"Branch cleanup on why the actor is leaving the world."},
+{q:"Why must constructors avoid gameplay logic?",o:["Too slow","They run for the CDO and before the world/properties exist","They can't call functions","They're deprecated"],a:1,x:"CDO + pre-load timing makes them defaults-only territory."}]},
+{id:"cpp4b", t:"Building Actors: components in C++", min:6,
+body:`<p>Assembling an Actor in C++ is what the Blueprint components panel does, in code — and it happens in the constructor with <strong>CreateDefaultSubobject</strong>. Create each component, attach scene components with <code>SetupAttachment</code>, pick a root. These become the inherited components every Blueprint child sees.</p>
+<p>Runtime addition exists too (<code>NewObject</code> + <code>RegisterComponent</code>) but is the exception, mirroring how <code>AddComponent</code> at runtime is rarer than prefab-authored components in mature Unity code.</p>`,
+code:`AWeapon::AWeapon()
+{
+    Root = CreateDefaultSubobject<USceneComponent>(TEXT(<span class="st">"Root"</span>));
+    SetRootComponent(Root);
+
+    Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT(<span class="st">"Mesh"</span>));
+    Mesh->SetupAttachment(Root);          <span class="cm">// ≈ transform.SetParent</span>
+
+    Muzzle = CreateDefaultSubobject<USceneComponent>(TEXT(<span class="st">"Muzzle"</span>));
+    Muzzle->SetupAttachment(Mesh);
+}`,
+cmp:[["Authoring components on a prefab","CreateDefaultSubobject in the constructor"],["transform.SetParent(parent)","SetupAttachment(Parent)|constructor-time"],["AddComponent<T>() at runtime","NewObject<T>() + RegisterComponent()|rarer"],["Attach to bone via code","SetupAttachment(Mesh, TEXT(\"SocketName\"))|sockets ≈ named attach points"]],
+task:"Create AWeapon in C++ with root + static mesh + muzzle scene component; make a Blueprint child, assign a mesh asset in the BP, and place it in the level.",
+quiz:[
+{q:"Default components are created in…",o:["BeginPlay","The constructor via CreateDefaultSubobject","Tick","The Level BP"],a:1,x:"Constructor-created subobjects become the class's default component set."},
+{q:"SetupAttachment corresponds to…",o:["Destroy","Parenting a transform under another","Casting","Possession"],a:1,x:"Builds the scene component tree."},
+{q:"A socket on a mesh is most like Unity's…",o:["Layer","Named empty child transform on a rig for attachments","Tag","Anchor preset"],a:1,x:"Author attach points on the mesh, attach components/actors to them by FName."}]},
+{id:"cpp4c", t:"Coroutines → Timers & Timelines", min:6,
+body:`<p>The question every Unity dev asks by day two: <em>where are my coroutines?</em> Standard answer: they don't exist, and most uses decompose into better-named tools. Delay then act → <strong>Timer</strong> (<code>SetTimer</code>, once or looping, cancellable via handle). Animate a value over time → <strong>Timeline</strong> component (Blueprint's curve-driven darling; in C++, an FTimeline or a small lerp in Tick). Wait for a condition → bind to the <strong>delegate</strong> that fires when the condition changes (the event-driven refactor your coroutine was avoiding). Sequenced cinematic logic → the <strong>Sequencer</strong>. Latent multi-frame flow in Blueprints exists natively (Delay nodes are 'coroutines' visually).</p>
+<p>Modern escape hatch: UE5 coroutines exist via C++20 in some plugins, but idiomatic Unreal remains timers + events. The mental rewrite: a coroutine was a state machine in disguise; Unreal asks you to name the states.</p>`,
+cmp:[["yield return new WaitForSeconds(2)","SetTimer(Handle, this, &A::Fn, 2.f)"],["Value-lerping coroutine","Timeline (curve → update event)"],["yield return null loops (poll)","Bind a delegate; act when the event fires"],["StopCoroutine","ClearTimer(Handle)"],["Cutscene coroutine chains","Sequencer"]],
+task:"Recreate this Unity pattern in C++: on BeginPlay wait 2 seconds, then start a repeating action every 0.5s, and stop it after 10 ticks via the handle.",
+quiz:[
+{q:"WaitForSeconds(3) then fire once →",o:["Tick counting","SetTimer with 3s, bLoop=false","Thread sleep","Delay node in C++"],a:1,x:"One-shot timer with a handle."},
+{q:"Smoothly animating a door's rotation over 1.5s is idiomatic with…",o:["A while loop","A Timeline (curve-driven) or lerp in a bounded Tick","A coroutine plugin","Physics"],a:1,x:"Timelines are curve → callback per frame — designer-tunable."},
+{q:"A coroutine that polls 'until enemy is dead' should become…",o:["A looping timer that checks","Binding to an OnDied delegate","A Tick check","Both A and C are ideal"],a:1,x:"Event-driven beats polling; broadcast death, react."}]}
+]},
+{id:"cpp5", t:"The Build System", skills:["Read a Build.cs","Add module dependencies","Use Live Coding safely"], lessons:[
+{id:"cpp5a", t:"Modules & Build.cs", min:6,
+body:`<p>Unity hides compilation behind asmdefs; Unreal exposes it. Code lives in <strong>modules</strong> — a folder with a <code>[Name].Build.cs</code> file (C# file, ironically) declaring dependencies. Your game starts as one module; the engine is hundreds. When the compiler says <em>unresolved external symbol</em> for an engine type, the fix is usually adding that type's module to <code>PublicDependencyModuleNames</code> in Build.cs — e.g. <code>"EnhancedInput"</code>, <code>"UMG"</code>, <code>"AIModule"</code>. This is exactly adding an asmdef reference, or a package to a manifest.</p>
+<p><strong>UnrealBuildTool (UBT)</strong> orchestrates: runs UHT for reflection codegen, compiles modules, links. The <code>.uproject</code> + <code>.uplugin</code> files list modules; <strong>Public/</strong> headers in a module are its API surface, <strong>Private/</strong> is internal — the same public/internal discipline asmdefs encourage.</p>`,
+code:`<span class="cm">// MyGame.Build.cs</span>
+PublicDependencyModuleNames.AddRange(<span class="kw">new</span> <span class="kw">string</span>[] {
+    <span class="st">"Core"</span>, <span class="st">"CoreUObject"</span>, <span class="st">"Engine"</span>, <span class="st">"InputCore"</span>,
+    <span class="st">"EnhancedInput"</span>   <span class="cm">// ← added to use Enhanced Input in C++</span>
+});`,
+cmp:[["Assembly Definition (.asmdef)","Module + Build.cs"],["asmdef references / packages","PublicDependencyModuleNames"],["internal vs public APIs","Private/ vs Public/ header folders"],["Unity's invisible compile pipeline","UBT + UHT|explicit, configurable"]],
+task:"Add \"EnhancedInput\" to your Build.cs dependencies, regenerate project files, and include an Enhanced Input header in a class to prove linkage.",
+quiz:[
+{q:"'Unresolved external symbol UInputAction' usually means…",o:["Bad C++","Missing module in Build.cs dependencies","Broken editor","Wrong UE version"],a:1,x:"The linker can't find the module — declare the dependency."},
+{q:"Build.cs is closest to Unity's…",o:["ProjectSettings","Assembly Definition + its references","Player settings","Manifest.json alone"],a:1,x:"Per-module compilation unit with explicit dependencies."},
+{q:"UHT runs…",o:["After linking","Before compilation, generating reflection code","At runtime","Only for Blueprints"],a:1,x:"Codegen first; the compiler then consumes .generated files."}]},
+{id:"cpp5b", t:"Compile workflow & Live Coding", min:6,
+body:`<p>Unity's edit → auto-recompile → domain reload loop becomes: edit in your IDE (Rider or VS; Rider is the community favourite) → <strong>Ctrl+Alt+F11 Live Coding</strong> patches function bodies into the running editor in seconds. The rules of the game: Live Coding is great for <em>logic changes inside functions</em>; for <strong>header changes</strong> (new UPROPERTY/UFUNCTION, new members) close the editor and rebuild — patching structural changes corrupts Blueprints in subtle ways. Respect this rule and C++ iteration feels close to C# iteration.</p>
+<p>Workflow habits that pay: keep the editor closed for big refactors; build the <em>Development Editor</em> configuration; when things get weird, delete Binaries/ + Intermediate/ and regenerate project files (the "reimport Library" ritual). And embrace logging: <code>UE_LOG(LogTemp, Warning, TEXT("HP: %f"), HP)</code> ≈ <code>Debug.LogWarning($"...")</code>, plus on-screen <code>GEngine->AddOnScreenDebugMessage</code>.</p>`,
+cmp:[["Save file → Unity recompiles + domain reload","Live Coding patch (Ctrl+Alt+F11)|function bodies only"],["Script change while playing","Live Coding works during PIE|same caveats"],["Debug.Log($\"HP {hp}\")","UE_LOG(LogTemp, Warning, TEXT(\"HP %f\"), HP)"],["Console window","Output Log + on-screen debug messages"],["Reimport / delete Library","Delete Binaries + Intermediate, regenerate projects"]],
+task:"With PIE running, change a UE_LOG string in a function body and apply Live Coding; then add a new UPROPERTY and do it the right way — close, rebuild, reopen.",
+quiz:[
+{q:"Live Coding is safe for…",o:["Adding UPROPERTYs","Changing code inside function bodies","Renaming classes","Editing Build.cs"],a:1,x:"Structural/header changes need a full editor-closed rebuild."},
+{q:"UE_LOG's closest Unity call is…",o:["print()","Debug.Log family with format strings","Console.Write","Assert"],a:1,x:"Category + verbosity + printf-style formatting."},
+{q:"The 'delete Library folder' ritual translates to…",o:["Delete Content","Delete Binaries + Intermediate, regenerate project files","Delete Config","Reinstall engine"],a:1,x:"Generated build artifacts are disposable."}]}
+]}
+]},
+{
+id:"int", icon:"⚙", title:"Unreal + C++ Integration", blurb:"The professional workflow: C++ systems exposed to Blueprint content — spawning, input, collision, and a real mini-project.",
+chapters:[
+{id:"int1", t:"C++ ↔ Blueprint Workflow", skills:["Expose C++ to Blueprints","Choose Implementable vs Native events","Apply the C++ base / BP child pattern"], lessons:[
+{id:"int1a", t:"The golden pattern: C++ base, Blueprint child", min:7,
+body:`<p>Here's how professional Unreal teams actually split work, and it has no true Unity equivalent because Unity has one scripting layer. <strong>C++ defines the architecture</strong>: base classes, systems, performance-critical logic, data structures. <strong>Blueprint subclasses them for content</strong>: assigning meshes and sounds, tweaking numbers, scripting one-off feel. Your <code>AWeapon</code> C++ class holds Damage, FireRate, Fire() logic; <code>BP_Shotgun</code> and <code>BP_Sniper</code> are Blueprint children that set assets and values — designer-editable without touching code.</p>
+<p>The nearest Unity analogy: a MonoBehaviour + a prefab with serialized fields tuned per prefab-variant — but here the "variant" is a real subclass that can also add logic. The rule of thumb Epic engineers repeat: <em>if it's a system, C++; if it's content or glue, Blueprint; expose the boundary deliberately with UPROPERTY/UFUNCTION.</em></p>
+<p>Spawning respects the pattern: your C++ spawner exposes <code>TSubclassOf&lt;AWeapon&gt;</code> (a type-safe class reference ≈ a prefab slot restricted to AWeapon-derived) which designers fill with BP_Shotgun.</p>`,
+cmp:[["MonoBehaviour + prefab variants tuning fields","C++ base class + Blueprint subclasses"],["public GameObject prefab slot","TSubclassOf<AWeapon>|type-restricted 'prefab' reference"],["One scripting layer for everything","Two deliberate layers: systems (C++) / content (BP)"]],
+task:"Take your AWeapon C++ class, create BP_Pistol and BP_Rifle children with different meshes and Damage values, and spawn one via a TSubclassOf variable on a spawner Actor.",
+quiz:[
+{q:"In the standard split, weapon balance numbers designers tune live in…",o:["C++ constants","UPROPERTYs edited on Blueprint child classes","INI files","The Level BP"],a:1,x:"C++ declares; BP children configure."},
+{q:"TSubclassOf<AEnemy> is like a prefab slot that…",o:["Accepts anything","Only accepts AEnemy-derived classes","Loads instantly","Is read-only"],a:1,x:"Type-safe class references keep designer choices valid."},
+{q:"'If it's a system → C++; if it's content/glue → …'",o:["Also C++","Blueprint","Level Blueprint","Python"],a:1,x:"The boundary is the design skill of Unreal development."}]},
+{id:"int1b", t:"BlueprintImplementableEvent & NativeEvent", min:7,
+body:`<p>Exposing C++ <em>to</em> Blueprint is UFUNCTION(BlueprintCallable). The reverse — C++ calling <em>into</em> Blueprint — is the magic Unity can't do, and it comes in two flavours. <strong>BlueprintImplementableEvent</strong>: declared in C++, implemented <em>only</em> in Blueprint; C++ calls <code>OnDeath()</code>, the BP child decides the explosion. No C++ body exists at all. <strong>BlueprintNativeEvent</strong>: C++ provides a default implementation (<code>OnDeath_Implementation()</code>), Blueprint <em>may</em> override — and can still call the parent, like base-method calls in C#.</p>
+<p>This is the hook system that makes the golden pattern breathe: C++ drives the logic ("health hit zero"), Blueprint supplies the presentation ("play this montage, spawn this Niagara"). In Unity terms: imagine declaring an abstract method in a MonoBehaviour that a prefab could implement visually. There's no such thing — this is new power, use it constantly.</p>`,
+code:`<span class="cm">// C++: declare hooks</span>
+<span class="mc">UFUNCTION</span>(BlueprintImplementableEvent)      <span class="cm">// BP-only implementation</span>
+<span class="kw">void</span> OnDeathFX();
+
+<span class="mc">UFUNCTION</span>(BlueprintNativeEvent)             <span class="cm">// C++ default, BP may override</span>
+<span class="kw">void</span> OnDamaged(<span class="kw">float</span> Amount);
+<span class="kw">void</span> OnDamaged_Implementation(<span class="kw">float</span> Amount); <span class="cm">// the C++ default body</span>
+
+<span class="cm">// C++ calls them; whoever implements, responds</span>
+OnDamaged(25.f);  OnDeathFX();`,
+cmp:[["No equivalent: script calling into prefab-authored logic","BlueprintImplementableEvent|C++ declares, BP implements"],["virtual method with default + override","BlueprintNativeEvent + _Implementation"],["UnityEvent assigned in Inspector as 'hook'","Closest spiritual cousin|but BIE is a real overridable function"]],
+task:"Add OnDeathFX (ImplementableEvent) to your enemy C++ class, call it when health ≤ 0, and implement it in the BP child with a Niagara burst and sound.",
+quiz:[
+{q:"A function C++ declares but ONLY Blueprint implements is…",o:["BlueprintCallable","BlueprintImplementableEvent","BlueprintPure","virtual"],a:1,x:"C++ gets a callable hook with no body of its own."},
+{q:"BlueprintNativeEvent requires the C++ body to be named…",o:["The same","FunctionName_Implementation","Super::FunctionName","Execute_FunctionName"],a:1,x:"The _Implementation suffix is the native default."},
+{q:"The idiomatic division these hooks enable:",o:["BP logic, C++ visuals","C++ logic & state, BP presentation & feel","Everything in C++","Everything in BP"],a:1,x:"Gameplay truth in C++; juice in Blueprint."}]}
+]},
+{id:"int2", t:"Gameplay Systems in C++", skills:["Spawn & find actors from C++","Bind Enhanced Input in C++","Handle overlaps & hits in C++"], lessons:[
+{id:"int2a", t:"Spawning, finding & world queries", min:7,
+body:`<p><code>Instantiate</code> becomes <code>GetWorld()->SpawnActor&lt;AWeapon&gt;(WeaponClass, Location, Rotation)</code> — note it takes a <em>class</em> (usually a TSubclassOf filled with a BP child), not a scene object. Need to configure before BeginPlay fires? <code>SpawnActorDeferred</code> → set fields → <code>FinishSpawning</code>, replacing Unity's instantiate-inactive-then-activate trick. Destruction: <code>Actor->Destroy()</code>; there is no cross-scene <code>DontDestroyOnLoad</code> — persistent things belong to GameInstance or subsystems.</p>
+<p>Finding things: <code>UGameplayStatics</code> is your static toolbox — <code>GetPlayerCharacter(this, 0)</code>, <code>GetAllActorsOfClass</code> (same Tick-crime warning as FindObjectsOfType), <code>GetGameMode</code>, plus utilities like <code>ApplyDamage</code>, <code>PlaySoundAtLocation</code>, <code>OpenLevel</code>. Almost every "static manager call" you made in Unity has a UGameplayStatics twin. For architecture-grade globals, meet <strong>Subsystems</strong> — engine-managed singletons scoped to GameInstance/World/LocalPlayer: declare a class, the engine instantiates and lifecycles it. It's the singleton pattern with the boilerplate deleted; prefer it over manager-Actors.</p>`,
+code:`FActorSpawnParameters P;  P.Owner = <span class="kw">this</span>;
+AWeapon* W = GetWorld()->SpawnActor<AWeapon>(WeaponClass, Loc, Rot, P);
+
+ACharacter* Player = UGameplayStatics::GetPlayerCharacter(<span class="kw">this</span>, 0);
+UMyScoreSubsystem* Score = GetGameInstance()->GetSubsystem<UMyScoreSubsystem>();`,
+cmp:[["Instantiate(prefab, pos, rot)","GetWorld()->SpawnActor<T>(Class, Loc, Rot)"],["Instantiate inactive → configure → activate","SpawnActorDeferred → FinishSpawning"],["GameObject.FindObjectsOfType","UGameplayStatics::GetAllActorsOfClass|same perf sins"],["Camera.main / player singleton","UGameplayStatics::GetPlayerCharacter/Controller"],["Custom singleton managers","Subsystems|engine-managed, scoped, no boilerplate"]],
+task:"Create a UGameInstanceSubsystem tracking kills; increment it from your enemy's death code and log the total — a manager with zero singleton plumbing.",
+quiz:[
+{q:"SpawnActor takes as its first argument…",o:["A scene actor to clone","A class (often TSubclassOf holding a BP)","A mesh","A level"],a:1,x:"You spawn classes; Blueprints are classes."},
+{q:"Configure-before-BeginPlay spawning uses…",o:["Two spawns","SpawnActorDeferred + FinishSpawning","Timers","Constructor args"],a:1,x:"Deferred spawn is the sanctioned initialize-first pattern."},
+{q:"The modern home for a global score/audio/save manager is…",o:["A static class","A Subsystem (GameInstance/World scoped)","The Level BP","A component on the player"],a:1,x:"Declared once, engine handles creation and lifetime."}]},
+{id:"int2b", t:"Enhanced Input in C++", min:6,
+body:`<p>Same assets as the Blueprint lesson (IA + IMC) — only the binding moves to code. In <code>SetupPlayerInputComponent</code>, cast the input component to <code>UEnhancedInputComponent</code> and <code>BindAction(IA_Jump, ETriggerEvent::Started, this, &AMyChar::Jump)</code>. Add the mapping context through the local player's <strong>EnhancedInputLocalPlayerSubsystem</strong> (usually in BeginPlay or the PlayerController). The IA/IMC assets stay designer-owned UPROPERTYs — content in data, wiring in code: the golden pattern again.</p>
+<p>Reading values: bound handlers receive <code>const FInputActionValue&</code>; call <code>Value.Get&lt;FVector2D&gt;()</code> for 2D axes — the typed replacement for ctx.ReadValue&lt;Vector2&gt;().</p>`,
+code:`<span class="kw">void</span> AMyChar::SetupPlayerInputComponent(UInputComponent* IC)
+{
+    <span class="kw">auto</span>* EIC = CastChecked<UEnhancedInputComponent>(IC);
+    EIC->BindAction(MoveAction, ETriggerEvent::Triggered, <span class="kw">this</span>, &AMyChar::Move);
+    EIC->BindAction(JumpAction, ETriggerEvent::Started,   <span class="kw">this</span>, &ACharacter::Jump);
+}
+<span class="kw">void</span> AMyChar::Move(<span class="kw">const</span> FInputActionValue& V)
+{
+    <span class="kw">const</span> FVector2D Axis = V.Get<FVector2D>();   <span class="cm">// ≈ ctx.ReadValue<Vector2>()</span>
+    AddMovementInput(GetActorForwardVector(), Axis.Y);
+}`,
+cmp:[["OnMove(InputAction.CallbackContext ctx)","Handler(const FInputActionValue&)"],["ctx.ReadValue<Vector2>()","Value.Get<FVector2D>()"],["actions.FindAction + performed +=","EnhancedInputComponent->BindAction(IA, TriggerEvent, this, &Fn)"],["PlayerInput component auto-wiring","Add IMC via EnhancedInputLocalPlayerSubsystem"]],
+task:"Move the template's input bindings into C++: UPROPERTYs for the IA/IMC assets, BindAction calls in SetupPlayerInputComponent, context added in BeginPlay.",
+quiz:[
+{q:"Input bindings in a C++ Pawn go in…",o:["The constructor","SetupPlayerInputComponent","Tick","EndPlay"],a:1,x:"The engine calls it when input is (re)wired for possession."},
+{q:"A 2D move axis arrives in the handler as…",o:["Two floats","FInputActionValue → Get<FVector2D>()","FVector always","A string"],a:1,x:"Typed extraction from the action value."},
+{q:"The IA/IMC assets in this workflow are…",o:["Generated by C++","Designer-editable UPROPERTY references","Hardcoded paths","Deprecated"],a:1,x:"Data stays data; C++ binds behaviour to it."}]},
+{id:"int2c", t:"Collision, overlaps & traces in C++", min:7,
+body:`<p>Physics events complete the OnTriggerEnter translation from the delegates lesson. Recipe: give a component overlap enabled (<code>SetCollisionEnabled(QueryOnly)</code> ≈ isTrigger), then <code>AddDynamic</code> your handler to <code>OnComponentBeginOverlap</code> / <code>EndOverlap</code>; solid hits bind <code>OnComponentHit</code> (≈ OnCollisionEnter). The handler signature hands you the other actor and component directly — no <code>collision.gameObject</code> digging.</p>
+<p>Raycasts: <code>GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, ECC_Visibility, Params)</code> ≈ <code>Physics.Raycast</code>; sweeps by shape exist (<code>SweepSingleByChannel</code> ≈ SphereCast). Layers & LayerMask become <strong>collision channels + responses</strong> — a richer matrix where each object type chooses Block / Overlap / Ignore per channel, configured in Project Settings and per-component presets. 'Complex vs simple' collision replaces Mesh-vs-primitive collider choices.</p>`,
+code:`Sphere->OnComponentBeginOverlap.AddDynamic(<span class="kw">this</span>, &APickup::OnOverlap);
+
+<span class="kw">void</span> APickup::OnOverlap(UPrimitiveComponent* Comp, AActor* Other,
+    UPrimitiveComponent* OtherComp, <span class="kw">int32</span> BodyIndex, <span class="kw">bool</span> bSweep,
+    <span class="kw">const</span> FHitResult& Hit)
+{
+    <span class="kw">if</span> (Other && Other != GetOwner()) { <span class="cm">/* ≈ OnTriggerEnter(other) */</span> }
+}
+
+FHitResult HR;
+<span class="kw">bool</span> bHit = GetWorld()->LineTraceSingleByChannel(HR, Start, End, ECC_Visibility);`,
+cmp:[["Collider.isTrigger + OnTriggerEnter","QueryOnly collision + OnComponentBeginOverlap (AddDynamic)"],["OnCollisionEnter","OnComponentHit"],["Physics.Raycast(origin, dir, out hit)","LineTraceSingleByChannel(OutHit, Start, End, Channel)"],["Physics.SphereCast","SweepSingleByChannel with FCollisionShape"],["Layers + LayerMask matrix","Collision channels + Block/Overlap/Ignore responses"]],
+task:"Build APickup in C++: sphere overlap destroys the pickup and broadcasts an OnCollected delegate. Bind a Blueprint to the delegate for the collect sound.",
+quiz:[
+{q:"Unity's isTrigger volume maps to collision enabled as…",o:["Physics Only","Query Only (overlaps, no blocking)","No Collision","Block All"],a:1,x:"Query = overlap/trace events without physical response."},
+{q:"OnComponentHit fires when…",o:["Any overlap","Blocking (solid) collisions occur","Traces run","Tick runs"],a:1,x:"Hit = blocked contact; overlap = pass-through volume."},
+{q:"LayerMask filtering becomes…",o:["Tags","Trace/collision channels with per-object responses","GameplayTags","Physics materials"],a:1,x:"Channels + response matrix, more expressive than layers."}]}
+]},
+{id:"int3", t:"Project: Putting It Together", skills:["Structure a hybrid project","Ship a full C++/BP feature","Plan your continued learning"], lessons:[
+{id:"int3a", t:"Architecting a hybrid project", min:6,
+body:`<p>A sane UE project layout, in Unity terms: <code>Source/MyGame/</code> holds the C++ "framework assembly" — your GameMode, Character, Subsystems, base classes for every content type (AWeaponBase, AEnemyBase, UItemData). <code>Content/</code> mirrors it with Blueprint children and assets, organized by feature (<code>Content/Weapons/</code>, <code>Content/Enemies/</code>) rather than by type — same debate as Unity, same modern answer.</p>
+<p>Dependency rules that keep builds fast and sane: C++ never references Content (no hardcoded asset paths; use TSubclassOf/TSoftObjectPtr UPROPERTYs configured in BP or Data Assets); Blueprints reference C++ freely; heavy inter-BP references go through interfaces, tags, or soft refs. Naming conventions matter socially: <code>BP_</code>, <code>WBP_</code> (widgets), <code>M_</code>/<code>MI_</code> (materials), <code>IA_</code>/<code>IMC_</code>, <code>DA_</code> (data assets), <code>NS_</code> (Niagara) — your team reads the Content Browser by prefix.</p>`,
+cmp:[["Core assembly + content referencing it","Source/ C++ module + Content/ BP children"],["Hardcoded Resources.Load paths (anti-pattern)","Also an anti-pattern|expose TSoftObjectPtr/TSubclassOf instead"],["Folder-by-feature debates","Same conclusion: by feature"],["Team naming conventions","BP_/WBP_/M_/MI_/DA_/NS_ prefixes|community-standard"]],
+task:"Restructure your practice project: one C++ base per content type you have, folders by feature, correct asset prefixes throughout.",
+quiz:[
+{q:"C++ referencing Content assets by hardcoded path is…",o:["The standard","An anti-pattern — expose soft/class references as UPROPERTYs","Required for cooking","Faster"],a:1,x:"Data flows into code via reflected properties, not string paths."},
+{q:"WBP_ prefixes mark…",o:["World BPs","UMG widget Blueprints","Physics assets","Wrapped BPs"],a:1,x:"Community convention; UI widgets in UMG."},
+{q:"The dependency direction that keeps builds healthy:",o:["C++ → Content","Content (BP) → C++, never the reverse","Both ways","No references at all"],a:1,x:"Code defines contracts; content fills them."}]},
+{id:"int3b", t:"Capstone: the pickup & inventory slice", min:9,
+body:`<p>Time to prove the transition. Build this vertical slice using everything from all three paths — the spec is deliberately a Unity-familiar feature so you feel the translation end-to-end:</p>
+<p><strong>1)</strong> <code>UItemData</code> (Primary Data Asset): Name (FText), Icon, MaxStack, GameplayTag category. <strong>2)</strong> <code>UInventoryComponent</code> (C++ UActorComponent): TArray of entries, AddItem/RemoveItem BlueprintCallable, OnInventoryChanged dynamic delegate. <strong>3)</strong> <code>APickupBase</code> (C++): sphere overlap → adds its DA_Item to the overlapping player's inventory → BlueprintImplementableEvent OnPickedUpFX → Destroy. <strong>4)</strong> BP children: BP_HealthPotion, BP_Coin with meshes and Niagara pickup bursts. <strong>5)</strong> An interact-driven chest using your UINTERFACE. <strong>6)</strong> Save/load the inventory through a USaveGame in your GameInstance. <strong>7)</strong> Bind IA_Interact via Enhanced Input in C++.</p>
+<p>When it works, package a Development build and play it outside the editor. That's the whole professional loop: C++ systems, BP content, data assets, input, save, package.</p>`,
+cmp:[["ScriptableObject items + MonoBehaviour inventory + prefab pickups","Data Assets + UActorComponent + C++ base/BP child pickups|the full translation in one feature"]],
+task:"Complete the seven-step slice above. Budget 2–4 hours. Every step maps to a lesson you've finished — revisit them as needed.",
+quiz:[
+{q:"Item definitions (name, icon, stack size) live in…",o:["The pickup BP","A UPrimaryDataAsset per item","The GameMode","Config INI"],a:1,x:"ScriptableObject instincts: data as assets."},
+{q:"The inventory notifies its UI via…",o:["Tick polling","A dynamic multicast delegate (OnInventoryChanged)","Direct widget references in C++","Print String"],a:1,x:"Broadcast on change; UI binds — decoupled."},
+{q:"Pickup visual feedback belongs in…",o:["C++ Destroy code","A BlueprintImplementableEvent implemented per BP child","The Level BP","The GameMode"],a:1,x:"C++ logic, BP presentation — the golden pattern, applied."}]},
+{id:"int3c", t:"Where to go next", min:5,
+body:`<p>You now hold the complete conceptual map. What remains is mileage, plus a shortlist of deep systems worth your next months: <strong>UMG/Slate</strong> for real UI (UMG ≈ a retained-mode UI Toolkit; widgets are Blueprints too — the C++ base/BP child pattern applies); the <strong>Gameplay Ability System</strong> (GAS) — Epic's Fortnite-grade framework for abilities, effects and attributes, built on the Gameplay Tags you already know; <strong>replication</strong> for multiplayer (the framework classes you learned were shaped by it — you're better prepared than you think); <strong>Sequencer</strong> for cinematics (≈ Timeline, industrial strength); and <strong>Lyra</strong>, Epic's sample game, as the reference codebase for modern architecture.</p>
+<p>Habits that compound: read engine source daily (you have all of it — Unity never gave you that); keep the Unity→Unreal map handy until reaching for Unreal idioms is reflex; and when you catch yourself building a manager singleton, a coroutine, or a component-only design, pause and ask what the Unreal-native shape is. Welcome across the bridge.</p>`,
+cmp:[["UI Toolkit / UGUI","UMG (Slate underneath)"],["Custom ability/buff frameworks","Gameplay Ability System"],["Netcode packages","Built-in replication + the framework you already learned"],["Timeline","Sequencer"],["Learning from asset-store examples","Reading Lyra + engine source|full source access"]],
+task:"Clone or install the Lyra sample, find its Character and Experience definitions, and identify five patterns from this course used in production code.",
+quiz:[
+{q:"GAS is built on which system you've already learned?",o:["Niagara","Gameplay Tags","World Partition","Sequencer"],a:1,x:"Tags identify abilities, effects and states throughout GAS."},
+{q:"A structural advantage over your Unity life:",o:["Faster compiles","Full engine source code access","No build step","Smaller installs"],a:1,x:"When docs fail, read the engine — the ultimate documentation."},
+{q:"Epic's reference sample for modern project architecture is…",o:["ShooterGame","Lyra","ThirdPerson template","ContentExamples"],a:1,x:"Lyra demonstrates current best practices at production scale."}]}
+]}
+]}
+];
+/* ===== glossary ===== */
+const GLOSSARY = [
+["Actor","GameObject (but subclassable)","Any object that can be placed or spawned in a Level. Base class <code>AActor</code>. Gains transform via its Root Component and behaviour via subclassing and components."],
+["Pawn","Player/AI-controllable object","An Actor that can be possessed by a Controller. Base for anything a player or AI drives."],
+["Character","CharacterController + humanoid kit","A Pawn with capsule, skeletal mesh and CharacterMovementComponent: walking, jumping, crouching, swimming, network prediction."],
+["PlayerController","Input + camera scripts on the player","The persistent 'will' of a player. Owns input routing, camera management and UI; possesses Pawns."],
+["AIController","NavMeshAgent driver script","Controller that possesses Pawns for AI, typically running Behavior Trees."],
+["GameMode","GameManager (rules)","Server-only referee: spawn rules, match flow, win conditions. Chosen per Level in World Settings."],
+["GameState","Shared match manager","Replicated match-wide facts every client sees: scores, timers, phase."],
+["PlayerState","Per-player public data","Replicated per-player info (name, score, ping) that survives Pawn death."],
+["GameInstance","DontDestroyOnLoad singleton","One object for the entire app session, surviving level loads. Home for meta-state and subsystem hosting."],
+["Level / Map","Scene","A world you load (.umap). Streamed additively via Level Streaming or automatically via World Partition."],
+["Level Blueprint","Scene-specific manager script","Script graph bound to one Level, for one-off scripted moments."],
+["World Settings","Per-scene project settings","Per-Level configuration panel: GameMode override, physics, lightmass settings."],
+["Blueprint (BP)","Prefab + MonoBehaviour fused","A visual-scripted class asset: components, variables, functions, event graphs. Compiles to bytecode; subclasses C++ or other BPs."],
+["Blueprint Interface","C# interface (asset form)","Function declarations any BP can implement; enables message calls without casting."],
+["Event Dispatcher","C# event / UnityEvent","Multicast delegate exposed on a Blueprint; listeners bind, owner broadcasts."],
+["Cast To","'as' operator with branch","Runtime typed conversion node with an execution branch for failure."],
+["Component (UActorComponent)","MonoBehaviour (logic-only)","Reusable behaviour attached to an Actor, no transform."],
+["Scene Component","Transform-bearing component","Component with a transform, attachable into trees (USceneComponent)."],
+["Root Component","The Transform","The scene component that gives an Actor its transform."],
+["Socket","Named attach transform on a rig","Named attach point on a mesh/skeleton for weapons, effects, cameras."],
+["Possession","(no equivalent)","A Controller taking control of a Pawn; the mechanism behind respawning and body-swapping."],
+["Enhanced Input","New Input System package","UE5's input framework: Input Actions, Mapping Contexts, Triggers, Modifiers."],
+["Input Action (IA)","InputAction","A typed input event asset (bool / Axis1D / Axis2D value)."],
+["Input Mapping Context (IMC)","Action Map","A stackable set of key→action bindings with priority."],
+["UCLASS","(reflection registration)","Macro registering a class with Unreal's reflection system; enables GC, serialization, BP exposure."],
+["UPROPERTY","[SerializeField] and friends","Macro exposing a field to reflection: editor editing, serialization, GC tracking, replication."],
+["UFUNCTION","(method exposure)","Macro exposing a method to reflection: Blueprint nodes, RPCs, delegate binding."],
+["UHT (Unreal Header Tool)","Roslyn's hidden work","Pre-compile code generator that parses reflection macros and emits .generated files."],
+["UBT (UnrealBuildTool)","Unity's invisible build pipeline","Orchestrates module compilation, UHT, linking across platforms."],
+["Module","Assembly Definition","A compilation unit with a Build.cs declaring dependencies."],
+["CDO (Class Default Object)","Prefab asset defaults","The template instance of every UCLASS holding default property values; constructors run for it at startup."],
+["TSubclassOf","Type-restricted prefab slot","A class reference limited to a base type — designer-safe class picking."],
+["Soft Reference (TSoftObjectPtr)","Addressables handle","Asset path reference that doesn't load the asset until requested."],
+["FString","string (working)","Mutable general-purpose string for manipulation and formatting."],
+["FName","Hashed string ID","Immutable interned identifier with integer-fast comparison."],
+["FText","Localized display string","Localization-aware text; the only correct type for player-facing UI."],
+["TArray","List<T>","Unreal's dynamic array; UPROPERTY-compatible."],
+["TMap","Dictionary<K,V>","Key-value container; editable in the Details panel unlike Unity's Dictionary."],
+["Delegate","C# delegate/event","Type-safe callback holder; multicast variants broadcast to many listeners; dynamic variants bind to BP."],
+["Timeline","Coroutine lerp / DOTween","Curve-driven value animation component firing update events."],
+["Timer (TimerManager)","Invoke / InvokeRepeating","Scheduled callbacks with cancellable handles — the standard coroutine-delay replacement."],
+["Material","Shader (Graph)","Node graph compiling to the actual shader; outputs PBR pins."],
+["Material Instance","Material asset","Cheap parameter-override child of a Material, no shader recompile."],
+["Niagara","VFX Graph","Programmable particle system: Systems → Emitters → Module stacks."],
+["Animation Blueprint","Animator Controller + its feeder script","Asset with an Event Graph (gather data) and AnimGraph (state machines & blends) producing the final pose."],
+["Blend Space","Blend Tree","Asset blending animations across 1–2 input axes."],
+["Anim Montage","Triggered clip section player","Play-on-demand animation container with sections and notifies (attacks, emotes)."],
+["Anim Notify","Animation Event","Event fired at a time point in an animation."],
+["World Partition","Hand-rolled scene streaming","Automatic grid-based streaming of one large persistent Level."],
+["Data Layer","Conditional scene content sets","Named actor grouping loaded/activated conditionally (quests, variants)."],
+["HLOD","Impostor/LOD system","Auto-generated merged proxy meshes representing unloaded distant cells."],
+["One File Per Actor","Scene-merge conflict fix","Stores each actor as its own file so teams can co-edit maps."],
+["Nanite","LOD Groups (rethought)","Virtualized geometry rendering micro-detail without authored LODs."],
+["Lumen","Realtime GI (no baking)","UE5's dynamic global illumination and reflections."],
+["Gameplay Tag","tag (but hierarchical, multiple)","Hierarchical label (A.B.C) in project-wide registry; attached in containers, queried with hierarchy matching."],
+["Primary Data Asset","ScriptableObject","Typed data container asset; scannable/loadable via the Asset Manager."],
+["DataTable","CSV importer you wrote","Struct-typed row table importable from CSV/JSON."],
+["Subsystem","Auto-managed singleton","Engine-instantiated singleton scoped to GameInstance, World, or LocalPlayer."],
+["SaveGame (USaveGame)","JSON save system you wrote","Snapshot object with automatic property serialization to named slots."],
+["Cooking","Asset import pipeline (at build)","Converting editor assets into platform-optimized runtime formats during packaging."],
+["Shipping build","Release build","Fully optimized configuration with debug features stripped."],
+["PIE (Play In Editor)","Play Mode","Running the game inside the editor viewport."],
+["Live Coding","Domain reload (but patching)","Hot-patching compiled function bodies into the running editor."],
+["UE_LOG","Debug.Log","Categorized, verbosity-leveled logging macro."],
+["Scalability","Quality Settings","Preset quality tiers (Low→Epic) driven by console variables."],
+["Unreal Insights","Profiler window","Deep tracing profiler for CPU/GPU/memory/loading."],
+["UMG","UI Toolkit / UGUI","Unreal Motion Graphics: widget-Blueprint UI framework over Slate."],
+["GAS","Custom ability frameworks","Gameplay Ability System: production framework for abilities, effects, attributes."],
+["Sequencer","Timeline","Cinematic authoring tool for cutscenes and scripted sequences."],
+["Lyra","(reference project)","Epic's sample game demonstrating modern architecture best practices."]
+];
+
+/* ===== translator table ===== */
+const TRANSLATOR = [
+["Core objects",[["GameObject","Actor (AActor)"],["Transform","Root Component (USceneComponent)"],["MonoBehaviour","Actor logic / UActorComponent"],["Prefab","Blueprint class"],["Prefab variant","Blueprint child class"],["Scene","Level / Map (.umap)"],["Inspector","Details panel"],["Hierarchy","World Outliner"],["Project window","Content Browser"],["Play Mode","PIE (Play In Editor)"]]],
+["Scripting",[["C#","C++ (+ Blueprints)"],["Start()","BeginPlay()"],["Update()","Tick(DeltaSeconds)"],["OnDestroy()","EndPlay(Reason)"],["base.Method()","Super::Method()"],["[SerializeField]","UPROPERTY(EditAnywhere)"],["public method for events","UFUNCTION(BlueprintCallable)"],["C# event / UnityEvent","Delegate / Event Dispatcher"],["Coroutines","Timers, Timelines, delegates"],["Invoke / InvokeRepeating","TimerManager::SetTimer"],["Instantiate(prefab)","SpawnActor<T>(Class)"],["Destroy(gameObject)","Actor->Destroy()"],["GetComponent<T>()","FindComponentByClass<T>()"],["FindObjectsOfType<T>()","GetAllActorsOfClass"],["OnTriggerEnter","OnComponentBeginOverlap (bound)"],["OnCollisionEnter","OnComponentHit (bound)"],["Physics.Raycast","LineTraceSingleByChannel"],["LayerMask","Collision channels + responses"],["Debug.Log","UE_LOG / Print String"],["string","FString / FName / FText"],["List<T> / Dictionary","TArray / TMap"],["DontDestroyOnLoad","GameInstance"],["Singleton managers","Subsystems"],["ScriptableObject","Primary Data Asset"],["Addressables","Soft references + Asset Manager"],["Assembly Definition","Module + Build.cs"],["Domain reload","Live Coding / rebuild"]]],
+["Gameplay framework",[["Player prefab + scripts","Character + PlayerController"],["GameManager","GameMode (+ GameState)"],["Per-player data store","PlayerState"],["Input System Action Map","Input Mapping Context"],["InputAction","Input Action asset"],["NavMeshAgent + AI script","AIController + Behavior Tree"],["CharacterController.Move","CharacterMovement AddMovementInput"]]],
+["Rendering & VFX",[["Shader / Shader Graph","Material (node graph)"],["Material","Material Instance"],["Smoothness","Roughness (inverted)"],["material.SetColor at runtime","Dynamic Material Instance"],["Shuriken / VFX Graph","Niagara"],["Quality Settings","Scalability"],["Baked GI / lightmaps","Lumen (or baked Lightmass)"],["LOD Groups","Nanite / classic LODs"],["GPU instancing","Instanced Static Meshes"],["Post-processing Volume","Post Process Volume"]]],
+["Animation",[["Animator Controller","Animation Blueprint"],["Blend Tree","Blend Space"],["animator.SetFloat(...)","AnimBP Event Graph (pulls from Pawn)"],["Animation Events","Anim Notifies"],["Avatar / Humanoid retarget","Skeleton + IK Retargeter"],["Avatar mask layers","Layered blend per bone"],["Timeline (cinematics)","Sequencer"],["One-shot triggered clips","Anim Montages"]]],
+["Data & world",[["Additive scenes","Level Streaming"],["Streaming manager (custom)","World Partition"],["Scene merge pain","One File Per Actor"],["tag (single string)","Gameplay Tag containers"],["CSV pipelines (custom)","DataTables"],["PlayerPrefs / JSON saves","USaveGame + slots"]]],
+["Build & tooling",[["Build Settings","Package Project"],["Scenes In Build","Packaging map list"],["Development Build","Development configuration"],["Release build","Shipping configuration"],["Profiler","Unreal Insights + stat commands"],["Frame Debugger","GPU Visualizer / RenderDoc"],["UI Toolkit / UGUI","UMG"]]]
+];
+
+/* ===== achievements ===== */
+const ACHIEVEMENTS = [
+{id:"first",   ico:"🌱", t:"First Contact",     d:"Complete your first lesson", xp:25},
+{id:"perfect", ico:"🎯", t:"Bullseye",          d:"Score a perfect quiz", xp:25},
+{id:"chapter", ico:"📘", t:"Foundation Laid",   d:"Complete a full chapter", xp:50},
+{id:"tasks5",  ico:"🔧", t:"Practitioner",      d:"Finish 5 hands-on mini-tasks", xp:50},
+{id:"tasks15", ico:"⚒️", t:"Workshop Veteran",  d:"Finish 15 hands-on mini-tasks", xp:100},
+{id:"streak3", ico:"🔥", t:"Warming Up",        d:"Reach a 3-day streak", xp:50},
+{id:"streak7", ico:"☄️", t:"On Fire",           d:"Reach a 7-day streak", xp:120},
+{id:"lvl5",    ico:"⬆️", t:"Rising Dev",        d:"Reach level 5", xp:75},
+{id:"half",    ico:"🌗", t:"Point of No Return",d:"Complete 50% of all lessons", xp:100},
+{id:"pathue",  ico:"🏰", t:"Engine Initiate",   d:"Complete the Unreal Engine path", xp:150},
+{id:"pathcpp", ico:"⟬⟭", t:"Native Speaker",   d:"Complete the C++ path", xp:150},
+{id:"pathint", ico:"⚙️", t:"Systems Architect", d:"Complete the Integration path", xp:150},
+{id:"all",     ico:"👑", t:"Bridge Crossed",    d:"Complete every lesson in every path", xp:300},
+{id:"labrat",  ico:"⌨️", t:"Lab Rat",           d:"Solve your first C++ Lab exercise", xp:30},
+{id:"labmaster",ico:"🧪", t:"Compiled & Shipped", d:"Solve every C++ Lab exercise", xp:150},
+{id:"lexicon", ico:"📖", t:"Lexicographer",     d:"Search the glossary", xp:15},
+{id:"rosetta", ico:"⇄",  t:"Rosetta Stone",     d:"Open the Unity → Unreal map", xp:15}
+];
+
+/* ===== levels ===== */
+const LEVELS = [
+{xp:0,    r:"Unity Expat"},
+{xp:120,  r:"Editor Explorer"},
+{xp:300,  r:"Blueprint Apprentice"},
+{xp:550,  r:"Actor Wrangler"},
+{xp:850,  r:"Header Hacker"},
+{xp:1250, r:"Reflection Adept"},
+{xp:1750, r:"Framework Architect"},
+{xp:2350, r:"Native Coder"},
+{xp:3050, r:"Engine Veteran"},
+{xp:3900, r:"Unreal Engineer"},
+{xp:4900, r:"Bridge Master"}
+];
+
+/* ===== C++ Lab: UE shim (auto-prepended so Unreal-flavored code really compiles) ===== */
+const UE_SHIM = String.raw`// ===== Bridge UE shim — makes Unreal idioms compile in plain C++ =====
+#include <cstdio>
+#include <cstdarg>
+#include <string>
+#include <vector>
+#include <map>
+#include <memory>
+#include <functional>
+#include <cmath>
+#define UCLASS(...)
+#define USTRUCT(...)
+#define UPROPERTY(...)
+#define UFUNCTION(...)
+#define GENERATED_BODY() public:
+#define TEXT(s) s
+using int32 = int;
+#define UE_LOG(Cat, Verb, Fmt, ...) std::printf("%s: " Fmt "\n", #Verb, ##__VA_ARGS__)
+struct FString {
+  std::string s;
+  FString() {}
+  FString(const char* c) : s(c) {}
+  const char* operator*() const { return s.c_str(); }           // *MyStr like UE
+  bool operator<(const FString& o) const { return s < o.s; }
+  bool operator==(const FString& o) const { return s == o.s; }
+  int Len() const { return (int)s.size(); }
+  static FString Printf(const char* fmt, ...) {
+    char buf[512]; va_list a; va_start(a, fmt);
+    vsnprintf(buf, sizeof buf, fmt, a); va_end(a);
+    return FString(buf);
+  }
+};
+template<class T> struct TArray {
+  std::vector<T> v;
+  int Add(const T& x) { v.push_back(x); return (int)v.size() - 1; }
+  bool Remove(const T& x) { for (size_t i=0;i<v.size();++i) if (v[i]==x) { v.erase(v.begin()+i); return true; } return false; }
+  int Num() const { return (int)v.size(); }
+  bool Contains(const T& x) const { for (auto& e : v) if (e == x) return true; return false; }
+  T& operator[](int i) { return v[i]; }
+  const T& operator[](int i) const { return v[i]; }
+  auto begin() { return v.begin(); }  auto end() { return v.end(); }
+  auto begin() const { return v.begin(); }  auto end() const { return v.end(); }
+};
+template<class K, class V> struct TMap {
+  std::map<K,V> m;
+  V& Add(const K& k, const V& val) { return m[k] = val; }
+  V* Find(const K& k) { auto it = m.find(k); return it == m.end() ? nullptr : &it->second; }
+  V& operator[](const K& k) { return m[k]; }
+  int Num() const { return (int)m.size(); }
+  auto begin() { return m.begin(); }  auto end() { return m.end(); }
+};
+struct FVector {
+  float X=0, Y=0, Z=0;
+  FVector() {} FVector(float x,float y,float z):X(x),Y(y),Z(z) {}
+  float Size() const { return std::sqrt(X*X + Y*Y + Z*Z); }
+  FVector operator+(const FVector& o) const { return {X+o.X, Y+o.Y, Z+o.Z}; }
+  FVector operator*(float k) const { return {X*k, Y*k, Z*k}; }
+};
+template<class To, class From> To* Cast(From* p) { return dynamic_cast<To*>(p); }  // UE's Cast<T>
+#define DECLARE_DELEGATE(Name) struct Name { std::function<void()> f; \
+  void BindLambda(std::function<void()> fn) { f = fn; } \
+  bool IsBound() const { return (bool)f; } \
+  void Execute() { f(); } \
+  bool ExecuteIfBound() { if (f) { f(); return true; } return false; } };
+#define DECLARE_MULTICAST_DELEGATE_OneParam(Name, T) struct Name { std::vector<std::function<void(T)>> fs; \
+  void AddLambda(std::function<void(T)> fn) { fs.push_back(fn); } \
+  void Broadcast(T v) { for (auto& f : fs) f(v); } };
+// ===== end shim — your code below =====
+`;
+
+/* ===== C++ Lab exercises ===== */
+const LAB = [
+{cat:"CH 1 · Language ground floor", items:[
+{id:"lab-hello", t:"Hello, UE_LOG", xp:30, shim:true,
+p:"Warm-up: make Unreal's logging feel like <code>Debug.Log</code>. Print your name and level using <code>UE_LOG</code> format specifiers — <code>%s</code> for strings (note the <code>*</code> on FString!), <code>%d</code> for ints, <code>%.1f</code> for floats.",
+starter:`int main() {
+    FString Name = TEXT("Rookie");
+    int Level = 7;
+    float Health = 92.5f;
+
+    // TODO: one UE_LOG line printing all three:
+    // expected -> Log: Rookie is level 7 with 92.5 HP
+    UE_LOG(LogTemp, Log, "...");
+
+    return 0;
+}`,
+expect:["Rookie is level 7 with 92.5 HP"],
+checks:[[/UE_LOG\s*\(\s*LogTemp/, "Uses UE_LOG with a category"],[/\*\s*Name/, "Dereferences FString with * (the UE idiom: *Name)"],[/%d/, "Uses %d for the int"],[/%\.1f/, "Uses %.1f for the float"]],
+hint:"UE_LOG(LogTemp, Log, \"%s is level %d with %.1f HP\", *Name, Level, Health); — the * on Name is real Unreal muscle memory: FString doesn't convert to a C string automatically."},
+
+{id:"lab-ptr", t:"Pointers & null checks", xp:35, shim:false,
+p:"C# hid this from you; Unreal will not. Write <code>ApplyDamage</code> that takes a <em>pointer</em>: if it's <code>nullptr</code>, print <code>no target</code> and return. Otherwise subtract damage through the pointer and print the result. Then call it with both a valid address and <code>nullptr</code>.",
+starter:`#include <cstdio>
+
+struct Enemy { int Health = 100; };
+
+// TODO: void ApplyDamage(Enemy* Target, int Amount)
+//  - if Target is nullptr: printf("no target\\n"); return;
+//  - else: Target->Health -= Amount; printf("health: %d\\n", Target->Health);
+
+int main() {
+    Enemy Grunt;
+    // TODO: call ApplyDamage(&Grunt, 30)  -> health: 70
+    // TODO: call ApplyDamage(nullptr, 30) -> no target
+    return 0;
+}`,
+expect:["health: 70","no target"],
+checks:[[/Enemy\s*\*\s*\w+/, "Function takes an Enemy* pointer"],[/==\s*nullptr|!\s*Target|nullptr\s*==/, "Checks for nullptr before use"],[/->\s*Health/, "Accesses members through -> (pointer syntax)"],[/&\s*Grunt/, "Passes an address with & at the call site"]],
+hint:"if (Target == nullptr) { ... return; } — in Unreal you'll write this check (or IsValid) constantly. -> is 'dot through a pointer'; &Grunt means 'the address of Grunt'."},
+
+{id:"lab-ref", t:"References vs copies", xp:35, shim:false,
+p:"The silent killer for C# devs: structs pass <strong>by copy</strong> in C++ unless you say otherwise. Fix <code>Heal</code> so it actually modifies the caller's struct — take it by reference (<code>&amp;</code>). Bonus: the read-only reporter should take <code>const &amp;</code>.",
+starter:`#include <cstdio>
+
+struct Stats { int HP = 40; };
+
+// BUG: this heals a COPY, the original never changes
+void Heal(Stats S, int Amount) {
+    S.HP += Amount;
+}
+
+void Report(Stats S) {   // wasteful copy; make it const Stats&
+    printf("HP: %d\\n", S.HP);
+}
+
+int main() {
+    Stats Player;
+    Heal(Player, 25);
+    Report(Player);      // must print -> HP: 65
+    return 0;
+}`,
+expect:["HP: 65"],
+checks:[[/Heal\s*\(\s*Stats\s*&/, "Heal takes Stats& (reference, not copy)"],[/const\s+Stats\s*&/, "Report takes const Stats& (read-only, no copy)"]],
+hint:"void Heal(Stats& S, ...) — one character, completely different behavior. Rule of thumb from the lessons: pass by value for tiny types, const& for reading, & (or a pointer) for mutating."}]},
+
+{cat:"CH 2 · Unreal types & reflection", items:[
+{id:"lab-fstring", t:"FString / Printf drills", xp:35, shim:true,
+p:"Build a kill-feed line with <code>FString::Printf</code> (Unreal's <code>string.Format</code>). Compose <code>Killer</code>, <code>Victim</code> and a distance into one FString, then log it.",
+starter:`int main() {
+    FString Killer = TEXT("PlayerOne");
+    FString Victim = TEXT("Bot_03");
+    float Dist = 41.7f;
+
+    // TODO: FString Line = FString::Printf(...)
+    // expected -> Log: PlayerOne eliminated Bot_03 (41.7m)
+    // then UE_LOG the Line
+
+    return 0;
+}`,
+expect:["PlayerOne eliminated Bot_03 (41.7m)"],
+checks:[[/FString::Printf/, "Uses FString::Printf"],[/\*\s*Killer/, "Feeds *Killer into the format"],[/\*\s*Victim/, "Feeds *Victim into the format"],[/UE_LOG/, "Logs the final line with UE_LOG"]],
+hint:"FString Line = FString::Printf(\"%s eliminated %s (%.1fm)\", *Killer, *Victim, Dist); UE_LOG(LogTemp, Log, \"%s\", *Line);"},
+
+{id:"lab-tarray", t:"TArray inventory", xp:40, shim:true,
+p:"Your <code>List&lt;T&gt;</code> reflexes, Unreal edition. Fill a <code>TArray&lt;FString&gt;</code>, print the count with <code>Num()</code>, range-for over it, <code>Remove</code> one item, and check membership with <code>Contains</code>.",
+starter:`int main() {
+    TArray<FString> Inventory;
+
+    // TODO:
+    // 1) Add "Sword", "Potion", "Map"
+    // 2) log -> Log: items: 3            (use Num())
+    // 3) range-for: log each ->  Log: - Sword   etc.
+    // 4) Remove "Potion"
+    // 5) if (!Inventory.Contains("Potion")) log -> Log: potion gone
+
+    return 0;
+}`,
+expect:["items: 3","- Sword","- Map","potion gone"],
+checks:[[/\.Add\s*\(/, "Uses Add()"],[/\.Num\s*\(\)/, "Uses Num() instead of .Count/.Length"],[/for\s*\(\s*(const\s+)?(auto|FString)/, "Range-for loop over the array"],[/\.Remove\s*\(/, "Uses Remove()"],[/\.Contains\s*\(/, "Uses Contains()"]],
+hint:"for (const FString& Item : Inventory) { UE_LOG(LogTemp, Log, \"- %s\", *Item); } — const& in the loop avoids copying each string."},
+
+{id:"lab-uprop", t:"UPROPERTY anatomy", xp:40, shim:true,
+p:"Declare a weapon class the way you'd expose it to designers. The macros compile to nothing here, but the <em>choices</em> are the exercise: designer-tunable stats get <code>EditAnywhere</code>, runtime-visible-but-locked state gets <code>VisibleAnywhere</code>, and anything Blueprints should read needs <code>BlueprintReadOnly</code>.",
+starter:`UCLASS()
+class AWeapon {
+    GENERATED_BODY()
+
+    // TODO give each UPROPERTY the right specifiers:
+
+    // Damage: designers tune it in the editor, BP can read it,
+    // group it under Category = "Combat"
+    UPROPERTY()
+    float Damage = 25.f;
+
+    // CurrentAmmo: visible in Details for debugging but NOT editable,
+    // BP can read it
+    UPROPERTY()
+    int32 CurrentAmmo = 30;
+
+    UFUNCTION()   // make it BlueprintCallable
+    void Fire() {
+        if (CurrentAmmo > 0) { CurrentAmmo--; UE_LOG(LogTemp, Log, "bang, ammo: %d", CurrentAmmo); }
+    }
+};
+
+int main() { AWeapon W; W.Fire(); W.Fire(); return 0; }`,
+expect:["bang, ammo: 29","bang, ammo: 28"],
+checks:[[/UPROPERTY\s*\(\s*EditAnywhere[\s\S]{0,80}?float\s+Damage/, "Damage is EditAnywhere"],[/BlueprintReadOnly[\s\S]{0,80}?float\s+Damage/, "Damage is BlueprintReadOnly"],[/Category\s*=\s*"Combat"/, "Damage has Category = \"Combat\""],[/UPROPERTY\s*\(\s*VisibleAnywhere[\s\S]{0,90}?int32\s+CurrentAmmo/, "CurrentAmmo is VisibleAnywhere (not editable)"],[/UFUNCTION\s*\(\s*BlueprintCallable/, "Fire is BlueprintCallable"]],
+hint:"UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = \"Combat\") for Damage; UPROPERTY(VisibleAnywhere, BlueprintReadOnly) for ammo; UFUNCTION(BlueprintCallable) for Fire. Compare: [SerializeField] never carried this much meaning."}]},
+
+{cat:"CH 3–4 · Classes, delegates, lifecycle", items:[
+{id:"lab-super", t:"Inheritance & Super::", xp:40, shim:true,
+p:"Unreal's <code>base.Method()</code> is <code>Super::Method()</code> — and forgetting it in <code>BeginPlay</code> is the classic UE bug. Derive <code>AEnemy</code> from <code>AActorBase</code>, override <code>BeginPlay</code>, and call the parent <em>first</em>.",
+starter:`class AActorBase {
+public:
+    virtual ~AActorBase() {}
+    virtual void BeginPlay() { UE_LOG(LogTemp, Log, "base systems online"); }
+};
+
+// TODO: class AEnemy : public AActorBase
+// - use "using Super = AActorBase;"  (UE generates this for you normally)
+// - override BeginPlay(): call Super::BeginPlay() FIRST,
+//   then log "enemy ready"
+
+int main() {
+    AActorBase* A = new AEnemy();   // polymorphism via base pointer
+    A->BeginPlay();
+    delete A;
+    return 0;
+}`,
+expect:["base systems online","enemy ready"],
+checks:[[/class\s+AEnemy\s*:\s*public\s+AActorBase/, "AEnemy publicly inherits AActorBase"],[/using\s+Super\s*=\s*AActorBase/, "Defines Super alias like UE's generated code"],[/void\s+BeginPlay\s*\(\s*\)\s*override/, "Overrides BeginPlay with the override keyword"],[/Super::BeginPlay\s*\(\)/, "Calls Super::BeginPlay()"]],
+hint:"class AEnemy : public AActorBase { public: using Super = AActorBase; void BeginPlay() override { Super::BeginPlay(); UE_LOG(LogTemp, Log, \"enemy ready\"); } }; — unlike C#, C++ never auto-calls the base."},
+
+{id:"lab-cast", t:"Cast<T> & interfaces", xp:45, shim:true,
+p:"Recreate the pickup pattern: a base pointer arrives at your overlap event, you <code>Cast&lt;&gt;</code> to check what it really is. Casts that fail return <code>nullptr</code> — branch on it like Unreal's Cast node.",
+starter:`class AActorBase { public: virtual ~AActorBase() {} };
+
+class IPickup {
+public:
+    virtual ~IPickup() {}
+    virtual void Collect() = 0;   // pure virtual, like a C# interface
+};
+
+// TODO: class ACoin : public AActorBase, public IPickup
+//   Collect() -> UE_LOG "coin collected"
+// TODO: class ARock : public AActorBase   (NOT a pickup)
+
+void OnOverlap(AActorBase* Other) {
+    // TODO: IPickup* P = Cast<IPickup>(Other);
+    // if valid -> P->Collect();  else -> UE_LOG "not a pickup"
+}
+
+int main() {
+    ACoin Coin; ARock Rock;
+    OnOverlap(&Coin);   // -> coin collected
+    OnOverlap(&Rock);   // -> not a pickup
+    return 0;
+}`,
+expect:["coin collected","not a pickup"],
+checks:[[/class\s+ACoin\s*:\s*public\s+AActorBase\s*,\s*public\s+IPickup/, "ACoin inherits both the base and the interface"],[/void\s+Collect\s*\(\s*\)\s*override/, "Implements Collect() with override"],[/Cast<\s*IPickup\s*>/, "Uses Cast<IPickup>(...)"],[/if\s*\(\s*\w+\s*\)|!=\s*nullptr/, "Branches on the cast result (null check)"]],
+hint:"IPickup* P = Cast<IPickup>(Other); if (P) { P->Collect(); } else { ... } — identical shape to Blueprint's Cast node with its failed pin."},
+
+{id:"lab-delegate", t:"Delegates: OnHealthChanged", xp:45, shim:true,
+p:"The observer pattern you used C# <code>event</code> for. Declare a one-param multicast delegate, expose it on <code>Health</code>, have the UI bind a lambda, and <code>Broadcast</code> on damage — the component never knows the UI exists.",
+starter:`// TODO: DECLARE_MULTICAST_DELEGATE_OneParam(FOnHealthChanged, int)
+
+class UHealthComponent {
+public:
+    // TODO: FOnHealthChanged OnHealthChanged;
+    int HP = 100;
+    void TakeDamage(int Amount) {
+        HP -= Amount;
+        // TODO: OnHealthChanged.Broadcast(HP);
+    }
+};
+
+int main() {
+    UHealthComponent Health;
+
+    // TODO: bind a lambda ->  UE_LOG "UI: hp bar at %d"
+    // (use AddLambda)
+
+    Health.TakeDamage(30);   // -> UI: hp bar at 70
+    Health.TakeDamage(25);   // -> UI: hp bar at 45
+    return 0;
+}`,
+expect:["UI: hp bar at 70","UI: hp bar at 45"],
+checks:[[/DECLARE_MULTICAST_DELEGATE_OneParam\s*\(\s*FOnHealthChanged\s*,\s*int\s*\)/, "Declares the multicast delegate type"],[/FOnHealthChanged\s+OnHealthChanged/, "Exposes it as a member"],[/\.Broadcast\s*\(/, "Broadcasts on change"],[/AddLambda\s*\(/, "Listener binds with AddLambda"]],
+hint:"Health.OnHealthChanged.AddLambda([](int NewHP){ UE_LOG(LogTemp, Log, \"UI: hp bar at %d\", NewHP); }); — same inversion of dependency as C# events: broadcaster stays dumb."},
+
+{id:"lab-lifecycle", t:"Lifecycle: a tickless timer", xp:50, shim:true,
+p:"Capstone: an actor with the full lifecycle shape — constructor sets defaults, <code>BeginPlay</code> arms a cooldown, <code>Tick(DeltaTime)</code> counts it down and 'fires' every 1.5s, <code>EndPlay</code> reports shots. The harness simulates a 60fps world for you.",
+starter:`class ATurret {
+public:
+    float Cooldown = 0.f;
+    float FireInterval = 1.5f;
+    int Shots = 0;
+
+    void BeginPlay() {
+        UE_LOG(LogTemp, Log, "turret online");
+        // TODO: start Cooldown at FireInterval
+    }
+
+    void Tick(float DeltaTime) {
+        // TODO: subtract DeltaTime from Cooldown
+        // when it hits <= 0: Shots++, log "fire! (%d)", reset Cooldown to FireInterval
+    }
+
+    void EndPlay() {
+        UE_LOG(LogTemp, Log, "turret offline after %d shots", Shots);
+    }
+};
+
+int main() {                       // -- fake world: 5 seconds at 60fps --
+    ATurret T;
+    T.BeginPlay();
+    for (int Frame = 0; Frame < 300; ++Frame) T.Tick(1.f / 60.f);
+    T.EndPlay();                   // expected: 3 shots in 5s at 1.5s interval
+    return 0;
+}`,
+expect:["turret online","fire! (1)","fire! (2)","fire! (3)","offline after 3 shots"],
+checks:[[/Cooldown\s*=\s*FireInterval/, "BeginPlay arms the cooldown"],[/Cooldown\s*-=\s*DeltaTime/, "Tick subtracts DeltaTime (frame-rate independent!)"],[/Cooldown\s*<=\s*0/, "Checks expiry with <= 0"],[/Shots\+\+|\+\+Shots/, "Counts shots"]],
+hint:"This is exactly what TimerManager does for you in real UE — but writing it once makes DeltaTime click. In Tick: Cooldown -= DeltaTime; if (Cooldown <= 0.f) { Shots++; UE_LOG(...); Cooldown = FireInterval; }"}]},
+
+{cat:"Free play", items:[
+{id:"lab-scratch", t:"Scratchpad", xp:0, shim:true, scratch:true,
+p:"Blank slate with the UE shim loaded — <code>UE_LOG</code>, <code>FString</code>, <code>TArray</code>, <code>TMap</code>, <code>FVector</code>, <code>Cast&lt;&gt;</code> and the delegate macros all work. Paste snippets from any lesson and poke at them.",
+starter:`int main() {
+    FVector Pos(3.f, 4.f, 0.f);
+    UE_LOG(LogTemp, Log, "vector length: %.1f", Pos.Size());
+
+    TMap<FString, int> Scores;
+    Scores.Add("Ada", 1200);
+    if (int* Found = Scores.Find("Ada"))
+        UE_LOG(LogTemp, Log, "Ada: %d", *Found);
+
+    return 0;
+}`,
+expect:null, checks:[], hint:"Anything goes here. Try the FVector operators, or declare a delegate and broadcast it."}]}
+];
+
+/* =====================================================================
+   APP LOGIC
+===================================================================== */
+
+/* ---------- storage adapter: artifact storage -> localStorage -> memory ---------- */
+const Store = (() => {
+  const KEY = "bridge-academy-v1";
+  let mem = null;
+  const hasWS = typeof window !== "undefined" && window.storage && typeof window.storage.get === "function";
+  let hasLS = false;
+  try { localStorage.setItem("__t","1"); localStorage.removeItem("__t"); hasLS = true; } catch(e){}
+  async function load(){
+    if (hasWS){
+      try { const r = await window.storage.get(KEY); if (r && r.value) return JSON.parse(r.value); } catch(e){}
+      return null;
+    }
+    if (hasLS){
+      try { const v = localStorage.getItem(KEY); return v ? JSON.parse(v) : null; } catch(e){ return null; }
+    }
+    return mem;
+  }
+  let t = null;
+  function save(state){
+    clearTimeout(t);
+    t = setTimeout(async () => {
+      const v = JSON.stringify(state);
+      if (hasWS){ try { await window.storage.set(KEY, v); } catch(e){} return; }
+      if (hasLS){ try { localStorage.setItem(KEY, v); } catch(e){} return; }
+      mem = state;
+    }, 350);
+  }
+  return { load, save };
+})();
+
+/* ---------- state ---------- */
+let S = {
+  xp: 0,
+  done: {},        // lessonId -> true (lesson completed)
+  quiz: {},        // lessonId -> best score (# correct)
+  tasks: {},       // lessonId -> true (mini-task checked)
+  ach: {},         // achievementId -> true
+  lab: {},         // exerciseId -> true (lab exercise solved)
+  streak: 0,
+  lastActive: null,
+  seenLevel: 1
+};
+
+const $ = sel => document.querySelector(sel);
+const content = $("#content");
+const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+
+/* ---------- lesson / path lookups ---------- */
+const ALL_LESSONS = [];
+const L_INDEX = {};   // lessonId -> {path, chapter, lesson, ci, li, flat}
+PATHS.forEach(p => p.chapters.forEach((c, ci) => c.lessons.forEach((l, li) => {
+  const rec = { path: p, chapter: c, lesson: l, ci, li, flat: ALL_LESSONS.length };
+  ALL_LESSONS.push(rec); L_INDEX[l.id] = rec;
+})));
+const pathLessons = p => p.chapters.flatMap(c => c.lessons);
+const pathDone   = p => pathLessons(p).filter(l => S.done[l.id]).length;
+const pathPct    = p => Math.round(100 * pathDone(p) / pathLessons(p).length);
+const chapterDone = c => c.lessons.every(l => S.done[l.id]);
+const chapterUnlocked = (p, ci) => ci === 0 || chapterDone(p.chapters[ci-1]);
+const lessonUnlocked = id => {
+  const r = L_INDEX[id];
+  if (!chapterUnlocked(r.path, r.ci)) return false;
+  return r.li === 0 || !!S.done[r.chapter.lessons[r.li-1].id];
+};
+const totalDone = () => Object.keys(S.done).length;
+
+/* ---------- levels & XP ---------- */
+function levelInfo(xp){
+  let lv = 1;
+  for (let i = 0; i < LEVELS.length; i++) if (xp >= LEVELS[i].xp) lv = i + 1;
+  const cur = LEVELS[lv-1];
+  const next = LEVELS[lv] || null;
+  const extra = !next ? { xp: cur.xp + 1000, r: "Bridge Master" } : null; // soft-cap continuation
+  const nxt = next || extra;
+  return { lv, rank: cur.r, cur: cur.xp, next: nxt.xp, pct: Math.min(100, Math.round(100*(xp-cur.xp)/(nxt.xp-cur.xp))) };
+}
+
+function addXP(n, label){
+  if (n <= 0) return;
+  const before = levelInfo(S.xp).lv;
+  S.xp += n;
+  toast("xp", "⚡", "+" + n + " XP", label || "");
+  const after = levelInfo(S.xp);
+  if (after.lv > before){
+    S.seenLevel = after.lv;
+    showLevelUp(after.lv, after.rank);
+    grant("lvl5", after.lv >= 5);
+  }
+  renderChrome(); persist();
+}
+
+/* ---------- achievements ---------- */
+function grant(id, cond = true){
+  if (!cond || S.ach[id]) return;
+  const a = ACHIEVEMENTS.find(x => x.id === id);
+  if (!a) return;
+  S.ach[id] = true;
+  toast("ach", a.ico, "Achievement unlocked", a.t + " · +" + a.xp + " XP");
+  S.xp += a.xp;   // silent add (toast already shows it)
+  const li = levelInfo(S.xp);
+  if (li.lv > S.seenLevel){ S.seenLevel = li.lv; showLevelUp(li.lv, li.rank); }
+  renderChrome(); persist();
+}
+function checkGlobalAchievements(){
+  grant("first", totalDone() >= 1);
+  const t = Object.keys(S.tasks).length;
+  grant("tasks5", t >= 5); grant("tasks15", t >= 15);
+  grant("half", totalDone() >= Math.ceil(ALL_LESSONS.length/2));
+  PATHS.forEach(p => grant("path"+p.id, pathDone(p) === pathLessons(p).length));
+  grant("all", totalDone() === ALL_LESSONS.length);
+  const labAll = LAB.flatMap(c => c.items).filter(e => !e.scratch);
+  const labN = labAll.filter(e => S.lab[e.id]).length;
+  grant("labrat", labN >= 1);
+  grant("labmaster", labN === labAll.length);
+  grant("streak3", S.streak >= 3); grant("streak7", S.streak >= 7);
+}
+
+/* ---------- streak ---------- */
+function touchStreak(){
+  const today = new Date(); today.setHours(0,0,0,0);
+  const t = today.getTime();
+  if (S.lastActive === t) return;
+  const yesterday = t - 86400000;
+  S.streak = (S.lastActive === yesterday) ? S.streak + 1 : 1;
+  S.lastActive = t;
+  grant("streak3", S.streak >= 3); grant("streak7", S.streak >= 7);
+  persist();
+}
+
+/* ---------- toasts & level-up ---------- */
+function toast(kind, ico, title, msg){
+  const el = document.createElement("div");
+  el.className = "toast" + (kind === "xp" ? " xp" : "");
+  el.innerHTML = `<div class="tico">${ico}</div><div><h5>${esc(title)}</h5><p>${esc(msg)}</p></div>`;
+  $("#toasts").appendChild(el);
+  setTimeout(() => { el.classList.add("out"); setTimeout(() => el.remove(), 380); }, kind === "xp" ? 2400 : 4200);
+}
+function showLevelUp(lv, rank){
+  const o = document.createElement("div");
+  o.className = "lvlup";
+  o.innerHTML = `<div class="box"><div style="font-size:13px;letter-spacing:2px;color:var(--muted);text-transform:uppercase">Level up</div>
+    <div class="big">${lv}</div><div class="rk">${esc(rank)}</div>
+    <p style="color:var(--muted);font-size:13px;margin:6px 0 18px">Keep crossing the bridge.</p>
+    <button class="btn">Continue</button></div>`;
+  o.querySelector(".btn").onclick = () => o.remove();
+  o.addEventListener("click", e => { if (e.target === o) o.remove(); });
+  document.body.appendChild(o);
+}
+
+/* ---------- chrome (sidebar / topbar) ---------- */
+function renderChrome(){
+  const li = levelInfo(S.xp);
+  $("#lvl-num").textContent = li.lv;
+  $("#lvl-rank").textContent = li.rank;
+  $("#lvl-xp").textContent = S.xp + " / " + li.next + " XP";
+  $("#xp-fill").style.width = li.pct + "%";
+  $("#streak-n").textContent = S.streak;
+  $("#streak-pill").style.opacity = S.streak > 0 ? 1 : .45;
+  $("#side-xp").textContent = S.xp + " XP";
+  PATHS.forEach(p => { const el = $("#pct-" + p.id); if (el) el.textContent = pathPct(p) + "%"; });
+  const labAll = LAB.flatMap(c => c.items).filter(e => !e.scratch);
+  const labEl = $("#pct-lab");
+  if (labEl) labEl.textContent = labAll.filter(e => S.lab[e.id]).length + "/" + labAll.length;
+}
+function persist(){ Store.save(S); }
+
+/* ---------- shared render helpers ---------- */
+function xlateHTML(cmp){
+  const cell = s => { const [a, b] = s.split("|"); return esc(a) + (b ? `<small>${esc(b)}</small>` : ""); };
+  return `<div class="xlate"><div class="xh"><div class="hu">In Unity</div><div></div><div class="he">In Unreal</div></div>` +
+    cmp.map(r => `<div class="xrow"><div class="xu">${cell(r[0])}</div><div class="xa">→</div><div class="xe">${cell(r[1])}</div></div>`).join("") + `</div>`;
+}
+function pipeHTML(title, diag){
+  const box = s => { const [a, b] = s.split("|"); return `<div class="pbox">${esc(a)}${b ? `<small>${esc(b)}</small>` : ""}</div>`; };
+  return (title ? `<div class="diag-title">${esc(title)}</div>` : "") +
+    `<div class="pipe">` + diag.map(box).join(`<div class="parr">→</div>`) + `</div>`;
+}
+function pathIcon(p){ return { ue: "🏰", cpp: "⟬⟭", int: "⚙️" }[p.id] || "📗"; }
+
+/* ---------- views ---------- */
+let view = "dash";
+function nav(v){
+  view = v;
+  document.querySelectorAll(".navbtn").forEach(b => b.classList.toggle("active", b.dataset.view === v));
+  $("#sidebar").classList.remove("open"); $("#scrim").classList.remove("on");
+  render();
+  window.scrollTo({ top: 0 });
+  content.focus({ preventScroll: true });
+}
+
+function render(){
+  if (view === "dash") return renderDash();
+  if (view.startsWith("path:")) return renderPath(view.slice(5));
+  if (view.startsWith("lesson:")) return renderLesson(view.slice(7));
+  if (view === "lab") return renderLab();
+  if (view === "translator") return renderTranslator();
+  if (view === "glossary") return renderGlossary();
+  if (view === "achievements") return renderAch();
+}
+
+/* ----- dashboard ----- */
+function nextLesson(){
+  for (const r of ALL_LESSONS) if (!S.done[r.lesson.id] && lessonUnlocked(r.lesson.id)) return r;
+  return null;
+}
+function renderDash(){
+  const li = levelInfo(S.xp);
+  const nxt = nextLesson();
+  const achGot = Object.keys(S.ach).length;
+  content.innerHTML = `
+  <div class="hero">
+    <div class="bridge"><span class="u">Unity</span><span class="arrow"></span><span class="e">Unreal</span></div>
+    <p>You already know how to make games. This academy only teaches the <strong>differences</strong> — every concept mapped from the Unity idea you already have to its Unreal counterpart.</p>
+    <div class="cta">
+      ${nxt
+        ? `<button class="btn" id="cta-continue">${totalDone() ? "Continue" : "Start"}: ${esc(nxt.lesson.t)}</button>
+           <span style="font-size:12.5px;color:var(--muted)">${esc(nxt.path.title)} · Chapter ${nxt.ci+1} · ~${nxt.lesson.min} min</span>`
+        : `<span class="tag gold">All ${ALL_LESSONS.length} lessons complete — Bridge crossed 👑</span>`}
+    </div>
+  </div>
+  <div class="statrow">
+    <div class="stat"><b>${totalDone()}<span style="font-size:14px;color:var(--muted)">/${ALL_LESSONS.length}</span></b><span>Lessons</span></div>
+    <div class="stat gold"><b>${S.xp}</b><span>Total XP</span></div>
+    <div class="stat ok"><b>${Object.keys(S.tasks).length}</b><span>Tasks done</span></div>
+    <div class="stat"><b>${achGot}<span style="font-size:14px;color:var(--muted)">/${ACHIEVEMENTS.length}</span></b><span>Achievements</span></div>
+  </div>
+  <div class="grid3">
+    ${PATHS.map(p => {
+      const dn = pathDone(p), tot = pathLessons(p).length, pct = pathPct(p);
+      return `<div class="card pathcard" data-go="path:${p.id}" role="button" tabindex="0">
+        <div class="ph"><div class="pico">${pathIcon(p)}</div><div><h3>${esc(p.title)}</h3><div class="pmeta">${p.chapters.length} chapters · ${tot} lessons</div></div></div>
+        <p style="font-size:13px;color:var(--muted)">${esc(p.blurb)}</p>
+        <div class="pbar${pct===100?" gold":""}"><div style="width:${pct}%"></div></div>
+        <div class="pmeta">${dn}/${tot} complete ${pct===100 ? "· ✓ done" : ""}</div>
+      </div>`;
+    }).join("")}
+  </div>
+  <div class="grid3" style="margin-top:16px">
+    <div class="card pathcard" data-go="lab" role="button" tabindex="0">
+      <div class="ph"><div class="pico">⌨️</div><div><h3>C++ Lab</h3><div class="pmeta">Write & run real code</div></div></div>
+      <p style="font-size:13px;color:var(--muted)">An in-browser IDE with Unreal-flavored exercises — UE_LOG, TArray, delegates and the lifecycle, compiled for real.</p>
+    </div>
+    <div class="card pathcard" data-go="translator" role="button" tabindex="0">
+      <div class="ph"><div class="pico">⇄</div><div><h3>Unity → Unreal map</h3><div class="pmeta">Instant lookup table</div></div></div>
+      <p style="font-size:13px;color:var(--muted)">"What's the Unreal name for…?" — every mapping from the course in one searchable table.</p>
+    </div>
+    <div class="card pathcard" data-go="glossary" role="button" tabindex="0">
+      <div class="ph"><div class="pico">📖</div><div><h3>Glossary</h3><div class="pmeta">${GLOSSARY.length} Unreal terms</div></div></div>
+      <p style="font-size:13px;color:var(--muted)">Every Unreal term defined, each with its closest Unity equivalent.</p>
+    </div>
+  </div>`;
+  const cta = $("#cta-continue");
+  if (cta) cta.onclick = () => nav("lesson:" + nxt.lesson.id);
+  content.querySelectorAll("[data-go]").forEach(el => {
+    const go = () => nav(el.dataset.go);
+    el.addEventListener("click", go);
+    el.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } });
+  });
+}
+
+/* ----- path view ----- */
+let openChapter = {};
+function renderPath(pid){
+  const p = PATHS.find(x => x.id === pid);
+  const dn = pathDone(p), tot = pathLessons(p).length, pct = pathPct(p);
+  if (openChapter[pid] === undefined){
+    let idx = p.chapters.findIndex((c, ci) => chapterUnlocked(p, ci) && !chapterDone(c));
+    openChapter[pid] = idx === -1 ? p.chapters.length - 1 : idx;
+  }
+  content.innerHTML = `
+  <div class="crumb"><a data-go="dash">Dashboard</a> / ${esc(p.title)}</div>
+  <h1 class="page">${pathIcon(p)} ${esc(p.title)}</h1>
+  <p class="sub">${esc(p.blurb)}</p>
+  <div style="display:flex;align-items:center;gap:14px;margin-bottom:22px">
+    <div class="pbar${pct===100?" gold":""}" style="flex:1;max-width:420px"><div style="width:${pct}%"></div></div>
+    <span class="tag${pct===100?" gold":" ue"}">${dn}/${tot} lessons</span>
+  </div>
+  ${p.chapters.map((c, ci) => {
+    const unlocked = chapterUnlocked(p, ci);
+    const cdone = c.lessons.filter(l => S.done[l.id]).length;
+    const open = openChapter[pid] === ci;
+    return `<div class="card chapter${open ? " open" : ""}${unlocked ? "" : " locked"}" data-ch="${ci}">
+      <div class="chap-head" role="button" tabindex="0" aria-expanded="${open}">
+        <span class="num">CH ${String(ci+1).padStart(2,"0")}</span>
+        <h3>${esc(c.t)}</h3>
+        <span class="tag${cdone===c.lessons.length ? " ok" : ""}">${unlocked ? cdone + "/" + c.lessons.length : "🔒"}</span>
+        <span class="chev">▸</span>
+      </div>
+      <div class="chap-body">
+        ${!unlocked ? `<div class="chap-lock">🔒 Finish <strong>${esc(p.chapters[ci-1].t)}</strong> (all lessons + quizzes) to unlock this chapter.</div>` : ""}
+        ${c.lessons.map(l => {
+          const done = !!S.done[l.id], unl = unlocked && lessonUnlocked(l.id);
+          return `<div class="lesson-row${done ? " done" : ""}${unl ? "" : " locked"}">
+            <div class="dot">${done ? "✓" : ""}</div>
+            <div class="lt" ${unl ? `data-go="lesson:${l.id}" role="button" tabindex="0"` : ""}>${esc(l.t)}</div>
+            ${S.tasks[l.id] ? `<span class="tag gold" title="Mini-task done">⚒</span>` : ""}
+            <span class="min">${unl ? "~" + l.min + " min" : "🔒"}</span>
+          </div>`;
+        }).join("")}
+        <div class="skillcheck"><h4>Skill checklist — you can now…</h4>
+          <ul>${c.skills.map(s => `<li class="${cdone===c.lessons.length ? "got" : ""}">${cdone===c.lessons.length ? "✓ " : ""}${esc(s)}</li>`).join("")}</ul>
+        </div>
+      </div>
+    </div>`;
+  }).join("")}`;
+  content.querySelectorAll(".chap-head").forEach(h => {
+    const toggle = () => {
+      const ci = +h.closest(".chapter").dataset.ch;
+      openChapter[pid] = openChapter[pid] === ci ? -1 : ci;
+      renderPath(pid);
+    };
+    h.addEventListener("click", toggle);
+    h.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); } });
+  });
+  wireGo();
+}
+
+/* ----- lesson view ----- */
+function renderLesson(id){
+  const r = L_INDEX[id];
+  if (!r || !lessonUnlocked(id)) return nav("path:" + (r ? r.path.id : "ue"));
+  const { path: p, chapter: c, lesson: l } = r;
+  const done = !!S.done[id];
+  const prev = r.flat > 0 ? ALL_LESSONS[r.flat-1] : null;
+  const nxt = r.flat < ALL_LESSONS.length-1 ? ALL_LESSONS[r.flat+1] : null;
+  const prevSame = prev && prev.path === p ? prev : null;
+
+  content.innerHTML = `
+  <div class="crumb"><a data-go="dash">Dashboard</a> / <a data-go="path:${p.id}">${esc(p.title)}</a> / Chapter ${r.ci+1}</div>
+  <div class="lesson-hd">
+    <span class="tag ue">${esc(c.t)}</span> ${done ? `<span class="tag ok">✓ Completed</span>` : ""}
+    <h1>${esc(l.t)}</h1>
+    <div class="lesson-meta"><span>⏱ ~${l.min} min</span><span>Lesson ${r.li+1} of ${c.lessons.length}</span></div>
+  </div>
+  <div class="lesson-body">${l.body}</div>
+  ${l.cmp ? xlateHTML(l.cmp) : ""}
+  ${l.diag ? pipeHTML(l.diagTitle, l.diag) : ""}
+  ${l.code ? `<div class="codeblock">${l.code}</div>` : ""}
+  <div class="quiz card" style="margin-top:26px">
+    <h2>🧠 Checkpoint quiz <span class="tag">${l.quiz.length} questions · +15 XP each</span></h2>
+    ${l.quiz.map((q, qi) => `<div class="qq" data-q="${qi}">
+      <div class="qt">${qi+1}. ${esc(q.q)}</div>
+      ${q.o.map((o, oi) => `<label class="opt"><input type="radio" name="q${qi}" value="${oi}"><span>${esc(o)}</span></label>`).join("")}
+      <div class="qx">${esc(q.x)}</div>
+    </div>`).join("")}
+    <div class="quiz-result" id="qres"></div>
+    <button class="btn" id="grade">${done ? "Retake quiz (no XP)" : "Submit answers"}</button>
+  </div>
+  <div class="taskbox">
+    <h2>⚒️ Mini-task <span class="tag gold">+20 XP</span></h2>
+    <p>${esc(l.task)}</p>
+    <label><input type="checkbox" id="taskck" ${S.tasks[id] ? "checked disabled" : ""}> I actually did this in the editor — no cheating your future self.</label>
+  </div>
+  <div class="lesson-nav">
+    <button class="btn ghost" id="nav-prev" ${prevSame ? "" : "disabled"}>← ${prevSame ? esc(prevSame.lesson.t) : "Previous"}</button>
+    <button class="btn" id="nav-next" ${done ? "" : "disabled"} title="${done ? "" : "Pass the quiz to continue"}">${nxt ? (nxt.path === p ? "Next: " + esc(nxt.lesson.t) : "Next path: " + esc(nxt.path.title)) + " →" : "Finish 🎉"}</button>
+  </div>`;
+
+  content.querySelectorAll(".opt input").forEach(inp => inp.addEventListener("change", () => {
+    const qq = inp.closest(".qq");
+    qq.querySelectorAll(".opt").forEach(o => o.classList.remove("sel"));
+    inp.closest(".opt").classList.add("sel");
+  }));
+
+  $("#grade").onclick = () => {
+    const already = !!S.done[id];
+    let correct = 0, answered = 0;
+    l.quiz.forEach((q, qi) => {
+      const qq = content.querySelector(`.qq[data-q="${qi}"]`);
+      const sel = qq.querySelector("input:checked");
+      if (!sel) return;
+      answered++;
+      qq.classList.add("graded");
+      qq.querySelectorAll(".opt").forEach((o, oi) => {
+        o.classList.remove("sel");
+        if (oi === q.a) o.classList.add("right");
+        else if (sel.value == oi) o.classList.add("wrong");
+        o.querySelector("input").disabled = true;
+      });
+      if (+sel.value === q.a) correct++;
+    });
+    if (answered < l.quiz.length){
+      $("#qres").innerHTML = `<span style="color:var(--bad)">Answer all ${l.quiz.length} questions first (${answered}/${l.quiz.length}).</span>`;
+      content.querySelectorAll(".qq input").forEach(i => i.disabled = false);
+      content.querySelectorAll(".qq").forEach(q => { q.classList.remove("graded"); q.querySelectorAll(".opt").forEach(o => o.classList.remove("right","wrong")); });
+      return;
+    }
+    const perfect = correct === l.quiz.length;
+    $("#qres").innerHTML = `Score: <span style="color:${perfect ? "var(--ok)" : "var(--gold)"}">${correct}/${l.quiz.length}</span>${perfect ? " — perfect! 🎯" : ""}`;
+    $("#grade").style.display = "none";
+    if (!already){
+      S.done[id] = true;
+      S.quiz[id] = correct;
+      touchStreak();
+      addXP(40 + correct * 15 + (perfect ? 25 : 0), "Lesson complete: " + l.t);
+      grant("perfect", perfect);
+      grant("chapter", chapterDone(c));
+      checkGlobalAchievements();
+      persist();
+      $("#nav-next").disabled = false;
+      $("#nav-next").title = "";
+    } else if (S.quiz[id] === undefined || correct > S.quiz[id]) {
+      S.quiz[id] = correct; persist();
+    }
+  };
+
+  $("#taskck").addEventListener("change", e => {
+    if (!e.target.checked || S.tasks[id]) return;
+    S.tasks[id] = true;
+    e.target.disabled = true;
+    touchStreak();
+    addXP(20, "Mini-task: " + l.t);
+    checkGlobalAchievements();
+    persist();
+  });
+
+  $("#nav-prev").onclick = () => prevSame && nav("lesson:" + prevSame.lesson.id);
+  $("#nav-next").onclick = () => {
+    if (!S.done[id]) return;
+    if (!nxt) return nav("achievements");
+    nav(nxt.path === p ? "lesson:" + nxt.lesson.id : "path:" + nxt.path.id);
+  };
+  wireGo();
+}
+
+
+/* ----- C++ lab ----- */
+let labCur = null;          // current exercise id
+let labEditor = null;       // CodeMirror instance or null
+const labDrafts = {};       // in-session code drafts per exercise
+
+function labExercise(id){ for (const c of LAB) for (const e of c.items) if (e.id === id) return e; return null; }
+
+function renderLab(){
+  const all = LAB.flatMap(c => c.items).filter(e => !e.scratch);
+  const solved = all.filter(e => S.lab[e.id]).length;
+  if (!labCur) labCur = (all.find(e => !S.lab[e.id]) || LAB[0].items[0]).id;
+  const ex = labExercise(labCur);
+
+  content.innerHTML = `
+  <h1 class="page">⌨️ C++ Lab</h1>
+  <p class="sub">Write real code, get it checked, run it for real. Unreal-only idioms compile via a tiny shim that's auto-prepended (peek at it below). ${solved}/${all.length} solved.</p>
+  <div class="lab-layout">
+    <div class="card lab-list">
+      ${LAB.map(c => `<div class="lab-cat">${esc(c.cat)}</div>` + c.items.map(e =>
+        `<button class="lab-ex${e.id === labCur ? " active" : ""}${S.lab[e.id] ? " solved" : ""}" data-ex="${e.id}">
+          <span class="ldot">${S.lab[e.id] ? "✓" : ""}</span>${esc(e.t)}
+        </button>`).join("")).join("")}
+    </div>
+    <div>
+      <div class="lab-prompt">
+        <h2 style="font-family:var(--disp);font-size:19px;margin-bottom:6px">${esc(ex.t)}
+          ${ex.xp ? `<span class="tag gold" style="vertical-align:2px">+${ex.xp} XP</span>` : `<span class="tag">sandbox</span>`}
+          ${S.lab[ex.id] ? `<span class="tag ok" style="vertical-align:2px">✓ solved</span>` : ""}
+        </h2>
+        <p>${ex.p}</p>
+      </div>
+      <div class="cm-wrap">
+        <div class="cmhead"><span class="fdot"></span><span class="fdot"></span><span class="fdot"></span>
+          ${ex.id}.cpp ${ex.shim ? '· <span style="color:var(--ue)">UE shim prepended</span>' : "· plain C++"}
+        </div>
+        <div id="lab-editor-host"></div>
+      </div>
+      <div class="lab-actions">
+        <button class="btn" id="lab-run">▶ Compile & run</button>
+        <button class="btn ghost" id="lab-check">✓ Check my code</button>
+        <button class="btn ghost" id="lab-reset">Reset</button>
+        <span class="lab-status" id="lab-status"></span>
+      </div>
+      <div class="console" id="lab-console"><span class="c-dim">// output appears here — Run compiles on a real compiler (needs internet), Check works offline</span></div>
+      <div id="lab-checks"></div>
+      ${ex.hint ? `<details class="lab-hint"><summary>💡 Stuck? Show hint</summary><p>${esc(ex.hint)}</p></details>` : ""}
+      ${ex.shim ? `<details class="lab-hint"><summary>📦 What the UE shim defines</summary><p style="font-family:var(--mono);font-size:12px">UCLASS / UPROPERTY / UFUNCTION / GENERATED_BODY (no-ops) · UE_LOG → printf · TEXT() · FString (with *Str and ::Printf) · TArray (Add/Num/Remove/Contains) · TMap (Add/Find) · FVector (+, *, Size) · Cast&lt;T&gt; → dynamic_cast · DECLARE_DELEGATE / DECLARE_MULTICAST_DELEGATE_OneParam</p></details>` : ""}
+    </div>
+  </div>`;
+
+  // editor
+  const host = $("#lab-editor-host");
+  const code = labDrafts[ex.id] !== undefined ? labDrafts[ex.id] : ex.starter;
+  if (window.CodeMirror){
+    labEditor = CodeMirror(host, {
+      value: code, mode: "text/x-c++src", lineNumbers: true,
+      indentUnit: 4, tabSize: 4, indentWithTabs: false,
+      viewportMargin: Infinity,
+      extraKeys: { Tab: cm => cm.replaceSelection("    ") }
+    });
+    labEditor.on("change", () => { labDrafts[ex.id] = labEditor.getValue(); });
+  } else {
+    labEditor = null;
+    host.innerHTML = `<textarea class="lab-fallback" id="lab-ta" spellcheck="false"></textarea>`;
+    const ta = $("#lab-ta"); ta.value = code;
+    ta.addEventListener("input", () => { labDrafts[ex.id] = ta.value; });
+  }
+  const getCode = () => labEditor ? labEditor.getValue() : $("#lab-ta").value;
+
+  // sidebar switching
+  content.querySelectorAll(".lab-ex").forEach(b => b.addEventListener("click", () => { labCur = b.dataset.ex; renderLab(); }));
+
+  $("#lab-reset").onclick = () => { delete labDrafts[ex.id]; renderLab(); };
+
+  const statusEl = $("#lab-status"), consoleEl = $("#lab-console"), checksEl = $("#lab-checks");
+
+  function runChecks(src){
+    if (!ex.checks.length) return { pass: true, html: "" };
+    let okAll = true;
+    const html = ex.checks.map(([re, msg]) => {
+      const ok = re.test(src); okAll = okAll && ok;
+      return `<div class="checkline ${ok ? "ok" : "no"}"><span class="ci">${ok ? "✓" : "○"}</span>${esc(msg)}</div>`;
+    }).join("");
+    return { pass: okAll, html: `<div class="card" style="margin-top:12px;padding:12px 16px">${html}</div>` };
+  }
+
+  function solve(){
+    if (ex.scratch || S.lab[ex.id]) return;
+    S.lab[ex.id] = true;
+    touchStreak();
+    addXP(ex.xp, "Lab solved: " + ex.t);
+    checkGlobalAchievements();
+    persist();
+    // update in place so the success status/console stay visible
+    const btn = content.querySelector(`.lab-ex[data-ex="${ex.id}"]`);
+    if (btn){ btn.classList.add("solved"); btn.querySelector(".ldot").textContent = "✓"; }
+    const h2 = content.querySelector(".lab-prompt h2");
+    if (h2 && !h2.querySelector(".tag.ok")) h2.insertAdjacentHTML("beforeend", ' <span class="tag ok" style="vertical-align:2px">✓ solved</span>');
+  }
+
+  $("#lab-check").onclick = () => {
+    const r = runChecks(getCode());
+    checksEl.innerHTML = r.html;
+    if (ex.scratch){ statusEl.className = "lab-status"; statusEl.textContent = "sandbox — nothing to check"; return; }
+    statusEl.className = "lab-status " + (r.pass ? "pass" : "fail");
+    statusEl.textContent = r.pass ? "All checks pass ✓" : "Not yet — see checklist";
+    if (r.pass) solve();
+  };
+
+  $("#lab-run").onclick = async () => {
+    const src = getCode();
+    const full = (ex.shim ? UE_SHIM : "") + src;
+    statusEl.className = "lab-status run"; statusEl.textContent = "compiling…";
+    consoleEl.innerHTML = `<span class="c-dim">// sending to compiler (gcc, C++17)…</span>`;
+    $("#lab-run").disabled = true;
+    try {
+      const res = await fetch("https://wandbox.org/api/compile.json", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ compiler: "gcc-head", code: full, options: "warning,c++17" })
+      });
+      const d = await res.json();
+      let out = "";
+      if (d.compiler_error) out += `<span class="c-err">${esc(remapLines(d.compiler_error, ex))}</span>\n`;
+      else if (d.compiler_message) out += `<span class="c-warn">${esc(remapLines(d.compiler_message, ex))}</span>\n`;
+      if (d.program_output) out += esc(d.program_output);
+      if (d.program_error) out += `<span class="c-err">${esc(d.program_error)}</span>`;
+      const ok = d.status === "0" && !d.compiler_error;
+      if (!out.trim()) out = ok ? '<span class="c-dim">// compiled, no output</span>' : '<span class="c-err">// compile failed</span>';
+      consoleEl.innerHTML = out;
+
+      if (ex.scratch){ statusEl.className = "lab-status " + (ok ? "pass" : "fail"); statusEl.textContent = ok ? "ran ✓" : "compile error"; return; }
+      const r = runChecks(src);
+      checksEl.innerHTML = r.html;
+      const outputOk = ok && (!ex.expect || ex.expect.every(s => (d.program_output || "").includes(s)));
+      if (outputOk && r.pass){
+        statusEl.className = "lab-status pass"; statusEl.textContent = "Compiled, ran, output correct ✓";
+        consoleEl.innerHTML += `\n<span class="c-ok">// ✓ expected output found</span>`;
+        solve();
+      } else if (ok){
+        statusEl.className = "lab-status fail"; statusEl.textContent = r.pass ? "Runs, but output doesn't match yet" : "Runs, but checks incomplete";
+        if (ex.expect) consoleEl.innerHTML += `\n<span class="c-warn">// expecting to see: ${ex.expect.map(esc).join('  ·  ')}</span>`;
+      } else {
+        statusEl.className = "lab-status fail"; statusEl.textContent = "Compile error — read it top-down, first error first";
+      }
+    } catch(e){
+      consoleEl.innerHTML = `<span class="c-warn">// Couldn't reach the compiler — this environment blocks external network calls.
+// "Check my code" works fully offline and still awards the solve.
+// (Download the HTML file and open it locally for real compilation.)</span>`;
+      statusEl.className = "lab-status"; statusEl.textContent = "offline mode";
+      const r = runChecks(getCode());
+      checksEl.innerHTML = r.html;
+      if (!ex.scratch && r.pass){ statusEl.className = "lab-status pass"; statusEl.textContent = "All checks pass ✓ (offline)"; solve(); }
+    } finally {
+      const btn = $("#lab-run"); if (btn) btn.disabled = false;
+    }
+  };
+}
+/* shift compiler error line numbers back to user code (shim is prepended) */
+function remapLines(msg, ex){
+  if (!ex.shim) return msg;
+  const off = UE_SHIM.split("\n").length - 1;
+  return msg.replace(/prog\.cc:(\d+)/g, (m, n) => "your-code:" + Math.max(1, +n - off));
+}
+
+/* ----- translator ----- */
+function renderTranslator(){
+  grant("rosetta");
+  content.innerHTML = `
+  <h1 class="page">⇄ Unity → Unreal map</h1>
+  <p class="sub">Muscle-memory dictionary. Type the Unity thing you know; find its Unreal name.</p>
+  <input class="search" id="trs" placeholder="Search… e.g. Instantiate, coroutine, prefab, raycast" autocomplete="off">
+  <div id="trbody"></div>`;
+  const body = $("#trbody");
+  const draw = q => {
+    q = q.trim().toLowerCase();
+    body.innerHTML = TRANSLATOR.map(([cat, rows]) => {
+      const hit = rows.filter(r => !q || r[0].toLowerCase().includes(q) || r[1].toLowerCase().includes(q));
+      if (!hit.length) return "";
+      return `<div class="tr-cat">${esc(cat)}</div><div class="xlate">
+        <div class="xh"><div class="hu">Unity</div><div></div><div class="he">Unreal</div></div>
+        ${hit.map(r => `<div class="xrow"><div class="xu">${esc(r[0])}</div><div class="xa">→</div><div class="xe">${esc(r[1])}</div></div>`).join("")}
+      </div>`;
+    }).join("") || `<p style="color:var(--muted)">No matches for “${esc(q)}”.</p>`;
+  };
+  draw("");
+  $("#trs").addEventListener("input", e => draw(e.target.value));
+  $("#trs").focus();
+}
+
+/* ----- glossary ----- */
+function renderGlossary(){
+  content.innerHTML = `
+  <h1 class="page">📖 Unreal glossary</h1>
+  <p class="sub">${GLOSSARY.length} terms, each with its closest Unity equivalent.</p>
+  <input class="search" id="gls" placeholder="Search terms… e.g. CDO, Pawn, Niagara" autocomplete="off">
+  <div class="card" style="padding:6px 20px" id="glbody"></div>`;
+  const body = $("#glbody");
+  const draw = q => {
+    q = q.trim().toLowerCase();
+    if (q.length >= 2) grant("lexicon");
+    const hit = GLOSSARY.filter(g => !q || g[0].toLowerCase().includes(q) || g[1].toLowerCase().includes(q) || g[2].toLowerCase().includes(q));
+    body.innerHTML = hit.map(g => `<div class="gl-item">
+      <h3>${esc(g[0])}</h3>
+      <div class="gl-eq">Unity: ${esc(g[1])}</div>
+      <div class="gl-def">${g[2]}</div>
+    </div>`).join("") || `<p style="color:var(--muted);padding:14px 0">No matches.</p>`;
+  };
+  draw("");
+  $("#gls").addEventListener("input", e => draw(e.target.value));
+  $("#gls").focus();
+}
+
+/* ----- achievements ----- */
+function renderAch(){
+  const got = Object.keys(S.ach).length;
+  content.innerHTML = `
+  <h1 class="page">🏆 Achievements</h1>
+  <p class="sub">${got} of ${ACHIEVEMENTS.length} unlocked</p>
+  <div class="ach-grid">
+    ${ACHIEVEMENTS.map(a => `<div class="card ach${S.ach[a.id] ? " got" : ""}">
+      <div class="aico">${a.ico}</div>
+      <div><h4>${esc(a.t)}</h4><p>${esc(a.d)}</p></div>
+      <div class="axp">+${a.xp}</div>
+    </div>`).join("")}
+  </div>`;
+}
+
+/* ---------- generic [data-go] wiring ---------- */
+function wireGo(){
+  content.querySelectorAll("[data-go]").forEach(el => {
+    if (el.__wired) return; el.__wired = true;
+    const go = e => { e.stopPropagation(); nav(el.dataset.go); };
+    el.addEventListener("click", go);
+    if (el.getAttribute("role") === "button")
+      el.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(e); } });
+  });
+}
+
+/* ---------- boot ---------- */
+document.querySelectorAll(".navbtn").forEach(b => b.addEventListener("click", () => nav(b.dataset.view)));
+$("#hamb").addEventListener("click", () => { $("#sidebar").classList.add("open"); $("#scrim").classList.add("on"); });
+$("#scrim").addEventListener("click", () => { $("#sidebar").classList.remove("open"); $("#scrim").classList.remove("on"); });
+
+(async () => {
+  const saved = await Store.load();
+  if (saved) S = Object.assign(S, saved);
+  // streak decay check: if last active more than 1 day ago, streak shows 0 until next activity
+  if (S.lastActive){
+    const today = new Date(); today.setHours(0,0,0,0);
+    if (today.getTime() - S.lastActive > 86400000) S.streak = 0;
+  }
+  renderChrome();
+  nav("dash");
+})();
+</script>
+</body>
+</html>
