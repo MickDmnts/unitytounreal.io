@@ -696,6 +696,46 @@ h1.page{font-family:var(--disp);font-size:26px;font-weight:700;letter-spacing:.3
 .cap-step .cs-links{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
 .lesson-chip{font-family:var(--disp);font-size:10px;letter-spacing:.8px;text-transform:uppercase;color:var(--ue);background:var(--ue-soft);border:1px solid var(--ue-line);border-radius:20px;padding:2px 9px;cursor:pointer}
 .lesson-chip.locked{color:var(--dim);background:none;border-color:var(--line);cursor:default}
+
+/* ===== dojo ===== */
+.dojo-tabs{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap}
+.dojo-tab{background:var(--panel);border:1px solid var(--line);border-radius:10px;color:var(--muted);padding:9px 16px;font-family:var(--disp);font-size:12.5px;letter-spacing:.5px;transition:all .15s}
+.dojo-tab:hover{border-color:var(--ue-line)}
+.dojo-tab.active{background:var(--ue-soft);border-color:var(--ue-line);color:var(--ue)}
+.type-prompt{font-size:15px;color:#E9EEF7;background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--unity);border-radius:10px;padding:14px 18px;margin-bottom:12px}
+.type-input{width:100%;background:var(--code-bg);border:1px solid var(--line);border-radius:10px;color:#C4D3EE;font-family:var(--mono);font-size:14px;padding:13px 16px;outline:none}
+.type-input:focus{border-color:var(--ue-line)}
+.type-input.good{border-color:var(--ok);background:rgba(69,208,126,.06)}
+.type-input.bad{border-color:var(--bad)}
+.type-timer{font-family:var(--mono);font-size:12px;color:var(--dim)}
+.flash-card{background:var(--panel);border:1px solid var(--line2);border-radius:14px;padding:34px 26px;text-align:center;cursor:pointer;min-height:150px;display:grid;place-items:center;transition:border-color .15s}
+.flash-card:hover{border-color:var(--ue-line)}
+.flash-card .fc-side{font-family:var(--disp);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px}
+.flash-card .fc-term{font-size:20px;font-weight:600}
+.flash-card.unity .fc-side{color:var(--unity)}.flash-card.ue .fc-side{color:var(--ue)}
+.predict-code{background:var(--code-bg);border:1px solid var(--line);border-radius:10px;font-family:var(--mono);font-size:13px;line-height:1.7;padding:16px 18px;white-space:pre;overflow-x:auto;color:#C4D3EE;margin-bottom:14px}
+.bpwrap{background:#141821;border:1px solid #2A3142;border-radius:12px;padding:18px;overflow-x:auto;margin-bottom:14px}
+
+/* ===== stats ===== */
+.stat-chart{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:16px}
+.stat-chart h3{font-family:var(--disp);font-size:13.5px;margin-bottom:10px}
+.cal{display:grid;grid-template-rows:repeat(7,12px);grid-auto-flow:column;gap:3px}
+.cal .cd{width:12px;height:12px;border-radius:3px;background:var(--panel3)}
+.cal .cd.a1{background:rgba(79,168,255,.30)}.cal .cd.a2{background:rgba(79,168,255,.55)}.cal .cd.a3{background:var(--ue)}
+.accbar{display:flex;align-items:center;gap:10px;margin:7px 0;font-size:12.5px;color:var(--muted)}
+.accbar .ab{flex:1;height:8px;background:var(--panel3);border-radius:6px;overflow:hidden}
+.accbar .ab div{height:100%;border-radius:6px}
+
+/* ===== ai tutor ===== */
+.tutor{margin-top:14px;background:var(--panel);border:1px solid var(--ue-line);border-radius:12px;padding:15px 18px}
+.tutor h3{font-family:var(--disp);font-size:13px;color:var(--ue);margin-bottom:8px}
+.tutor p{font-size:13.5px;color:#CBD4E4;line-height:1.65;margin-bottom:8px}
+.tutor .thinking{color:var(--muted);font-size:13px;animation:pulse 1.2s infinite}
+@keyframes pulse{50%{opacity:.45}}
+
+/* ===== confetti ===== */
+.cf{position:fixed;top:-14px;z-index:200;width:9px;height:14px;pointer-events:none;animation:cfall linear forwards}
+@keyframes cfall{to{transform:translateY(105vh) rotate(720deg);opacity:.4}}
 .CodeMirror-hints{background:var(--panel2)!important;border:1px solid var(--line2)!important;border-radius:9px!important;box-shadow:0 12px 40px rgba(0,0,0,.55)!important;font-family:var(--mono)!important;font-size:12.5px!important;padding:5px!important;z-index:130!important;max-height:230px!important}
 .CodeMirror-hint{color:#C4D3EE!important;padding:4px 12px!important;border-radius:6px!important}
 li.CodeMirror-hint-active{background:var(--ue-soft)!important;color:var(--ue)!important}
@@ -731,6 +771,8 @@ li.CodeMirror-hint-active{background:var(--ue-soft)!important;color:var(--ue)!im
     <button class="navbtn" data-view="lab"><span class="ic">⌨</span>C++ Lab<span class="pct" id="pct-lab"></span></button>
     <button class="navbtn" data-view="review"><span class="ic">🔁</span>Daily Review<span class="pct" id="pct-review" style="color:var(--gold)"></span></button>
     <button class="navbtn" data-view="capstone"><span class="ic">🚢</span>Capstone<span class="pct" id="pct-cap"></span></button>
+    <button class="navbtn" data-view="dojo"><span class="ic">🥋</span>Dojo<span class="pct" id="pct-dojo"></span></button>
+    <button class="navbtn" data-view="stats"><span class="ic">📊</span>Stats</button>
     <div class="navlabel">Reference</div>
     <button class="navbtn" data-view="translator"><span class="ic">⇄</span>Unity → Unreal map</button>
     <button class="navbtn" data-view="glossary"><span class="ic">📖</span>Glossary</button>
@@ -1024,6 +1066,83 @@ quiz:[
 {q:"meta = (BindWidget) on a UTextBlock* means…",o:["the widget is created for you","a same-named Designer widget is wired in, verified at compile","the text auto-updates","it becomes a binding (per-frame)"],a:1,x:"Name-matched auto-wiring with compile-time verification — a null-proof GetComponent."},
 {q:"The widget equivalent of BeginPlay in C++ is…",o:["Construct","NativeConstruct","OnInitialized only","NativeTick"],a:1,x:"NativeConstruct — and like everything in UE, call Super::NativeConstruct() first."},
 {q:"AddDynamic on a button's OnClicked requires the handler to be…",o:["static","virtual","marked UFUNCTION()","public"],a:2,x:"Dynamic delegates bind by reflection, so the target function must be a UFUNCTION."}]}
+]},
+{id:"ue8", t:"Physics & Collision, Demystified", skills:["Configure collision presets, channels and responses without guessing","Choose between Overlap and Hit (Block) events correctly","Run traces and shape sweeps from C++ and BP","Apply forces and impulses to simulated bodies"], lessons:[
+
+{id:"ue8a", t:"The collision matrix", min:8,
+body:`<p>Unity's Layer Collision Matrix is a global grid in project settings. Unreal turns that inside out: every primitive component carries its own collision recipe — an <strong>Object Type</strong> (what am I?), and a <strong>response list</strong> (Ignore / Overlap / Block) against every <strong>channel</strong> (how do I react to each kind of thing?). Two objects interact using the <em>least</em> enthusiastic of their two opinions: Block+Block = physical hit, Block+Overlap = overlap only, anything+Ignore = nothing. That one sentence resolves 90% of "why doesn't my trigger fire" mysteries.</p>
+<p>You rarely hand-author responses: <strong>Presets</strong> (BlockAll, OverlapAllDynamic, Pawn, NoCollision…) are named bundles, and custom presets live in Project Settings → Collision, where you can also add your own trace/object channels (Projectile, Interactable) — Unreal's answer to running out of Unity layers. Also split in two where Unity had one checkbox: <em>Collision Enabled</em> has modes — Query Only (traces/overlaps see it, physics doesn't), Physics Only, or both. UI-piercing bullets and walk-through-but-shootable ghosts are one dropdown, not a script.</p>`,
+cmp:[["Layer + Layer Collision Matrix|global grid","Object Type + per-component responses|local recipe"],["isTrigger checkbox","Response set to Overlap (vs Block)"],["Running out of layers (32 max)","Custom channels in Project Settings"],["Collider enabled on/off","Collision Enabled: Query / Physics / Both"],["Physics Debug window","Collision view mode + 'show collision' console cmd"]],
+task:"Make a projectile that Blocks WorldStatic but Overlaps Pawns: new Object Channel 'Projectile', a preset for it, applied to your capstone projectile. Verify with the Player Collision view mode.",
+quiz:[
+{q:"Object A Blocks Pawn; Pawn B Overlaps A's type. Result when they touch:",o:["Physical block","Overlap events only","Nothing","Both block and overlap"],a:1,x:"Interactions resolve to the LEAST enthusiastic response: Block + Overlap = Overlap."},
+{q:"'Query Only' collision means…",o:["only C++ can query it","traces & overlaps see it, physics simulation ignores it","it blocks everything","it's editor-only"],a:1,x:"Query = traces/overlaps; Physics = simulation. Unreal splits what Unity's single 'enabled' merged."},
+{q:"You need a 'grappling-point' category that only your hook trace can see. You create…",o:["a new Layer","a Gameplay Tag","a custom Trace Channel","a new preset only"],a:2,x:"Custom trace channels in Project Settings → Collision are exactly for special-purpose queries."}]},
+
+{id:"ue8b", t:"Hits, overlaps & traces", min:8,
+body:`<p>Unity's OnTriggerEnter/OnCollisionEnter become two delegate pairs you <em>bind</em> per component: <code>OnComponentBeginOverlap / EndOverlap</code> (trigger-style, from Overlap responses) and <code>OnComponentHit</code> (physical contact, from Block + something simulating or sweeping). The data is richer: <code>FHitResult</code> hands you impact point, normal, bone name, the component hit, distance, and both channels involved. Bind in C++ with <code>AddDynamic</code> (your handler is a UFUNCTION — you know this song) or click the + on the component's Events in BP.</p>
+<p>Raycasts become <strong>traces</strong>: <code>LineTraceSingleByChannel</code>, plus shape sweeps (<code>SweepSingleByChannel</code> with a sphere/box/capsule — SphereCast's whole family) and multi variants that collect everything along the path. Two habits to import: pass an <code>FCollisionQueryParams</code> with <code>AddIgnoredActor(this)</code> so you stop shooting yourself, and debug-draw with <code>DrawDebugLine</code> — Unreal's Debug.DrawRay, but it actually shows up without a checkbox hunt.</p>`,
+code:`<span class="cm">// Classic aim trace from a camera</span>
+FHitResult Hit;
+FVector Start = Camera->GetComponentLocation();
+FVector End   = Start + Camera->GetForwardVector() * 5000.f;
+FCollisionQueryParams Params;
+Params.AddIgnoredActor(<span class="kw">this</span>);   <span class="cm">// don't shoot yourself</span>
+
+<span class="kw">bool</span> bHit = GetWorld()->LineTraceSingleByChannel(
+    Hit, Start, End, ECC_Visibility, Params);
+<span class="kw">if</span> (bHit)
+    <span class="mc">UE_LOG</span>(LogTemp, Log, <span class="st">"hit %s at %.0f units"</span>, *Hit.GetActor()->GetName(), Hit.Distance);`,
+cmp:[["OnTriggerEnter(Collider other)","OnComponentBeginOverlap (bound delegate)"],["OnCollisionEnter(Collision c)","OnComponentHit (bound delegate)"],["Physics.Raycast(ray, out hit)","LineTraceSingleByChannel(Hit, …)"],["Physics.SphereCast","SweepSingleByChannel + FCollisionShape"],["RaycastAll","LineTraceMultiByChannel"],["Debug.DrawRay","DrawDebugLine / 'show collision'"]],
+task:"Add the aim trace above to your capstone character on IA_Aim, DrawDebugLine the ray, and log what it hits. Then break it on purpose: set the target to Ignore Visibility and watch the trace pass through.",
+quiz:[
+{q:"OnComponentHit fires when…",o:["any two components touch","Block meets Block with physics/sweep involved","responses are Overlap","only in C++"],a:1,x:"Hit events come from blocking contact; overlap events from Overlap responses. Different pairs, different events."},
+{q:"Your trace keeps hitting the shooter. Fix:",o:["raise the start point","FCollisionQueryParams::AddIgnoredActor(this)","use Overlap instead","trace on a different thread"],a:1,x:"Ignoring self via query params is the standard first line of every trace."},
+{q:"SphereCast's equivalent is…",o:["SphereTraceByObject only","a sweep: SweepSingleByChannel with FCollisionShape::MakeSphere","MultiLineTrace","OverlapAnyTest"],a:1,x:"Sweeps move a shape along a path — same idea, channel rules included."}]},
+
+{id:"ue8c", t:"Simulating bodies & forces", min:7,
+body:`<p>Rigidbody dissolves into a checkbox: <strong>Simulate Physics</strong> on any primitive component (per-component, not per-actor — a door's handle can simulate while its frame doesn't). Mass comes from volume × density by default with an override; damping replaces drag. The force API maps almost verb-for-verb: <code>AddForce</code> (continuous, per-tick), <code>AddImpulse</code> (instant, ForceMode.Impulse), <code>AddTorque</code>, plus cinematic gifts Unity made you write — <code>AddRadialImpulse</code> for explosions. One serious cultural difference: <strong>characters are not physics objects</strong>. CharacterMovementComponent is a kinematic solver with physics <em>interactions</em>; pushing a Character with AddImpulse mostly does nothing. Launch pads use <code>LaunchCharacter</code>, ragdolls flip Simulate on the mesh and hand control to Chaos.</p>
+<div class="note">⚙️ Chaos is the physics engine under everything (PhysX left in UE5). Same mental model as PhysX for daily work — where it shines is destruction: fracture meshes into Geometry Collections and let walls shatter without a single line of code.</div>`,
+cmp:[["Rigidbody component","Simulate Physics checkbox (per primitive)"],["rb.AddForce(v)","AddForce (continuous)"],["AddForce(v, ForceMode.Impulse)","AddImpulse"],["rb.drag / angularDrag","Linear / Angular Damping"],["Explosion force loop you wrote","AddRadialImpulse"],["CharacterController + custom launcher","LaunchCharacter (characters aren't sim bodies)"]],
+task:"Capstone juice: on enemy death, flip Simulate Physics on its mesh and AddRadialImpulse from the kill point. Congratulations, you have ragdoll comedy.",
+quiz:[
+{q:"Simulate Physics is set…",o:["per Actor","per primitive component","globally","in GameMode"],a:1,x:"Per-component — mixed simulated/kinematic hierarchies in one actor are normal."},
+{q:"AddImpulse on your Character does nothing because…",o:["mass too high","CharacterMovement is a kinematic solver — use LaunchCharacter","impulses are server-only","you forgot Tick"],a:1,x:"Characters aren't free physics bodies; the movement component owns them. LaunchCharacter is the sanctioned shove."},
+{q:"Unreal's built-in explosion push is…",o:["a Blueprint you download","AddRadialImpulse","looping AddForce over overlaps","Niagara"],a:1,x:"AddRadialImpulse(origin, radius, strength, falloff) — the loop Unity devs hand-rolled, shipped as an API."}]}
+]},
+{id:"ue9", t:"Multiplayer: The Built-In Superpower", skills:["Explain authority and the server-client model","Replicate variables with UPROPERTY(Replicated) and RepNotify","Choose the right RPC type and validate it","Place state correctly across GameMode/GameState/PlayerState in networked play"], lessons:[
+
+{id:"ue9a", t:"Authority & replication", min:9,
+body:`<p>Here's the thing Unity never gave you for free: Unreal is networked <em>at the core</em>. The Gameplay Framework you already learned was designed for multiplayer and merely tolerates single-player. The model is strict server-authority: the <strong>server</strong> owns the true game state; clients hold replicated copies and send requests. Every Actor knows which side it's on — <code>HasAuthority()</code> — and gameplay-mutating code should check it the way you check pointers for null.</p>
+<p><strong>Replication</strong> is one-way, server→client, and opt-in per property: mark it <code>UPROPERTY(Replicated)</code>, register it in <code>GetLifetimeReplicatedProps</code>, and set <code>bReplicates = true</code> on the actor. When you need a client-side <em>reaction</em> to a change (update the HUD, play a sound), use <code>ReplicatedUsing = OnRep_Health</code> — a function that fires on clients when the value arrives. That's your networked OnValueChanged, free of charge. The mind-bender for Netcode/Mirror veterans: you don't sync transforms by hand — movement replication for Characters is already built, prediction included.</p>`,
+cmp:[["NetworkBehaviour + NetworkIdentity","AActor with bReplicates = true"],["[SyncVar]","UPROPERTY(Replicated) + GetLifetimeReplicatedProps"],["[SyncVar(hook=…)]","ReplicatedUsing = OnRep_Func"],["isServer / isClient checks","HasAuthority() / GetLocalRole()"],["NetworkTransform component","Built-in movement replication (with prediction)"],["Mirror/Netcode (a package)","The engine itself"]],
+task:"Set your capstone project to 2 players in PIE (Net Mode: Play as Listen Server). Replicate CurrentHealth with an OnRep updating the HUD. Damage on the server window; watch the client HUD follow.",
+quiz:[
+{q:"In Unreal's model, the truth lives…",o:["on whichever client acted","on the server","split evenly","in GameInstance"],a:1,x:"Server-authoritative: clients see replicated copies and send requests."},
+{q:"A Replicated property needs all EXCEPT…",o:["UPROPERTY(Replicated)","registration in GetLifetimeReplicatedProps","bReplicates = true on the actor","a manual send call every change"],a:3,x:"There is no manual send — the engine detects changes and replicates. That's the point."},
+{q:"Client should play a sound when Health changes. Use…",o:["Tick comparison","ReplicatedUsing = OnRep_Health","a Server RPC","GameMode"],a:1,x:"RepNotify functions fire on clients when the new value lands — the networked change-hook."}]},
+
+{id:"ue9b", t:"RPCs: talking across the wire", min:8,
+body:`<p>Replication moves <em>state</em> downstream; <strong>RPCs</strong> move <em>events</em> in any direction. Three UFUNCTION flavors: <code>Server</code> (client → server: "I want to fire" — callable only from the owning client), <code>Client</code> (server → one owner: "you specifically took damage"), and <code>NetMulticast</code> (server → everyone: "explosion here, all of you play the effect"). Add <code>Reliable</code> for must-arrive gameplay events; leave cosmetic spam unreliable. Naming convention you'll see everywhere: <code>ServerFire()</code>, <code>ClientNotifyKill()</code>, <code>MulticastPlayExplosion()</code>.</p>
+<p>Two iron rules. One: <strong>never trust the client</strong> — Server RPCs take <code>WithValidation</code>, and your <code>_Validate</code> function returning false disconnects the cheater; validate ammo counts, cooldowns, ranges server-side even when the client already checked. Two: RPCs are for <em>events</em>, replication is for <em>state</em>. If you're multicasting a health value, you wanted a Replicated property; if late-joiners need to see it, it must be state — multicasts are fire-and-forget and new clients never hear old ones.</p>`,
+cmp:[["[Command] (client→server)","UFUNCTION(Server, Reliable, WithValidation)"],["[ClientRpc] (server→owner)","UFUNCTION(Client, Reliable)"],["[ClientRpc] to all","UFUNCTION(NetMulticast, …)"],["Channel: reliable/unreliable","Reliable keyword (or not)"],["Server-side checks you hopefully wrote","_Validate — return false = kick"]],
+task:"Make capstone firing server-authoritative: input calls ServerFire (Reliable, WithValidation — reject if cooldown active), the server spawns the projectile, and a Multicast plays muzzle flash on all clients.",
+quiz:[
+{q:"Client wants the server to spawn its projectile:",o:["Client RPC","Server RPC from the owning client","NetMulticast","Just SpawnActor locally"],a:1,x:"Requests flow client→server via Server RPCs; the server does the authoritative spawn."},
+{q:"A late-joining player must see the door's open state. You use…",o:["NetMulticast when it opened","a Replicated property (state, not event)","Client RPC to newcomers","GameInstance"],a:1,x:"Multicasts are fire-and-forget events; persistent facts are replicated state."},
+{q:"_Validate returning false…",o:["logs a warning","re-runs the RPC","disconnects the caller","rolls back state"],a:2,x:"Failed validation = presumed tampering = kicked. Validate the cheap invariants there."}]},
+
+{id:"ue9c", t:"The framework, revisited online", min:8,
+body:`<p>Now the Gameplay Framework's weird divisions finally justify themselves. <strong>GameMode exists only on the server</strong> — clients literally don't have one, which is why rules and spawning live there: unhackable by construction. <strong>GameState replicates to everyone</strong>: match timer, phase, team scores. <strong>PlayerState replicates per player</strong>: names, scores, ping — and survives Pawn death, which is why your kill-feed reads names from PlayerState, never from the Pawn that just exploded. PlayerController is private to its owning client (plus the server); Pawns replicate to all. That table from chapter 2? It was a network topology diagram all along.</p>
+<p>Ownership ties it together: a client owns its PlayerController and possessed Pawn, and only owned actors may call Server RPCs — that's why input handling lives in PlayerController/Pawn. Practical spawning rule: gameplay actors spawn <strong>on the server</strong> (they replicate down automatically); spawn on a client and you've made a local ghost no one else can see. When you're ready to go deeper, the magic words are <em>Lyra</em>, <em>Iris</em> and the <em>Network Prediction</em> plugin — but everything above is enough to ship co-op.</p>`,
+diagTitle:"Who exists where",
+diag:["GameMode|server only — the referee","GameState|server + all clients","PlayerState|per player, replicated to all","PlayerController|owner + server only","Pawn|replicated to everyone"],
+cmp:[["GameManager guarded by isServer","GameMode (server-only by construction)"],["Synced match vars","GameState replicated properties"],["Player dictionary you synced","PlayerState (auto, survives respawn)"],["Everyone's input scripts everywhere","Input only on owning client's Controller/Pawn"],["Spawn + NetworkServer.Spawn()","SpawnActor on server (replicates itself)"]],
+task:"Move your capstone wave counter into GameState (Replicated) and score into PlayerState. Two-player PIE: verify both windows agree on the wave, and each shows both scores.",
+quiz:[
+{q:"Clients can't cheat GameMode rules because…",o:["it's encrypted","GameMode doesn't exist on clients","validation catches it","it's const"],a:1,x:"Server-only by design — there is nothing client-side to tamper with."},
+{q:"The kill-feed shows the victim's name from…",o:["the destroyed Pawn","PlayerState","GameMode","the HUD widget"],a:1,x:"PlayerState replicates to everyone and outlives the Pawn — exactly for this."},
+{q:"A client calls SpawnActor for a pickup. Result:",o:["replicates to all","exists only on that client","crashes","spawns on server instead"],a:1,x:"Client-spawned actors are local ghosts. Gameplay spawning happens on the server, which replicates down."}]}
 ]}
 ]
 },{
@@ -1484,6 +1603,10 @@ const ACHIEVEMENTS = [
 {id:"palette", ico:"🔍", t:"Speed Reader",         d:"Jump somewhere via the command palette", xp:15},
 {id:"bossfirst", ico:"⚔️", t:"Examined",          d:"Master a chapter boss quiz (80%+)", xp:40},
 {id:"bossall",   ico:"🎓", t:"Magna Cum Laude",   d:"Master every chapter's boss quiz", xp:200},
+{id:"dojo",    ico:"🥋", t:"White Belt",         d:"Complete a Typing Dojo session", xp:30},
+{id:"prophet", ico:"🔮", t:"Prophet",            d:"Predict every output correctly in one run", xp:75},
+{id:"grapher", ico:"🕸️", t:"Graph Reader",       d:"Solve all Blueprint-reading puzzles", xp:60},
+{id:"wpm",     ico:"⚡", t:"Fast Hands",          d:"Average under 6s per drill in a Dojo session", xp:50},
 {id:"lexicon", ico:"📖", t:"Lexicographer",     d:"Search the glossary", xp:15},
 {id:"rosetta", ico:"⇄",  t:"Rosetta Stone",     d:"Open the Unity → Unreal map", xp:15}
 ];
@@ -2162,6 +2285,126 @@ phases: [
 {id:"cap5e", txt:"Victory lap: profile it with stat unit and Unreal Insights. If it's not 60fps with 50 enemies, hunt Tick abuse first.", lessons:["ue6c"]}]}
 ]};
 
+/* ===== Dojo: typing drills ===== */
+const DOJO_TYPE = [
+{p:"Call the parent's BeginPlay (you're overriding it)", a:"Super::BeginPlay();"},
+{p:"Log with category LogTemp, verbosity Warning, text \"low ammo\"", a:"UE_LOG(LogTemp, Warning, \"low ammo\");"},
+{p:"Designer-tunable float, BP-readable (the everyday specifier pair)", a:"UPROPERTY(EditAnywhere, BlueprintReadOnly)"},
+{p:"Make a method callable from Blueprints", a:"UFUNCTION(BlueprintCallable)"},
+{p:"Runtime-typed conversion of Other to AEnemy*", a:"Cast<AEnemy>(Other)"},
+{p:"Null-guard: if pointer Target is invalid, bail out", a:"if (Target == nullptr) return;"},
+{p:"Declare a dynamic array of FString named Names", a:"TArray<FString> Names;"},
+{p:"Read-only string parameter, zero copies (the eternal signature)", a:"const FString& Name"},
+{p:"Dereference FString Player for a printf-style %s", a:"*Player"},
+{p:"Tick signature (the one you'll type until you dream it)", a:"void Tick(float DeltaTime) override"},
+{p:"Spawn an actor of class AProjectile (expression only)", a:"GetWorld()->SpawnActor<AProjectile>(ProjectileClass)"},
+{p:"Create a default subobject: a mesh component named \"Mesh\"", a:"CreateDefaultSubobject<UStaticMeshComponent>(TEXT(\"Mesh\"))"},
+{p:"Wrap a literal for Unreal's text macro", a:"TEXT(\"Hello\")"},
+{p:"Class-reference property designers can fill: subclass of AEnemy", a:"TSubclassOf<AEnemy> EnemyClass;"},
+{p:"Bind handler HandleHit (a UFUNCTION) to OnComponentHit", a:"Mesh->OnComponentHit.AddDynamic(this, &AMyActor::HandleHit);"},
+{p:"Check this actor runs on the server", a:"if (HasAuthority())"}
+];
+
+/* ===== Dojo: predict the output (all g++-verified) ===== */
+const DOJO_PREDICT = [
+{id:"pr1", t:"Copy or reference?",
+code:`struct S { int V = 1; };
+void F(S A, S& B) { A.V = 10; B.V = 20; }
+int main() {
+    S X, Y;
+    F(X, Y);
+    printf("%d %d\\n", X.V, Y.V);
+}`,
+o:["10 20","1 20","1 1","10 1"], a:1,
+x:"A is a copy — mutating it changes nothing outside. B is a reference — the caller's Y really becomes 20. The single most C#-hostile line in C++."},
+{id:"pr2", t:"Virtual dispatch",
+code:`struct Base { virtual const char* Who() { return "base"; }
+               const char* Say() { return Who(); } };
+struct Kid : Base { const char* Who() override { return "kid"; } };
+int main() {
+    Kid K;
+    Base* P = &K;
+    printf("%s %s\\n", P->Who(), P->Say());
+}`,
+o:["base base","kid base","kid kid","base kid"], a:2,
+x:"Who() is virtual, so both the direct call AND the call inside Say() dispatch to the Kid override — even through a Base*. This is exactly why Super::BeginPlay chains work."},
+{id:"pr3", t:"Construction order",
+code:`struct A { A() { printf("A"); } ~A() { printf("~A"); } };
+struct B : A { B() { printf("B"); } ~B() { printf("~B"); } };
+int main() { { B Obj; } printf(".\\n"); }`,
+o:["AB~A~B.","BA~B~A.","AB~B~A.","BA~A~B."], a:2,
+x:"Bases construct first (A then B); destruction runs exactly backwards (~B then ~A). Deterministic, at the closing brace — no GC 'eventually'."},
+{id:"pr4", t:"Integer division strikes",
+code:`int main() {
+    float Ratio = 3 / 4;
+    float Fixed = 3.f / 4;
+    printf("%.2f %.2f\\n", Ratio, Fixed);
+}`,
+o:["0.75 0.75","0.00 0.75","0.00 0.00","0.75 0.00"], a:1,
+x:"3 / 4 is INT division (=0) before the float ever sees it. One f suffix rescues the second. Health-percentage bugs are born here."},
+{id:"pr5", t:"Pointer aliasing",
+code:`int main() {
+    int A = 5;
+    int* P = &A;
+    int B = *P;
+    *P = 9;
+    B += 1;
+    printf("%d %d\\n", A, B);
+}`,
+o:["9 10","5 6","9 6","5 10"], a:2,
+x:"B copied the VALUE 5 (then became 6) — it never aliased A. Writing through P changed A to 9. int b = *p copies; only the pointer itself aliases."},
+{id:"pr6", t:"Hidden, not overridden",
+code:`struct Base { const char* Who() { return "base"; } };  // no virtual!
+struct Kid : Base { const char* Who() { return "kid"; } };
+int main() {
+    Kid K;
+    Base* P = &K;
+    printf("%s\\n", P->Who());
+}`,
+o:["kid","base","compile error","undefined"], a:1,
+x:"Without virtual, the call binds to the pointer's STATIC type: Base. The Kid version merely hides it. In C# everything on a base reference still dispatched — here you must ask for it."},
+{id:"pr7", t:"Postfix in the wild",
+code:`int main() {
+    int I = 5;
+    int J = I++ + ++I;
+    printf("%d %d\\n", I, J);
+}`,
+o:["7 12","7 11","6 11","7 13"], a:0,
+x:"I++ yields 5 (then I=6), ++I makes 7 and yields 7. J = 5+7 = 12, I ends at 7. Legal here (the ++ operands differ) — but write code like this and your reviewer will find you."},
+{id:"pr8", t:"Scope death",
+code:`struct Note { const char* T;
+    Note(const char* t):T(t) { printf("+%s ", T); }
+    ~Note() { printf("-%s ", T); } };
+int main() {
+    Note A("A");
+    { Note B("B"); }
+    printf("| ");
+}`,
+o:["+A +B | -B -A","+A +B -B | -A","+A +B -A -B |","+A -A +B -B |"], a:1,
+x:"B dies at its closing brace — BEFORE the |. A lives to the end of main. RAII in one line: scope IS lifetime. unique_ptr rides exactly this rule."}
+];
+
+/* ===== Dojo: read the Blueprint graph ===== */
+/* node spec: [type(e=event red, f=function blue, p=pure green, b=branch gray), title, subtitle] ; wires connect indices left→right */
+const DOJO_BP = [
+{id:"bp1", t:"What does this graph do?",
+nodes:[["e","Event BeginPlay",""],["f","Create Widget","Class: WBP_HUD"],["f","Add to Viewport","Target: Return Value"]],
+o:["Shows the HUD when the actor spawns","Shows the HUD every frame","Creates a HUD asset on disk","Nothing — widgets need Tick"], a:0,
+x:"BeginPlay → Create Widget → Add to Viewport: the canonical 'HUD appears once at startup' chain. If this hung off Tick you'd spawn 60 HUDs a second — a real bug people ship."},
+{id:"bp2", t:"Spot the flow",
+nodes:[["e","On Component Begin Overlap","Other Actor →"],["f","Cast to ACoinHunter","Object: Other Actor"],["b","Branch","(cast failed pin unused)"],["f","Add Score","Amount: 10"],["f","Destroy Actor","self"]],
+o:["Any overlap adds score and destroys the coin","Only ACoinHunter overlaps add score, then the coin destroys itself","The coin destroys the player","Score adds every frame while overlapping"], a:1,
+x:"Cast gates the flow: only when Other Actor really is an ACoinHunter does execution continue to Add Score → Destroy Actor (self = the coin). Everything else falls off the failed pin."},
+{id:"bp3", t:"Event-driven or polling?",
+nodes:[["e","OnHealthChanged","(Event Dispatcher) NewHealth →"],["p","NewHealth / MaxHealth","float ÷ float"],["f","Set Percent","Target: HealthBar"]],
+o:["Polls health every frame and updates the bar","Updates the bar only when health actually changes","Sets health from the UI","Divides the bar in half"], a:1,
+x:"The red entry is a dispatcher event, not Tick: the green pure node computes the ratio only when the broadcast arrives. This is the ue7b pattern — event-driven UI, zero per-frame cost."},
+{id:"bp4", t:"The classic mistake",
+nodes:[["e","Event Tick","Delta Seconds →"],["f","Line Trace By Channel","Start: eye, End: eye+fwd*5000"],["f","Print String","Hit Actor name"]],
+o:["A well-built aim system","Traces once at startup","Traces and prints EVERY FRAME — works, but reconsider","Compiles but never runs"], a:2,
+x:"It works — and it's the polling habit. Fine for an aim reticle (genuinely per-frame data); a smell for anything reactive. Interviewers show you this graph to hear you say 'why is this on Tick?'"}
+];
+
 /* =====================================================================
    APP LOGIC
 ===================================================================== */
@@ -2211,6 +2454,11 @@ let S = {
   capstone: {},    // capstone stepId -> true
   capPhase: {},    // capstone phaseId -> XP awarded
   boss: {},        // chapterId -> best score pct (0-100); >=80 = mastered
+  log: {},         // "YYYY-MM-DD" -> {xp, acts}  daily activity
+  dojoBest: null,  // best avg seconds per typing drill
+  predict: {},     // predict puzzle id -> true (answered right at least once)
+  bp: {},          // BP puzzle id -> true
+  lastDojoXP: null,
   streak: 0,
   lastActive: null,
   seenLevel: 1
@@ -2251,8 +2499,14 @@ function levelInfo(xp){
   return { lv, rank: cur.r, cur: cur.xp, next: nxt.xp, pct: Math.min(100, Math.round(100*(xp-cur.xp)/(nxt.xp-cur.xp))) };
 }
 
+function logDay(xp, acts){
+  const k = new Date().toISOString().slice(0, 10);
+  const e = S.log[k] || (S.log[k] = { xp: 0, acts: 0 });
+  e.xp += xp; e.acts += acts;
+}
 function addXP(n, label){
   if (n <= 0) return;
+  logDay(n, 1);
   const before = levelInfo(S.xp).lv;
   S.xp += n;
   toast("xp", "⚡", "+" + n + " XP", label || "");
@@ -2300,10 +2554,28 @@ function touchStreak(){
   const t = today.getTime();
   if (S.lastActive === t) return;
   const yesterday = t - 86400000;
+  logDay(0, 1);
   S.streak = (S.lastActive === yesterday) ? S.streak + 1 : 1;
   S.lastActive = t;
   grant("streak3", S.streak >= 3); grant("streak7", S.streak >= 7);
   persist();
+}
+
+
+/* ----- confetti ----- */
+function confetti(){
+  const colors = ["#4FA8FF","#9DC549","#F3B84B","#45D07E","#D89BF5","#EF6A6A"];
+  for (let i = 0; i < 70; i++){
+    const c = document.createElement("div");
+    c.className = "cf";
+    c.style.left = Math.random() * 100 + "vw";
+    c.style.background = colors[i % colors.length];
+    c.style.animationDuration = (1.6 + Math.random() * 1.6) + "s";
+    c.style.animationDelay = Math.random() * .4 + "s";
+    c.style.transform = "rotate(" + Math.random() * 360 + "deg)";
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 3600);
+  }
 }
 
 /* ---------- toasts & level-up ---------- */
@@ -2315,6 +2587,7 @@ function toast(kind, ico, title, msg){
   setTimeout(() => { el.classList.add("out"); setTimeout(() => el.remove(), 380); }, kind === "xp" ? 2400 : 4200);
 }
 function showLevelUp(lv, rank){
+  confetti();
   const o = document.createElement("div");
   o.className = "lvlup";
   o.innerHTML = `<div class="box"><div style="font-size:13px;letter-spacing:2px;color:var(--muted);text-transform:uppercase">Level up</div>
@@ -2344,6 +2617,8 @@ function renderChrome(){
   const revEl = $("#pct-review");
   if (revEl) revEl.textContent = missedN ? missedN + "!" : "";
   const capSteps = CAPSTONE.phases.flatMap(p => p.steps);
+  const dojoEl = $("#pct-dojo");
+  if (dojoEl) dojoEl.textContent = S.dojoBest ? S.dojoBest.toFixed(1) + "s" : "";
   const capEl = $("#pct-cap");
   if (capEl) capEl.textContent = Math.round(100 * capSteps.filter(st => S.capstone[st.id]).length / capSteps.length) + "%";
 }
@@ -2383,6 +2658,8 @@ function render(){
   if (view === "review") return renderReview();
   if (view === "capstone") return renderCapstone();
   if (view.startsWith("boss:")) return renderBoss(view.slice(5));
+  if (view === "dojo") return renderDojo();
+  if (view === "stats") return renderStats();
   if (view === "translator") return renderTranslator();
   if (view === "glossary") return renderGlossary();
   if (view === "achievements") return renderAch();
@@ -2614,6 +2891,8 @@ function renderLesson(id){
     <p>${esc(l.task)}</p>
     <label><input type="checkbox" id="taskck" ${S.tasks[id] ? "checked disabled" : ""}> I actually did this in the editor — no cheating your future self.</label>
   </div>
+  <div style="margin-top:16px"><button class="btn ghost" id="tutor-btn">🤖 Explain this differently</button></div>
+  <div id="tutor-panel"></div>
   <div class="notesbox">
     <h2>✍️ My notes</h2>
     <textarea id="lesson-notes" placeholder="Gotchas, aha-moments, things future-you will Google otherwise… Searchable from Ctrl+K.">${esc(S.notes[id] || "")}</textarea>
@@ -2687,6 +2966,13 @@ function renderLesson(id){
     addXP(20, "Mini-task: " + l.t);
     checkGlobalAchievements();
     persist();
+  });
+
+  $("#tutor-btn").addEventListener("click", () => {
+    const panel = $("#tutor-panel");
+    panel.className = "tutor";
+    const bodyText = l.body.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").slice(0, 2200);
+    askClaude("You are tutoring an experienced Unity/C# game developer learning Unreal Engine. They just read a lesson titled \"" + l.t + "\" covering: " + bodyText + "\n\nExplain the same core ideas DIFFERENTLY — a fresh angle, a concrete example or analogy from real game dev, no repetition of the lesson's own phrasing. Max 150 words, plain text, use `backticks` for code terms.", panel);
   });
 
   let notesTimer = null;
@@ -2852,6 +3138,7 @@ function renderLab(){
       <div class="lab-actions">
         <button class="btn" id="lab-run">▶ Compile & run</button>
         <button class="btn ghost" id="lab-check">✓ Check my code</button>
+        <button class="btn ghost" id="lab-review">🤖 AI review</button>
         <button class="btn ghost" id="lab-reset">Reset</button>
         <span class="lab-status" id="lab-status"></span>
       </div>
@@ -2924,6 +3211,12 @@ function renderLab(){
     const h2 = content.querySelector(".lab-prompt h2");
     if (h2 && !h2.querySelector(".tag.ok")) h2.insertAdjacentHTML("beforeend", ' <span class="tag ok" style="vertical-align:2px">✓ solved</span>');
   }
+
+  $("#lab-review").onclick = () => {
+    let panel = $("#lab-tutor");
+    if (!panel){ panel = document.createElement("div"); panel.id = "lab-tutor"; panel.className = "tutor"; $("#lab-explain").after(panel); }
+    askClaude("You are reviewing C++ code from a Unity/C# developer learning Unreal. Exercise: \"" + ex.t + "\" — " + ex.p.replace(/<[^>]+>/g, "") + "\n\nTheir code:\n```cpp\n" + getCode().slice(0, 3000) + "\n```\n\nGive a brief, direct review: what's correct, what's un-idiomatic for UE-style C++, one concrete improvement. If they haven't attempted much yet, give a nudge not the answer. Max 130 words, plain text, `backticks` for code.", panel);
+  };
 
   $("#lab-check").onclick = () => {
     const r = runChecks(getCode());
@@ -3229,6 +3522,7 @@ function renderBossSummary(p, c){
   if (prevBest === undefined || pct > prevBest) S.boss[c.id] = pct;
   touchStreak();
   if (firstMaster){
+    confetti();
     addXP(50 + (pct === 100 ? 25 : 0), "Chapter mastered: " + c.t);
     grant("bossfirst");
     const allCh = PATHS.flatMap(pp => pp.chapters);
@@ -3253,6 +3547,258 @@ function renderBossSummary(p, c){
   $("#boss-again").onclick = () => { bossDeck = null; renderBoss(c.id); };
   wireGo();
   bossDeck = null; bossCh = null;
+}
+
+
+
+/* ----- AI tutor (works when running inside claude.ai) ----- */
+async function askClaude(prompt, panel){
+  panel.innerHTML = '<h3>🤖 AI Tutor</h3><p class="thinking">thinking…</p>';
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ model: "claude-sonnet-4-6", max_tokens: 1000, messages: [{ role: "user", content: prompt }] })
+    });
+    const data = await res.json();
+    const text = (data.content || []).filter(b => b.type === "text").map(b => b.text).join("\n");
+    if (!text) throw new Error("empty");
+    panel.innerHTML = '<h3>🤖 AI Tutor</h3>' + text.split(/\n{2,}/).map(p => `<p>${esc(p).replace(/`([^`]+)`/g, "<code>$1</code>")}</p>`).join("");
+  } catch(e){
+    panel.innerHTML = '<h3>🤖 AI Tutor</h3><p style="color:var(--muted)">Couldn\'t reach the tutor — this feature works when the app runs inside claude.ai as an artifact. Everything else works offline.</p>';
+  }
+}
+
+/* ----- dojo ----- */
+let dojoMode = "type", dj = null;
+
+function renderDojo(){
+  content.innerHTML = `
+  <h1 class="page">🥋 Dojo</h1>
+  <p class="sub">Quizzes test recognition. The Dojo trains production — typing the idioms, reading the code, reading the graphs.</p>
+  <div class="dojo-tabs">
+    ${[["type","⌨ Typing drills"],["flash","🃏 Flash cards"],["predict","🔮 Predict the output"],["bp","🕸 Read the Blueprint"]]
+      .map(([m, t]) => `<button class="dojo-tab${dojoMode === m ? " active" : ""}" data-m="${m}">${t}</button>`).join("")}
+  </div>
+  <div id="dojo-body"></div>`;
+  content.querySelectorAll(".dojo-tab").forEach(b => b.addEventListener("click", () => { dojoMode = b.dataset.m; dj = null; renderDojo(); }));
+  ({ type: dojoType, flash: dojoFlash, predict: dojoPredict, bp: dojoBP })[dojoMode]();
+}
+
+function shuffled(arr){ const a = arr.slice(); for (let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+const normCode = t => t.replace(/\s+/g, " ").replace(/\s*([(){};,<>*&:=+\-\.])\s*/g, "$1").trim();
+
+function dojoType(){
+  const body = $("#dojo-body");
+  if (!dj) dj = { deck: shuffled(DOJO_TYPE).slice(0, 8), i: 0, times: [], t0: 0 };
+  if (dj.i >= dj.deck.length){
+    const avg = dj.times.reduce((a, b) => a + b, 0) / dj.times.length;
+    const best = S.dojoBest === null || avg < S.dojoBest;
+    if (best) S.dojoBest = +avg.toFixed(1);
+    const today = new Date(); today.setHours(0,0,0,0);
+    const firstToday = S.lastDojoXP !== today.getTime();
+    touchStreak();
+    if (firstToday){ S.lastDojoXP = today.getTime(); addXP(35, "Dojo session"); }
+    grant("dojo"); grant("wpm", avg < 6);
+    persist(); renderChrome();
+    body.innerHTML = `<div class="card" style="max-width:520px">
+      <div style="font-family:var(--disp);font-size:38px;font-weight:700;color:var(--ue)">${avg.toFixed(1)}s <span style="font-size:15px;color:var(--muted)">avg / drill</span></div>
+      <p style="color:var(--muted);font-size:13.5px;margin:8px 0">${best ? "🏅 New personal best!" : "Personal best: " + S.dojoBest + "s."} ${firstToday ? "+35 XP." : "Practice run — XP already earned today."} ${avg < 6 ? "Fast hands. ⚡" : ""}</p>
+      <button class="btn" id="dj-again">Another round</button></div>`;
+    $("#dj-again").onclick = () => { dj = null; dojoType(); };
+    return;
+  }
+  const d = dj.deck[dj.i];
+  body.innerHTML = `
+  <p style="font-size:12.5px;color:var(--dim);margin-bottom:8px">Drill ${dj.i + 1}/${dj.deck.length} · <span class="type-timer" id="dj-timer">0.0s</span></p>
+  <div class="type-prompt">${esc(d.p)}</div>
+  <input class="type-input" id="dj-in" placeholder="type the Unreal idiom, exact syntax… Enter to check" autocomplete="off" spellcheck="false">
+  <p style="font-size:11.5px;color:var(--dim);margin-top:8px">Whitespace is forgiven; spelling isn't. <a id="dj-skip" style="color:var(--gold);cursor:pointer">Reveal & skip</a></p>`;
+  const inp = $("#dj-in");
+  dj.t0 = performance.now();
+  const timer = setInterval(() => { const el = $("#dj-timer"); if (!el){ clearInterval(timer); return; } el.textContent = ((performance.now() - dj.t0) / 1000).toFixed(1) + "s"; }, 100);
+  const myDj = dj;
+  const next = () => { clearInterval(timer); if (dojoMode !== "type" || dj !== myDj) return; dj.i++; dojoType(); };
+  inp.addEventListener("input", () => {
+    inp.classList.remove("bad");
+    if (normCode(inp.value) === normCode(d.a)){
+      inp.classList.add("good"); inp.disabled = true;
+      dj.times.push((performance.now() - dj.t0) / 1000);
+      setTimeout(next, 450);
+    }
+  });
+  inp.addEventListener("keydown", e => {
+    if (e.key === "Enter" && normCode(inp.value) !== normCode(d.a)) inp.classList.add("bad");
+  });
+  $("#dj-skip").addEventListener("click", () => {
+    inp.value = d.a; inp.classList.add("good"); inp.disabled = true;
+    dj.times.push(12);   // skips cost you the average
+    setTimeout(next, 900);
+  });
+  inp.focus();
+}
+
+function dojoFlash(){
+  const body = $("#dojo-body");
+  if (!dj) dj = { deck: shuffled(TRANSLATOR.flatMap(([cat, rows]) => rows)).slice(0, 12), i: 0, flipped: false, knew: 0 };
+  if (dj.i >= dj.deck.length){
+    touchStreak(); persist();
+    body.innerHTML = `<div class="card" style="max-width:520px">
+      <div style="font-family:var(--disp);font-size:38px;font-weight:700;color:${dj.knew >= 10 ? "var(--ok)" : "var(--gold)"}">${dj.knew}/${dj.deck.length}</div>
+      <p style="color:var(--muted);font-size:13.5px;margin:8px 0">self-graded recall. ${dj.knew >= 10 ? "The map is becoming muscle." : "The ⇄ Translator is one click away for the fuzzy ones."}</p>
+      <button class="btn" id="fc-again">New deck</button></div>`;
+    $("#fc-again").onclick = () => { dj = null; dojoFlash(); };
+    return;
+  }
+  const [u, e] = dj.deck[dj.i];
+  body.innerHTML = `
+  <p style="font-size:12.5px;color:var(--dim);margin-bottom:10px">Card ${dj.i + 1}/${dj.deck.length} — think it, then flip</p>
+  <div class="flash-card ${dj.flipped ? "ue" : "unity"}" id="fc">
+    <div><div class="fc-side">${dj.flipped ? "In Unreal" : "In Unity"}</div>
+    <div class="fc-term">${esc(dj.flipped ? e : u)}</div>
+    ${!dj.flipped ? '<p style="font-size:11.5px;color:var(--dim);margin-top:12px">click / space to flip</p>' : ""}</div>
+  </div>
+  ${dj.flipped ? `<div style="display:flex;gap:10px;margin-top:14px">
+    <button class="btn" id="fc-knew">✓ Knew it</button>
+    <button class="btn ghost" id="fc-nope">✗ Didn't</button></div>` : ""}`;
+  $("#fc").onclick = () => { if (!dj.flipped){ dj.flipped = true; dojoFlash(); } };
+  if (dj.flipped){
+    $("#fc-knew").onclick = () => { dj.knew++; dj.i++; dj.flipped = false; dojoFlash(); };
+    $("#fc-nope").onclick = () => { dj.i++; dj.flipped = false; dojoFlash(); };
+  }
+}
+
+function deckQuizUI(body, deck, i, solvedMap, header, codeHTML, onDone){
+  const item = deck[i];
+  body.innerHTML = `
+  <p style="font-size:12.5px;color:var(--dim);margin-bottom:10px">${header} ${i + 1}/${deck.length} · <strong style="color:var(--text)">${esc(item.t)}</strong> ${solvedMap[item.id] ? '<span class="tag ok">solved before</span>' : ""}</p>
+  ${codeHTML}
+  <div class="card quiz"><div class="qq">
+    ${item.o.map((o, oi) => `<label class="opt" data-oi="${oi}"><input type="radio" name="dq"><span>${esc(o)}</span></label>`).join("")}
+    <div class="qx">${esc(item.x)}</div></div>
+    <div class="quiz-result" id="dq-res"></div>
+    <button class="btn" id="dq-next" style="display:none"></button></div>`;
+  let answered = false;
+  body.querySelectorAll(".opt").forEach(opt => opt.addEventListener("click", () => {
+    if (answered) return; answered = true;
+    const oi = +opt.dataset.oi, right = oi === item.a;
+    body.querySelector(".qq").classList.add("graded");
+    body.querySelectorAll(".opt").forEach((o, k) => { o.querySelector("input").disabled = true;
+      if (k === item.a) o.classList.add("right"); else if (k === oi) o.classList.add("wrong"); });
+    $("#dq-res").innerHTML = right ? '<span style="color:var(--ok)">Correct ✓</span>' : '<span style="color:var(--bad)">The compiler disagrees</span>';
+    const btn = $("#dq-next"); btn.style.display = ""; btn.textContent = i + 1 < deck.length ? "Next →" : "Finish";
+    btn.onclick = () => onDone(right);
+    btn.focus();
+  }));
+}
+
+function dojoPredict(){
+  const body = $("#dojo-body");
+  if (!dj) dj = { deck: shuffled(DOJO_PREDICT), i: 0, right: 0 };
+  if (dj.i >= dj.deck.length){
+    touchStreak();
+    if (dj.right === dj.deck.length) grant("prophet");
+    checkGlobalAchievements(); persist();
+    body.innerHTML = `<div class="card" style="max-width:520px">
+      <div style="font-family:var(--disp);font-size:38px;font-weight:700;color:${dj.right === dj.deck.length ? "var(--ok)" : "var(--gold)"}">${dj.right}/${dj.deck.length}</div>
+      <p style="color:var(--muted);font-size:13.5px;margin:8px 0">${dj.right === dj.deck.length ? "You read C++ like the compiler does. 🔮" : "Every one of these is a real bug class — the misses are the lessons."}</p>
+      <button class="btn" id="pd-again">Run it back</button></div>`;
+    $("#pd-again").onclick = () => { dj = null; dojoPredict(); };
+    return;
+  }
+  const item = dj.deck[dj.i];
+  deckQuizUI(body, dj.deck, dj.i, S.predict, "Snippet",
+    `<p style="font-size:13px;color:var(--muted);margin-bottom:8px">What does this print? (compiler-verified — no tricks, just C++)</p><div class="predict-code">${esc(item.code)}</div>`,
+    right => { if (right){ dj.right++; S.predict[item.id] = true; addXP(S.predict[item.id] && false ? 0 : 0, ""); } dj.i++; persist(); dojoPredict(); });
+}
+
+/* tiny fake-Blueprint SVG renderer */
+function bpSVG(nodes){
+  const W = 190, H = 64, GAP = 46, colors = { e: "#8B1E1E", f: "#1E4E8B", p: "#1E6B44", b: "#3A3F4D" };
+  const total = nodes.length * W + (nodes.length - 1) * GAP;
+  let x = 0, out = "";
+  nodes.forEach(([type, title, sub], i) => {
+    out += `<g transform="translate(${x},20)">
+      <rect width="${W}" height="${H}" rx="8" fill="#1B2130" stroke="#39415A"/>
+      <rect width="${W}" height="22" rx="8" fill="${colors[type]}"/>
+      <rect y="14" width="${W}" height="8" fill="${colors[type]}"/>
+      <text x="10" y="15.5" fill="#fff" font-size="10.5" font-family="Chakra Petch,sans-serif" font-weight="600">${esc(title)}</text>
+      <text x="10" y="42" fill="#8C96AC" font-size="9.5" font-family="IBM Plex Sans,sans-serif">${esc(sub)}</text>
+      ${type !== "e" ? `<polygon points="6,50 14,54 6,58" fill="#CBD4E4"/>` : ""}
+      ${i < nodes.length - 1 ? `<polygon points="${W - 14},50 ${W - 6},54 ${W - 14},58" fill="#CBD4E4"/>` : ""}
+    </g>`;
+    if (i < nodes.length - 1) out += `<path d="M ${x + W - 6} 74 C ${x + W + GAP / 2} 74, ${x + W + GAP / 2} 74, ${x + W + GAP + 6} 74" stroke="#E9EEF7" stroke-width="2.2" fill="none"/>`;
+    x += W + GAP;
+  });
+  return `<svg viewBox="0 0 ${total} 104" width="${total}" height="104" xmlns="http://www.w3.org/2000/svg">${out}</svg>`;
+}
+
+function dojoBP(){
+  const body = $("#dojo-body");
+  if (!dj) dj = { deck: DOJO_BP.slice(), i: 0, right: 0 };
+  if (dj.i >= dj.deck.length){
+    touchStreak();
+    grant("grapher", DOJO_BP.every(p => S.bp[p.id]));
+    checkGlobalAchievements(); persist();
+    body.innerHTML = `<div class="card" style="max-width:520px">
+      <div style="font-family:var(--disp);font-size:38px;font-weight:700;color:${dj.right === dj.deck.length ? "var(--ok)" : "var(--gold)"}">${dj.right}/${dj.deck.length}</div>
+      <p style="color:var(--muted);font-size:13.5px;margin:8px 0">Reading other people's graphs is half of every Unreal job. This is that, with training wheels.</p>
+      <button class="btn" id="bp-again">Again</button></div>`;
+    $("#bp-again").onclick = () => { dj = null; dojoBP(); };
+    return;
+  }
+  const item = dj.deck[dj.i];
+  deckQuizUI(body, dj.deck, dj.i, S.bp, "Graph",
+    `<div class="bpwrap">${bpSVG(item.nodes)}</div>`,
+    right => { if (right){ dj.right++; S.bp[item.id] = true; } dj.i++; persist(); dojoBP(); });
+}
+
+
+/* ----- stats ----- */
+function renderStats(){
+  const days = Object.keys(S.log).sort();
+  // cumulative XP polyline
+  let chart = '<p style="color:var(--dim);font-size:13px">No activity logged yet — it starts counting from today.</p>';
+  if (days.length){
+    let cum = 0;
+    const pts = days.map(d => (cum += S.log[d].xp, { d, cum }));
+    const max = Math.max(cum, 1), W = 600, H = 140;
+    const step = pts.length > 1 ? W / (pts.length - 1) : 0;
+    const poly = pts.map((p, i) => (i * step).toFixed(1) + "," + (H - 8 - (p.cum / max) * (H - 24)).toFixed(1)).join(" ");
+    chart = `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" preserveAspectRatio="none">
+      <polyline points="0,${H - 8} ${poly}" fill="none" stroke="#4FA8FF" stroke-width="2.5"/>
+      <polygon points="0,${H - 8} ${poly} ${W},${H - 8}" fill="rgba(79,168,255,.10)"/>
+    </svg><p style="font-size:11.5px;color:var(--dim)">${days[0]} → ${days[days.length - 1]} · ${cum} XP logged since tracking began</p>`;
+  }
+  // activity calendar: last 84 days
+  const cal = [];
+  for (let i = 83; i >= 0; i--){
+    const d = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
+    const acts = (S.log[d] || {}).acts || 0;
+    cal.push(`<div class="cd ${acts >= 8 ? "a3" : acts >= 3 ? "a2" : acts >= 1 ? "a1" : ""}" title="${d}: ${acts} actions"></div>`);
+  }
+  // accuracy per path
+  const acc = PATHS.map(p => {
+    const ls = pathLessons(p).filter(l => S.quiz[l.id] !== undefined);
+    if (!ls.length) return null;
+    const got = ls.reduce((a, l) => a + S.quiz[l.id], 0), tot = ls.reduce((a, l) => a + l.quiz.length, 0);
+    const pct = Math.round(100 * got / tot);
+    return `<div class="accbar"><span style="width:120px">${pathIcon(p)} ${esc(p.title)}</span>
+      <div class="ab"><div style="width:${pct}%;background:${pct >= 90 ? "var(--ok)" : pct >= 70 ? "var(--gold)" : "var(--bad)"}"></div></div><b>${pct}%</b></div>`;
+  }).filter(Boolean).join("") || '<p style="color:var(--dim);font-size:13px">Complete some lessons for accuracy data.</p>';
+  const masters = PATHS.flatMap(p => p.chapters).filter(c => chapterMastered(c)).length;
+  content.innerHTML = `
+  <h1 class="page">📊 Stats</h1>
+  <p class="sub">The numbers behind the grind.</p>
+  <div class="statrow">
+    <div class="stat"><b>${totalDone()}</b><span>Lessons</span></div>
+    <div class="stat gold"><b>${S.xp}</b><span>Total XP</span></div>
+    <div class="stat"><b>${masters}/${PATHS.flatMap(p => p.chapters).length}</b><span>Chapters mastered</span></div>
+    <div class="stat ok"><b>${S.reviews}</b><span>Reviews</span></div>
+    <div class="stat"><b>${S.dojoBest ? S.dojoBest + "s" : "—"}</b><span>Dojo best</span></div>
+  </div>
+  <div class="stat-chart"><h3>Cumulative XP</h3>${chart}</div>
+  <div class="stat-chart"><h3>Activity — last 12 weeks</h3><div class="cal">${cal.join("")}</div></div>
+  <div class="stat-chart"><h3>Quiz accuracy by path</h3>${acc}</div>`;
 }
 
 /* ----- command palette ----- */
@@ -3327,7 +3873,10 @@ function renderTranslator(){
   content.innerHTML = `
   <h1 class="page">⇄ Unity → Unreal map</h1>
   <p class="sub">Muscle-memory dictionary. Type the Unity thing you know; find its Unreal name.</p>
-  <input class="search" id="trs" placeholder="Search… e.g. Instantiate, coroutine, prefab, raycast" autocomplete="off">
+  <div style="display:flex;gap:10px;align-items:center;margin-bottom:4px">
+    <input class="search" id="trs" style="flex:1;margin-bottom:0" placeholder="Search… e.g. Instantiate, coroutine, prefab, raycast" autocomplete="off">
+    <button class="btn ghost" id="cheat-btn" title="Printable cheat sheet">🖨 Cheat sheet</button>
+  </div>
   <div id="trbody"></div>`;
   const body = $("#trbody");
   const draw = q => {
@@ -3345,6 +3894,24 @@ function renderTranslator(){
   $("#trs").value = q0;
   draw(q0);
   $("#trs").addEventListener("input", e => draw(e.target.value));
+  $("#cheat-btn").addEventListener("click", () => {
+    const win = window.open("", "_blank");
+    if (!win) return toast("ach", "⚠️", "Popup blocked", "Allow popups to print the cheat sheet.");
+    const rows = TRANSLATOR.map(([cat, rs]) =>
+      `<tr><th colspan="2">${cat}</th></tr>` + rs.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join("")).join("");
+    win.document.write(`<!DOCTYPE html><html><head><title>Unity → Unreal Cheat Sheet</title><style>
+      body{font-family:Segoe UI,Arial,sans-serif;font-size:11px;margin:24px;color:#111}
+      h1{font-size:18px;margin:0 0 2px}p{color:#666;margin:0 0 14px;font-size:11px}
+      table{width:100%;border-collapse:collapse;column-span:all}
+      th{background:#eef;text-align:left;padding:5px 8px;font-size:11px;border:1px solid #ccd}
+      td{padding:3px 8px;border:1px solid #ddd;width:50%}
+      td:first-child{color:#567d1e}td:last-child{color:#1a5fa8;font-weight:600}
+      @media print{body{margin:8mm}}</style></head><body>
+      <h1>Unity → Unreal Cheat Sheet</h1><p>Bridge Academy · ${TRANSLATOR.reduce((a, c) => a + c[1].length, 0)} mappings · print me, tape me to the monitor</p>
+      <table>${rows}</table>
+      <scr${""}ipt>window.print();</scr${""}ipt></body></html>`);
+    win.document.close();
+  });
   $("#trs").focus();
 }
 
@@ -3408,6 +3975,24 @@ $("#hamb").addEventListener("click", () => { $("#sidebar").classList.add("open")
 $("#pal-btn").addEventListener("click", openPalette);
 document.addEventListener("keydown", e => {
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k"){ e.preventDefault(); openPalette(); }
+  // quiz keys: 1-4 answer, only when not typing in an input
+  const tag = (e.target.tagName || "").toLowerCase();
+  if (tag === "input" || tag === "textarea" || e.target.isContentEditable || palOpen) return;
+  if (/^[1-4]$/.test(e.key)){
+    const oi = +e.key - 1;
+    // single-question flows (review / boss / dojo decks)
+    const single = content.querySelector(`.opt[data-oi="${oi}"]`);
+    if (single && !single.querySelector("input").disabled){ single.click(); return; }
+    // lesson quiz: apply to first unanswered question
+    const qq = [...content.querySelectorAll(".qq")].find(q => q.querySelector("input") && !q.querySelector("input:checked") && !q.querySelector("input").disabled);
+    if (qq){ const inp = qq.querySelectorAll(".opt input")[oi]; if (inp){ inp.checked = true; inp.dispatchEvent(new Event("change", { bubbles: true })); } }
+  }
+  if (e.key === "Enter"){
+    const btn = $("#rev-next") || $("#boss-next") || $("#dq-next");
+    if (btn && btn.style.display !== "none"){ btn.click(); return; }
+    const grade = $("#grade");
+    if (grade && grade.style.display !== "none" && content.querySelectorAll(".qq input:checked").length === content.querySelectorAll(".qq").length / 1 && grade.offsetParent) grade.click();
+  }
 });
 $("#scrim").addEventListener("click", () => { $("#sidebar").classList.remove("open"); $("#scrim").classList.remove("on"); });
 
