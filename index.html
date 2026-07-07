@@ -788,6 +788,7 @@ li.CodeMirror-hint-active{background:var(--ue-soft)!important;color:var(--ue)!im
         <div class="lvlmeta"><div class="rank" id="lvl-rank">Unity Expat</div><div class="xptext" id="lvl-xp">0 / 100 XP</div></div>
       </div>
       <div class="xpwrap"><div class="xpbar"><div id="xp-fill" style="width:0%"></div></div></div>
+      <button class="palbtn" id="snd-btn" title="Sound effects on/off" style="padding:8px 10px">🔇</button>
       <button class="palbtn" id="pal-btn" title="Search everything (Ctrl+K)">🔍 <span class="pk">Ctrl K</span></button>
       <div class="streak" id="streak-pill" title="Daily streak">🔥 <span id="streak-n">0</span></div>
     </header>
@@ -1143,6 +1144,83 @@ quiz:[
 {q:"Clients can't cheat GameMode rules because…",o:["it's encrypted","GameMode doesn't exist on clients","validation catches it","it's const"],a:1,x:"Server-only by design — there is nothing client-side to tamper with."},
 {q:"The kill-feed shows the victim's name from…",o:["the destroyed Pawn","PlayerState","GameMode","the HUD widget"],a:1,x:"PlayerState replicates to everyone and outlives the Pawn — exactly for this."},
 {q:"A client calls SpawnActor for a pickup. Result:",o:["replicates to all","exists only on that client","crashes","spawns on server instead"],a:1,x:"Client-spawned actors are local ghosts. Gameplay spawning happens on the server, which replicates down."}]}
+]},
+{id:"ue10", t:"AI: Behavior Trees & Perception", skills:["Structure AI as Behavior Tree + Blackboard","Write custom Tasks, Decorators and Services","Give AI senses with the Perception system","Move pawns with the NavMesh like a civilized person"], lessons:[
+
+{id:"ue10a", t:"Behavior Trees & the Blackboard", min:9,
+body:`<p>Your capstone enemy Ticks toward the player — fine for wave 1, unmaintainable by wave 5. Unreal's answer isn't "write a bigger state machine": it's a first-class visual AI system. Split the brain in two: the <strong>Blackboard</strong> is the AI's memory — typed key/value pairs (TargetActor, LastKnownLocation, bCanSeePlayer) — and the <strong>Behavior Tree</strong> is the decision logic reading and writing it. The <strong>AIController</strong> (Controller possession, paying off again) runs the tree with <code>RunBehaviorTree</code>.</p>
+<p>Trees execute left-to-right, depth-first, re-evaluating from the root. Two composite nodes do most of the work: <strong>Selector</strong> tries children until one <em>succeeds</em> ("attack, else chase, else patrol" — priority order for free) and <strong>Sequence</strong> runs children until one <em>fails</em> ("move to target, then play attack, then cooldown"). If you've used Unity's Behavior Designer or NodeCanvas you know this model — the difference is it's native, networked-aware, and every studio uses the same one.</p>`,
+diagTitle:"The AI stack",
+diag:["Pawn|the body","AIController|the will — runs the tree","Behavior Tree|decisions","Blackboard|memory (typed keys)"],
+cmp:[["Update() if/else AI","Behavior Tree asset"],["Fields on the AI script","Blackboard keys"],["Behavior Designer (paid asset)","Built-in BT editor"],["switch(state) machine","Selector = priorities, Sequence = steps"],["GetComponent<AIBrain>()","GetBlackboardComponent()"]],
+task:"Create BB_Enemy (keys: TargetActor, HomeLocation) and BT_Enemy with a Selector: [Sequence: chase & attack when TargetActor set] else [patrol home]. AIController runs it on possess. Your capstone enemy just got a brain transplant.",
+quiz:[
+{q:"A Selector node…",o:["runs all children","runs children until one SUCCEEDS","runs children until one FAILS","picks randomly"],a:1,x:"Selector = 'try options in priority order'. Sequence is its dual: run steps until one fails."},
+{q:"The AI's memory (target refs, flags) lives in…",o:["the Pawn","the Behavior Tree itself","the Blackboard","GameState"],a:2,x:"Blackboard keys are the shared memory; the tree reads/writes them. Separation keeps trees reusable across enemy types."},
+{q:"Who actually runs the Behavior Tree?",o:["the Pawn's Tick","GameMode","the AIController","the Level Blueprint"],a:2,x:"RunBehaviorTree lives on AIController — the same possession model as players, which is why AI and players can swap bodies."}]},
+
+{id:"ue10b", t:"Tasks, Decorators, Services", min:8,
+body:`<p>Three node types you'll author: <strong>Tasks</strong> are leaves that <em>do</em> things — MoveTo and Wait ship built-in; custom ones subclass <code>BTTask_BlueprintBase</code> (or <code>UBTTaskNode</code> in C++) and must call <code>FinishExecute(success)</code> — forget it and the tree hangs forever on that node, the classic first BT bug. <strong>Decorators</strong> are conditions bolted onto nodes — "Blackboard key TargetActor is Set" gates the combat branch. Their <em>observer aborts</em> setting is the magic: "abort lower priority" means the instant the player is spotted, the patrol branch is interrupted mid-walk. That's the reactive behavior your Update() spaghetti faked poorly. <strong>Services</strong> tick on a schedule while their branch is active — "every 0.5s, update distance-to-target" — your controlled, honest replacement for per-frame polling.</p>
+<p>Movement itself is the easy part: bake a <strong>NavMesh</strong> by dropping a NavMeshBoundsVolume (press P to see the green), and MoveTo tasks path across it. Same recast tech as Unity's NavMesh — agents, areas and links included.</p>`,
+cmp:[["Custom action nodes","BTTask (FinishExecute or it hangs!)"],["if-guards around behavior","Decorators (+ observer aborts = interrupts)"],["Polling in Update()","Services (scheduled, scoped to a branch)"],["NavMesh bake button","NavMeshBoundsVolume (auto-bake, P to view)"],["agent.SetDestination(pos)","MoveTo task / AIController MoveToActor"]],
+task:"Write BTTask_FindPatrolPoint (random reachable point near HomeLocation → writes a Blackboard key), and add a 'TargetActor Is Set' decorator with Observer Aborts: Lower Priority. Watch the patrol get interrupted the frame you're seen.",
+quiz:[
+{q:"Your custom Task runs once and the tree freezes on it. You forgot…",o:["a Blackboard key","FinishExecute","to bake NavMesh","Tick"],a:1,x:"Tasks are latent: the tree waits until you report success/failure via FinishExecute."},
+{q:"'Observer Aborts: Lower Priority' on a decorator means…",o:["nothing below ever runs","when the condition changes, currently-running lower-priority branches are interrupted","the tree restarts","it disables the node"],a:1,x:"That setting is what makes BTs reactive — spotted-player instantly cancels patrol."},
+{q:"Per-half-second target distance checks belong in a…",o:["Task","Decorator","Service","GameMode timer"],a:2,x:"Services tick on their own interval while the branch runs — scheduled polling, scoped and visible."}]},
+
+{id:"ue10c", t:"AI Perception", min:7,
+body:`<p>Stop checking distance-to-player in Tick: <strong>AIPerception</strong> gives AI actual senses. Add the component to the AIController, configure senses — Sight (radius, peripheral angle, lose-sight radius), Hearing, Damage — and bind <code>OnTargetPerceptionUpdated</code>. The event hands you the actor and an <code>FAIStimulus</code>: successfully sensed or lost, where, how strongly. Your handler writes TargetActor / LastKnownLocation to the Blackboard, and the tree's decorators do the rest — perception feeds memory, memory drives decisions. Clean pipeline, zero polling.</p>
+<p>Targets need a <code>AIPerceptionStimuliSource</code> component registered for the senses that should detect them (players don't emit "visibility" automatically). Debug everything with the <strong>gameplay debugger</strong> — apostrophe key (') in PIE — live view of perception cones, blackboard values and the running tree branch. It will save you hours; learn the key now.</p>`,
+cmp:[["Vector3.Distance checks in Update","AIPerception Sight sense (cone + radii)"],["Physics.OverlapSphere for hearing","Hearing sense + Report Noise Event"],["Custom 'can see player' raycast rig","Line-of-sight handled by the sense"],["Debug.DrawWireSphere debugging","Gameplay Debugger (apostrophe in PIE)"]],
+task:"Give your capstone enemy Sight-based perception: on sensed → set TargetActor; on lost → write LastKnownLocation and clear TargetActor after a 3s 'search' Wait. Verify cones with the gameplay debugger.",
+quiz:[
+{q:"The AI never sees the player because…",o:["sight radius too big","the player lacks a PerceptionStimuliSource registered for Sight","perception is C++ only","NavMesh missing"],a:1,x:"Detection is two-sided: the sensor perceives, the target must register as a stimuli source."},
+{q:"OnTargetPerceptionUpdated typically writes to…",o:["GameState","the Behavior Tree directly","Blackboard keys","PlayerState"],a:2,x:"Perception → Blackboard → decorators react. Each layer stays dumb and testable."},
+{q:"Live-view an AI's senses and blackboard in PIE with…",o:["stat ai","the apostrophe-key Gameplay Debugger","Unreal Insights","show collision"],a:1,x:"The gameplay debugger overlays perception cones, BB values and the active tree branch — the single best AI debugging tool in the engine."}]}
+]},
+{id:"ue11", t:"Audio with MetaSounds", skills:["Play one-shots and attached sounds correctly","Build a MetaSound with runtime parameters","Mix with Sound Classes and Submixes","Add attenuation and occlusion to world sounds"], lessons:[
+
+{id:"ue11a", t:"Playing sound, the Unreal way", min:7,
+body:`<p>The AudioSource/AudioClip pair splits by intent: fire-and-forget one-shots via <code>UGameplayStatics::PlaySoundAtLocation</code> / <code>PlaySound2D</code> (UI), a following emitter via <code>SpawnSoundAttached</code> (returns an AudioComponent — your handle to stop/fade/retune), or a placed <strong>AmbientSound</strong> actor for loops living in the level. Spatialization ships in <strong>Sound Attenuation</strong> assets — distance curves, spread, and <em>occlusion</em> (muffled-behind-walls, a trace-based checkbox Unity made you build) — reusable across any number of sounds.</p>
+<p>Variety without code: a <strong>Sound Cue</strong> (classic) or <strong>MetaSound</strong> wraps waves in a graph — Random node into Modulator (pitch ±10%) and your one footstep asset stops sounding like a metronome. The habit to import: gameplay code plays <em>assets that decide for themselves</em>; it never picks variations.</p>`,
+cmp:[["AudioSource.PlayClipAtPoint","PlaySoundAtLocation"],["AudioSource on a moving object","SpawnSoundAttached → AudioComponent"],["2D UI sound hack (spatialBlend 0)","PlaySound2D"],["Rolloff curves per source","Sound Attenuation asset (shared)"],["Occlusion via your own raycasts","Attenuation → Enable Occlusion ✓"],["Randomizer script for clips","Sound Cue / MetaSound Random node"]],
+task:"Capstone audio pass: fire = PlaySoundAtLocation with a Cue randomizing 3 variants ±pitch; enemy death = attached sound; one ambient hum actor with attenuation + occlusion. Walk behind a wall and listen.",
+quiz:[
+{q:"A sound that must follow a moving rocket:",o:["PlaySoundAtLocation each frame","SpawnSoundAttached","AmbientSound actor","PlaySound2D"],a:1,x:"Attached sounds ride the component and hand you an AudioComponent to stop or fade later."},
+{q:"Muffling sounds behind geometry is…",o:["a DSP plugin you buy","Enable Occlusion on the Attenuation asset","impossible in real time","a Niagara feature"],a:1,x:"Trace-based occlusion is a checkbox on attenuation settings."},
+{q:"Footstep variety belongs in…",o:["a C++ array + RandRange","the animation blueprint","a Sound Cue/MetaSound with a Random node","one longer wav"],a:2,x:"Assets own their variation; code just says 'play footstep'."}]},
+
+{id:"ue11b", t:"MetaSounds & the mix", min:8,
+body:`<p><strong>MetaSounds</strong> are UE5's procedural audio engine: a node graph that IS the DSP — oscillators, envelopes, filters, sample players — with typed <strong>inputs you set from gameplay</strong>. Build an engine hum whose pitch input is driven by speed: <code>AudioComponent->SetFloatParameter("Speed", Velocity)</code> and the graph reacts live. It's the audio sibling of the Material/Niagara graphs you already know, replacing the FMOD/Wwise middleware many Unity teams bolted on.</p>
+<p>Mixing: every sound routes through a <strong>Sound Class</strong> hierarchy (Master → SFX/Music/UI — your mixer groups, and where the options-menu volume sliders hook in via Sound Mix overrides), and <strong>Submixes</strong> carry shared effect chains — reverb on everything world-side, a low-pass "you're hurt" filter on the SFX submix. Ducking dialogue over music is a passive Sound Mix, not a script.</p>`,
+cmp:[["FMOD/Wwise parameter","MetaSound input + SetFloatParameter"],["AudioMixer groups","Sound Classes (hierarchy)"],["Mixer effect sends","Submixes with effect chains"],["Snapshot ducking","Sound Mix (push/pop, passive triggers)"],["Volume sliders → mixer.SetFloat","Sound Mix class adjusters"]],
+task:"Build MS_EngineHum (saw osc → filter, float input 'Speed' → pitch), attach to your character, drive the parameter from velocity in Tick. Then add Master/SFX/Music Sound Classes and a working SFX volume slider.",
+quiz:[
+{q:"Gameplay changes a running MetaSound via…",o:["restarting it","SetFloatParameter on its AudioComponent","a Server RPC","editing the asset"],a:1,x:"Typed graph inputs are the contract; components set them live."},
+{q:"Options-menu volume sliders map to…",o:["each AudioComponent","Sound Classes (via a Sound Mix)","Submixes only","the master wav"],a:1,x:"Class hierarchy = mixer groups; a Sound Mix adjusts a class's volume globally."},
+{q:"Reverb on all world audio but not UI:",o:["per-sound reverb settings","route world sounds to a Submix with a reverb effect","a post-process volume","impossible"],a:1,x:"Submixes are the effect buses; UI class simply routes elsewhere."}]}
+]},
+{id:"ue12", t:"Working Like a Studio", skills:["Explain why Perforce dominates UE teams and use it or Git+LFS sanely","Never edit engine-Content, always migrate properly","Redirectors: what they are and when to fix them up","Structure a project team-scale from day one"], lessons:[
+
+{id:"ue12a", t:"Version control for binary worlds", min:8,
+body:`<p>Unity spoiled you: YAML scenes, text prefabs, Git mostly works. Unreal assets are <strong>binary</strong> — .uasset and .umap don't merge, ever. Two people editing one file = one person's day deleted. Hence studio reality: <strong>Perforce</strong> dominates, not from tradition but because <em>exclusive checkout</em> (locking) prevents the unmergeable conflict instead of detecting it after. The editor has source control built in — checkout, submit, file history, and lock states shown right on asset icons in the Content Browser.</p>
+<p>Git works for solo/small teams with rules: <strong>Git LFS</strong> for all binaries (there's a standard UE .gitattributes), lock discipline via LFS file locking, commit <code>Content/ Config/ Source/ *.uproject</code> and ignore <code>Binaries/ Intermediate/ Saved/ DerivedDataCache/</code>. And the modern peace treaty for maps: <strong>One File Per Actor</strong> (chapter 5!) turns level edits into per-actor files, so two people finally CAN work in the same map.</p>`,
+cmp:[["Git + YAML merges","Perforce + exclusive checkout (binary reality)"],["Library/ in .gitignore","Binaries/ Intermediate/ Saved/ DDC ignored"],["Smart Merge for scenes","No merge — locks + One File Per Actor"],["Plastic/Unity VCS","Perforce Helix (or Git LFS w/ locking)"],["Editor VCS plugin","Built-in: checkout/submit in Content Browser"]],
+task:"Set your capstone up properly: git init with the standard UE .gitignore + LFS .gitattributes, enable OFPA on your map, first commit. Future-you sends regards.",
+quiz:[
+{q:"Perforce rules UE studios because…",o:["Epic owns it","exclusive checkout prevents unmergeable binary conflicts","it's free","Git can't store big files"],a:1,x:"You can't merge a .uasset; locking makes the conflict impossible rather than discovered."},
+{q:"NOT in version control:",o:["Content/","Config/","Intermediate/ and Saved/","Source/"],a:2,x:"Binaries, Intermediate, Saved, DDC are all regenerated — committing them is pure pain."},
+{q:"Two designers, one map, no tears:",o:["impossible","shifts","One File Per Actor","copy the map twice"],a:2,x:"OFPA externalizes each actor to its own file — per-actor locks instead of one giant .umap."}]},
+
+{id:"ue12b", t:"Asset hygiene: migrate, redirect, structure", min:7,
+body:`<p>Three habits separating pros from crime scenes. <strong>One:</strong> assets reference each other by path, so never move/rename in the OS file explorer — only inside the Content Browser, which maintains references and leaves <strong>redirectors</strong> (invisible forwarding addresses) at old locations. They're harmless until they're not (stale refs, packaging surprises); right-click folder → <em>Fix Up Redirectors</em> regularly. <strong>Two:</strong> moving content between projects is <em>Migrate</em> (right-click → Asset Actions), which brings the full dependency chain — copying files by hand brings broken references. <strong>Three:</strong> structure — top-level project folder (<code>/Game/NeonArena/…</code>) so marketplace imports don't interleave with your work; prefix discipline (BP_, WBP_, M_, MI_, NS_, SFX_, DT_) because search is how large projects navigate; and check the <em>Reference Viewer</em> (right-click any asset) before deleting anything — it's the dependency graph Unity never showed you.</p>`,
+cmp:[["Move files in Explorer/Finder (fine-ish)","Content Browser ONLY — refs break otherwise"],["unitypackage export/import","Migrate (dependency-aware)"],["GUID-based refs (move-proof)","Path-based refs + redirectors (fix them up)"],["Find References (script refs)","Reference Viewer (full asset graph)"],["Loose naming, folders by type","Project root folder + strict prefixes"]],
+task:"Hygiene pass on the capstone: everything under /Game/NeonArena, prefixes enforced, Fix Up Redirectors on the root, then open the Reference Viewer on your character and admire the dependency web.",
+quiz:[
+{q:"You renamed an asset in Windows Explorer. Now…",o:["nothing, refs are GUIDs","every reference to it is broken","the editor fixes it on start","only BPs break"],a:1,x:"UE references are path-based; the Content Browser maintains them, the OS doesn't."},
+{q:"Redirectors are…",a:1,o:["corrupt assets","forwarding stubs left after moves — fix them up periodically","a networking feature","editor-only shortcuts"],x:"Tiny 'moved to X' notes keeping old paths alive. Fix Up Redirectors consolidates before they bite packaging."},
+{q:"Reusing your health system in a new project:",o:["copy the uassets over","Migrate from the Content Browser","export FBX","rebuild it"],a:1,x:"Migrate walks the dependency graph and brings everything the asset needs."}]}
 ]}
 ]
 },{
@@ -2271,6 +2349,7 @@ phases: [
 {id:"cap3a", txt:"AEnemyPawn: floating pawn that chases the player — every Tick, AddMovementInput toward (PlayerLocation - MyLocation).GetSafeNormal(). Dumb is fine; dumb ships.", lessons:["ue2a","cpp4a"]},
 {id:"cap3b", txt:"Enemy carries the same UHealthComponent (that's the whole point of components) — OnDied → award score, spawn death FX, Destroy.", lessons:["ue1c"]},
 {id:"cap3c", txt:"AWaveSpawner actor: TArray of spawn points, SetTimer loop spawning enemies, wave count in GameState so the whole world can read it.", lessons:["ue2c","int2a"]},
+{id:"cap3e", txt:"Brain transplant: replace the Tick-chase with an AIController + Behavior Tree (patrol → chase via Sight perception). Same enemy, real AI.", lessons:["ue10a","ue10b","ue10c"]},
 {id:"cap3d", txt:"GameMode owns the rules: wave N size = 4 + N*2, next wave when alive-count hits zero, game-over when player's OnDied fires.", lessons:["ue2c"]}]},
 {id:"cap4", t:"Feedback & UI", xp:60, steps:[
 {id:"cap4a", txt:"WBP_ArenaHUD on a UUserWidget C++ base: health bar + wave counter via BindWidget. Created and added to viewport by the PlayerController.", lessons:["ue7c","ue2b"]},
@@ -2405,6 +2484,40 @@ o:["A well-built aim system","Traces once at startup","Traces and prints EVERY F
 x:"It works — and it's the polling habit. Fine for an aim reticle (genuinely per-frame data); a smell for anything reactive. Interviewers show you this graph to hear you say 'why is this on Tick?'"}
 ];
 
+/* ===== further reading: lessonId -> [[title, slug-or-null], …] ===== */
+const LESSON_DOCS = {
+ue1a:[["Editor interface","unreal-editor-interface"]], ue1b:[["Actors","actors-in-unreal-engine"]],
+ue1c:[["Components","components-in-unreal-engine"]], ue1d:[["Levels","levels-in-unreal-engine"]],
+ue2a:[["Pawn","pawn-in-unreal-engine"],["Characters","characters-in-unreal-engine"]],
+ue2b:[["Player Controllers","player-controllers-in-unreal-engine"]],
+ue2c:[["GameMode & GameState","game-mode-and-game-state-in-unreal-engine"]],
+ue3a:[["Blueprints overview","blueprints-visual-scripting-in-unreal-engine"]],
+ue3b:[["Event Dispatchers","event-dispatchers-in-unreal-engine"]],
+ue3c:[["Enhanced Input","enhanced-input-in-unreal-engine"]],
+ue4b:[["Animation Blueprints","animation-blueprints-in-unreal-engine"]],
+ue4c:[["Niagara",null]],
+ue5a:[["Data Assets","data-assets-in-unreal-engine"]], ue5b:[["Gameplay Tags","gameplay-tags-in-unreal-engine"]],
+ue5d:[["World Partition","world-partition-in-unreal-engine"]],
+ue6a:[["Saving & loading","saving-and-loading-your-game-in-unreal-engine"]],
+ue6b:[["Packaging","packaging-unreal-engine-projects"]],
+ue7a:[["UMG UI Designer","umg-ui-designer-for-unreal-engine"]],
+ue8a:[["Collision overview","collision-in-unreal-engine"]],
+ue8b:[["Traces","traces-in-unreal-engine---overview"]],
+ue9a:[["Networking overview","networking-overview-for-unreal-engine"]],
+ue9b:[["RPCs","remote-procedure-calls-in-unreal-engine"]],
+ue10a:[["Behavior Trees","behavior-trees-in-unreal-engine"]],
+ue10c:[["AI Perception","ai-perception-in-unreal-engine"]],
+ue11a:[["Audio overview",null]], ue11b:[["MetaSounds",null]],
+ue12a:[["Source control","using-source-control-in-the-unreal-editor"]],
+cpp2a:[["UProperties","unreal-engine-uproperties"]], cpp2b:[["String handling","string-handling-in-unreal-engine"]],
+cpp3c:[["Delegates","delegates-and-lambda-functions-in-unreal-engine"]],
+cpp4c:[["Timers","gameplay-timers-in-unreal-engine"]],
+int1a:[["C++ & Blueprints","cpp-and-blueprints-in-unreal-engine"]]
+};
+const docURLFor = (title, slug) => slug
+  ? "https://dev.epicgames.com/documentation/en-us/unreal-engine/" + slug
+  : "https://dev.epicgames.com/community/search?query=" + encodeURIComponent(title + " unreal");
+
 /* =====================================================================
    APP LOGIC
 ===================================================================== */
@@ -2459,6 +2572,8 @@ let S = {
   predict: {},     // predict puzzle id -> true (answered right at least once)
   bp: {},          // BP puzzle id -> true
   lastDojoXP: null,
+  sound: false,    // sfx toggle
+  toured: false,   // first-launch tour shown
   streak: 0,
   lastActive: null,
   seenLevel: 1
@@ -2525,6 +2640,7 @@ function grant(id, cond = true){
   const a = ACHIEVEMENTS.find(x => x.id === id);
   if (!a) return;
   S.ach[id] = true;
+  sfx("ach");
   toast("ach", a.ico, "Achievement unlocked", a.t + " · +" + a.xp + " XP");
   S.xp += a.xp;   // silent add (toast already shows it)
   const li = levelInfo(S.xp);
@@ -2562,6 +2678,30 @@ function touchStreak(){
 }
 
 
+
+/* ----- sound effects (tiny synth, optional) ----- */
+let audioCtx = null;
+function sfx(kind){
+  if (!S.sound) return;
+  try {
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    const t = audioCtx.currentTime;
+    const tone = (freq, start, dur, vol, type) => {
+      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.type = type || "sine"; o.frequency.value = freq;
+      g.gain.setValueAtTime(0, t + start);
+      g.gain.linearRampToValueAtTime(vol, t + start + .012);
+      g.gain.exponentialRampToValueAtTime(.0001, t + start + dur);
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(t + start); o.stop(t + start + dur + .05);
+    };
+    if (kind === "right") tone(880, 0, .14, .16);
+    else if (kind === "wrong") tone(196, 0, .2, .14, "square");
+    else if (kind === "level"){ tone(523, 0, .12, .15); tone(659, .1, .12, .15); tone(784, .2, .2, .16); }
+    else if (kind === "ach"){ tone(659, 0, .1, .13); tone(988, .09, .18, .14); }
+  } catch(e){}
+}
+
 /* ----- confetti ----- */
 function confetti(){
   const colors = ["#4FA8FF","#9DC549","#F3B84B","#45D07E","#D89BF5","#EF6A6A"];
@@ -2587,7 +2727,7 @@ function toast(kind, ico, title, msg){
   setTimeout(() => { el.classList.add("out"); setTimeout(() => el.remove(), 380); }, kind === "xp" ? 2400 : 4200);
 }
 function showLevelUp(lv, rank){
-  confetti();
+  confetti(); sfx("level");
   const o = document.createElement("div");
   o.className = "lvlup";
   o.innerHTML = `<div class="box"><div style="font-size:13px;letter-spacing:2px;color:var(--muted);text-transform:uppercase">Level up</div>
@@ -2597,6 +2737,36 @@ function showLevelUp(lv, rank){
   o.querySelector(".btn").onclick = () => o.remove();
   o.addEventListener("click", e => { if (e.target === o) o.remove(); });
   document.body.appendChild(o);
+}
+
+
+/* ----- first-launch tour ----- */
+function runTour(){
+  const steps = [
+    ["👋 Welcome to Bridge", "You already know how to make games — this academy only teaches what's DIFFERENT in Unreal. Three paths on the left: the Engine, C++, and gluing them together. Chapters unlock in order; quizzes gate lessons."],
+    ["🥋 Practice wing", "The C++ Lab compiles real code (with an AI reviewer), the Dojo drills typing, code-reading and Blueprint-reading, Daily Review resurfaces what you got wrong, and the Capstone walks you through building an actual game."],
+    ["⇄ Reference wing", "The Translator maps every Unity concept to its Unreal name (printable!), the Glossary links to official Epic docs. Both searchable — but the fastest way anywhere is Ctrl+K, from any screen."],
+    ["⚡ The meta-game", "XP, levels, streaks, 30 achievements, per-chapter mastery. The streak feeds on ANY daily activity — one review or dojo round keeps it alive. Stats tracks everything from today onward."],
+    ["🚀 One suggestion", "Don't binge lessons. The loop that works: 2-3 lessons → the matching Lab exercises → next day, Daily Review → boss quiz when a chapter's done. Now go — the Editor chapter is 8 minutes."]
+  ];
+  let i = 0;
+  const ov = document.createElement("div");
+  ov.className = "lvlup";
+  const draw = () => {
+    ov.innerHTML = `<div class="box" style="max-width:460px;text-align:left">
+      <div style="font-size:11px;letter-spacing:2px;color:var(--muted);text-transform:uppercase">Tour ${i + 1} / ${steps.length}</div>
+      <h2 style="font-family:var(--disp);font-size:20px;margin:8px 0 10px">${steps[i][0]}</h2>
+      <p style="color:#CBD4E4;font-size:13.5px;line-height:1.65;margin-bottom:18px">${steps[i][1]}</p>
+      <div style="display:flex;gap:10px">
+        <button class="btn" id="tour-next">${i < steps.length - 1 ? "Next →" : "Let's go 🚀"}</button>
+        ${i < steps.length - 1 ? '<button class="btn ghost" id="tour-skip">Skip</button>' : ""}
+      </div></div>`;
+    ov.querySelector("#tour-next").onclick = () => { i++; if (i >= steps.length){ done(); } else draw(); };
+    const sk = ov.querySelector("#tour-skip"); if (sk) sk.onclick = done;
+  };
+  const done = () => { ov.remove(); S.toured = true; persist(); };
+  document.body.appendChild(ov);
+  draw();
 }
 
 /* ---------- chrome (sidebar / topbar) ---------- */
@@ -2876,6 +3046,10 @@ function renderLesson(id){
   ${l.cmp ? xlateHTML(l.cmp) : ""}
   ${l.diag ? pipeHTML(l.diagTitle, l.diag) : ""}
   ${l.code ? `<div class="codeblock">${l.code}</div>` : ""}
+  ${LESSON_DOCS[id] ? `<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:16px">
+    <span style="font-size:12px;color:var(--dim)">📚 Official docs:</span>
+    ${LESSON_DOCS[id].map(([t, slug]) => `<a class="gl-link" style="margin-left:0" href="${docURLFor(t, slug)}" target="_blank" rel="noopener">${esc(t)} ↗</a>`).join("")}
+  </div>` : ""}
   <div class="quiz card" style="margin-top:26px">
     <h2>🧠 Checkpoint quiz <span class="tag">${l.quiz.length} questions · +15 XP each</span></h2>
     ${l.quiz.map((q, qi) => `<div class="qq" data-q="${qi}">
@@ -2940,6 +3114,7 @@ function renderLesson(id){
       return;
     }
     const perfect = correct === l.quiz.length;
+    sfx(perfect ? "level" : correct > 0 ? "right" : "wrong");
     $("#qres").innerHTML = `Score: <span style="color:${perfect ? "var(--ok)" : "var(--gold)"}">${correct}/${l.quiz.length}</span>${perfect ? " — perfect! 🎯" : ""}`;
     $("#grade").style.display = "none";
     if (!already){
@@ -3343,6 +3518,7 @@ function renderReview(){
     const oi = +opt.dataset.oi;
     const right = oi === q.a;
     if (right) revCorrect++;
+    sfx(right ? "right" : "wrong");
     const qq = content.querySelector(".qq");
     qq.classList.add("graded");
     content.querySelectorAll(".opt").forEach((o, i) => {
@@ -3492,6 +3668,7 @@ function renderBoss(chId){
     answered = true;
     const oi = +opt.dataset.oi, right = oi === q.a;
     if (right) bossCorrect++;
+    sfx(right ? "right" : "wrong");
     content.querySelector(".qq").classList.add("graded");
     content.querySelectorAll(".opt").forEach((o, i) => {
       o.querySelector("input").disabled = true;
@@ -3681,6 +3858,7 @@ function deckQuizUI(body, deck, i, solvedMap, header, codeHTML, onDone){
   body.querySelectorAll(".opt").forEach(opt => opt.addEventListener("click", () => {
     if (answered) return; answered = true;
     const oi = +opt.dataset.oi, right = oi === item.a;
+    sfx(right ? "right" : "wrong");
     body.querySelector(".qq").classList.add("graded");
     body.querySelectorAll(".opt").forEach((o, k) => { o.querySelector("input").disabled = true;
       if (k === item.a) o.classList.add("right"); else if (k === oi) o.classList.add("wrong"); });
@@ -3973,6 +4151,11 @@ function wireGo(){
 document.querySelectorAll(".navbtn").forEach(b => b.addEventListener("click", () => nav(b.dataset.view)));
 $("#hamb").addEventListener("click", () => { $("#sidebar").classList.add("open"); $("#scrim").classList.add("on"); });
 $("#pal-btn").addEventListener("click", openPalette);
+$("#snd-btn").addEventListener("click", () => {
+  S.sound = !S.sound; persist();
+  $("#snd-btn").textContent = S.sound ? "🔊" : "🔇";
+  if (S.sound) sfx("right");
+});
 document.addEventListener("keydown", e => {
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k"){ e.preventDefault(); openPalette(); }
   // quiz keys: 1-4 answer, only when not typing in an input
@@ -4005,7 +4188,9 @@ $("#scrim").addEventListener("click", () => { $("#sidebar").classList.remove("op
     if (today.getTime() - S.lastActive > 86400000) S.streak = 0;
   }
   renderChrome();
+  $("#snd-btn").textContent = S.sound ? "🔊" : "🔇";
   nav("dash");
+  if (!S.toured) runTour();
 })();
 </script>
 </body>
