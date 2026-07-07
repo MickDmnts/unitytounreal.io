@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.css">
 <style>
 :root{
   --bg:#0A0D14; --panel:#121724; --panel2:#182033; --panel3:#1E2740;
@@ -266,6 +267,9 @@ h1.page{font-family:var(--disp);font-size:26px;font-weight:700;letter-spacing:.3
 .lab-hint{margin-top:10px}
 .lab-hint summary{cursor:pointer;color:var(--gold);font-size:13px}
 .lab-hint p{font-size:13px;color:var(--muted);padding:8px 0 0}
+.CodeMirror-hints{background:var(--panel2)!important;border:1px solid var(--line2)!important;border-radius:9px!important;box-shadow:0 12px 40px rgba(0,0,0,.55)!important;font-family:var(--mono)!important;font-size:12.5px!important;padding:5px!important;z-index:130!important;max-height:230px!important}
+.CodeMirror-hint{color:#C4D3EE!important;padding:4px 12px!important;border-radius:6px!important}
+li.CodeMirror-hint-active{background:var(--ue-soft)!important;color:var(--ue)!important}
 @media (max-width:1020px){.lab-layout{grid-template-columns:1fr}.lab-list{position:static;display:flex;flex-wrap:wrap;gap:4px}.lab-cat{width:100%}}
 
 /* responsive */
@@ -319,6 +323,7 @@ h1.page{font-family:var(--disp);font-size:26px;font-weight:700;letter-spacing:.3
 <div class="toasts" id="toasts"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/clike/clike.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.js"></script>
 <script>
 /* ============================================================
    DATA — curriculum. "u|sub" strings split into label + subtext.
@@ -1076,7 +1081,7 @@ template<class To, class From> To* Cast(From* p) { return dynamic_cast<To*>(p); 
 
 /* ===== C++ Lab exercises ===== */
 const LAB = [
-{cat:"CH 1 · Language ground floor", items:[
+{cat:"C++ basics bootcamp", items:[
 {id:"lab-hello", t:"Hello, UE_LOG", xp:30, shim:true,
 p:"Warm-up: make Unreal's logging feel like <code>Debug.Log</code>. Print your name and level using <code>UE_LOG</code> format specifiers — <code>%s</code> for strings (note the <code>*</code> on FString!), <code>%d</code> for ints, <code>%.1f</code> for floats.",
 starter:`int main() {
@@ -1093,6 +1098,117 @@ starter:`int main() {
 expect:["Rookie is level 7 with 92.5 HP"],
 checks:[[/UE_LOG\s*\(\s*LogTemp/, "Uses UE_LOG with a category"],[/\*\s*Name/, "Dereferences FString with * (the UE idiom: *Name)"],[/%d/, "Uses %d for the int"],[/%\.1f/, "Uses %.1f for the float"]],
 hint:"UE_LOG(LogTemp, Log, \"%s is level %d with %.1f HP\", *Name, Level, Health); — the * on Name is real Unreal muscle memory: FString doesn't convert to a C string automatically."},
+
+{id:"lab-vars", t:"Types, literals & auto", xp:30, shim:false,
+p:"C# spoiled you with one <code>float</code> world. In C++ the literal decides the type: <code>4.5</code> is a <em>double</em>, <code>4.5f</code> is a float — and mixing them costs conversions. Declare the variables below, use <code>auto</code> where marked (C++'s <code>var</code>), and print them with the matching format specifiers.",
+starter:`#include <cstdio>
+
+int main() {
+    // TODO declare:
+    //   int    Score  = 1250
+    //   float  Speed  = 4.5f        <- the f suffix matters! 4.5 alone is a double
+    //   double Pi     = 3.14159
+    //   bool   bAlive = true        (UE convention: b prefix for bools)
+    //   auto   Delta  = 0.016f      (auto = C#'s var, deduced at compile time)
+
+    // TODO print (mind the specifiers):
+    //   score: 1250          %d
+    //   speed: 4.50          %.2f
+    //   pi: 3.14159          %.5f
+    //   alive: true          printf has no %b — use  bAlive ? "true" : "false"  with %s
+    return 0;
+}`,
+expect:["score: 1250","speed: 4.50","pi: 3.14159","alive: true"],
+checks:[[/float\s+Speed\s*=\s*4\.5f/, "Speed is a float with the f suffix"],[/bool\s+bAlive/, "bool with UE-style b prefix"],[/auto\s+Delta\s*=/, "Uses auto for Delta"],[/%\.2f/, "Prints speed with %.2f"],[/bAlive\s*\?\s*"true"\s*:\s*"false"/, "Prints the bool via ternary + %s"]],
+hint:"printf(\"speed: %.2f\\n\", Speed); — and for the bool: printf(\"alive: %s\\n\", bAlive ? \"true\" : \"false\"); C++ streams (std::cout) exist too, but UE code is printf-style everywhere, so we drill that."},
+
+{id:"lab-func", t:"Declare vs define", xp:35, shim:false,
+p:"The single biggest structural difference from C#: the compiler reads top-down and must see a <em>declaration</em> before any call. Prototype both functions <strong>above</strong> <code>main</code>, define them <strong>below</strong> it — the .h / .cpp split in miniature. Note: a default argument lives in the <em>declaration only</em>.",
+starter:`#include <cstdio>
+
+// TODO declare (prototypes ending in ; — no bodies):
+//   int Add(int A, int B);
+//   float Damage(float Base, float Mult = 1.5f);   <- default arg goes HERE
+
+int main() {
+    printf("add: %d\\n", Add(2, 3));            // -> add: 5
+    printf("dmg: %.1f\\n", Damage(10.f));       // -> dmg: 15.0   (uses default Mult)
+    printf("dmg: %.1f\\n", Damage(10.f, 3.f));  // -> dmg: 30.0
+    return 0;
+}
+
+// TODO define both functions here, BELOW main.
+// This only compiles because the prototypes above promised they exist —
+// exactly how headers work. (Don't repeat "= 1.5f" here; C++ forbids it.)`,
+expect:["add: 5","dmg: 15.0","dmg: 30.0"],
+checks:[[/int\s+Add\s*\(\s*int\s+\w+\s*,\s*int\s+\w+\s*\)\s*;/, "Add is declared as a prototype (ends with ;)"],[/Mult\s*=\s*1\.5f\s*\)\s*;/, "Default argument sits in the declaration"],[/int\s+Add\s*\([^;]*\)\s*\{/, "Add is defined with a body"],[/float\s+Damage\s*\([^;=]*\)\s*\{/, "Damage's definition does NOT repeat the default"]],
+hint:"Above main: int Add(int A, int B); float Damage(float Base, float Mult = 1.5f); — below main, write the bodies with no defaults. In real UE, the prototypes live in MyActor.h and the bodies in MyActor.cpp."},
+
+{id:"lab-const", t:"const correctness", xp:35, shim:false,
+p:"C++ has three flavors of 'can't change' and Unreal code uses all of them. Make <code>MaxPlayers</code> a <code>constexpr</code> (compile-time, like C# <code>const</code>), <code>TickRate</code> a runtime <code>const</code>, and fix <code>PrintTitle</code> to take the string by <code>const&amp;</code> — read-only access, zero copies.",
+starter:`#include <cstdio>
+#include <string>
+
+// BUG: copies the whole string every call. Take it by const reference.
+void PrintTitle(std::string Title) {
+    printf("== %s ==\\n", Title.c_str());
+}
+
+int main() {
+    // TODO:
+    //   constexpr int MaxPlayers = 4;
+    //   const float TickRate = 60.f;
+    std::string Title = "Deathmatch";
+    PrintTitle(Title);                          // -> == Deathmatch ==
+    // TODO print -> max players: 4
+    // TODO print -> tick rate: 60.0
+    return 0;
+}`,
+expect:["== Deathmatch ==","max players: 4","tick rate: 60.0"],
+checks:[[/const\s+std::string\s*&/, "PrintTitle takes const std::string&"],[/constexpr\s+int\s+MaxPlayers\s*=\s*4/, "MaxPlayers is constexpr"],[/const\s+float\s+TickRate\s*=\s*60/, "TickRate is a const float"]],
+hint:"void PrintTitle(const std::string& Title) — the pattern you'll write a thousand times in UE: const FString&, const TArray<...>&. constexpr = the compiler bakes the value in; const = set once at runtime, locked after."},
+
+{id:"lab-struct", t:"Structs & constructors", xp:40, shim:false,
+p:"Build a <code>Projectile</code> struct: default member initializers (like C# field initializers), a constructor using an <em>initializer list</em> (the <code>: Speed(InSpeed)</code> syntax — new to you), a <code>const</code> method, and one gotcha: once you add any constructor, the free default one vanishes — bring it back with <code>= default</code>.",
+starter:`#include <cstdio>
+
+// TODO: struct Projectile with
+//   float Speed = 900.f;   int Damage = 25;          <- default member init
+//   Projectile() = default;                           <- keeps the no-arg ctor alive
+//   Projectile(float InSpeed, int InDamage) : Speed(InSpeed), Damage(InDamage) {}
+//   void Describe() const                             <- const = promises not to modify
+//     -> prints "projectile: <speed> u/s, <dmg> dmg"  (use %.1f and %d)
+
+int main() {
+    Projectile Rocket(1200.f, 40);
+    Rocket.Describe();          // -> projectile: 1200.0 u/s, 40 dmg
+    Projectile Pistol;          // only compiles thanks to = default
+    Pistol.Describe();          // -> projectile: 900.0 u/s, 25 dmg
+    return 0;
+}`,
+expect:["projectile: 1200.0 u/s, 40 dmg","projectile: 900.0 u/s, 25 dmg"],
+checks:[[/struct\s+Projectile/, "Declares struct Projectile"],[/float\s+Speed\s*=\s*900/, "Default member initializer for Speed"],[/Projectile\s*\(\s*\)\s*=\s*default/, "Restores the default constructor with = default"],[/:\s*Speed\s*\(\s*InSpeed\s*\)\s*,\s*Damage\s*\(\s*InDamage\s*\)/, "Constructor uses an initializer list"],[/void\s+Describe\s*\(\s*\)\s*const/, "Describe is a const method"]],
+hint:"The initializer list (: Speed(InSpeed), Damage(InDamage)) constructs members directly instead of default-constructing then assigning — UE constructors use it everywhere. struct vs class in C++ is only default visibility: struct is public, class is private."}]},
+
+{cat:"Pointers & memory", items:[
+{id:"lab-addr", t:"& and *: the ground truth", xp:35, shim:false,
+p:"Before Unreal buries pointers under <code>Cast&lt;&gt;</code> and <code>IsValid</code>, feel the raw mechanics once: <code>&amp;</code> takes an address, <code>*</code> follows it. Point at <code>Ammo</code>, read through the pointer, write through the pointer, and prove both names refer to one piece of memory.",
+starter:`#include <cstdio>
+
+int main() {
+    int Ammo = 12;
+
+    // TODO: int* PtrToAmmo = &Ammo;     <- & = "address of"
+    // TODO: read THROUGH the pointer -> via ptr: 12       (that's *PtrToAmmo)
+    // TODO: write through it:  *PtrToAmmo = 30;
+    // TODO: print Ammo itself -> ammo now: 30             (same memory!)
+    // TODO: printf("same address: %s\\n", (PtrToAmmo == &Ammo) ? "yes" : "no");
+
+    return 0;
+}`,
+expect:["via ptr: 12","ammo now: 30","same address: yes"],
+checks:[[/int\s*\*\s*PtrToAmmo\s*=\s*&\s*Ammo/, "Takes the address with & into an int*"],[/\*\s*PtrToAmmo\s*=\s*30/, "Writes through the pointer with *"],[/PtrToAmmo\s*==\s*&\s*Ammo|&\s*Ammo\s*==\s*PtrToAmmo/, "Compares the pointer against &Ammo"]],
+hint:"printf(\"via ptr: %d\\n\", *PtrToAmmo); — read * as 'the thing at'. In C# every class variable was secretly one of these; C++ just stops hiding it."},
 
 {id:"lab-ptr", t:"Pointers & null checks", xp:35, shim:false,
 p:"C# hid this from you; Unreal will not. Write <code>ApplyDamage</code> that takes a <em>pointer</em>: if it's <code>nullptr</code>, print <code>no target</code> and return. Otherwise subtract damage through the pointer and print the result. Then call it with both a valid address and <code>nullptr</code>.",
@@ -1137,9 +1253,81 @@ int main() {
 }`,
 expect:["HP: 65"],
 checks:[[/Heal\s*\(\s*Stats\s*&/, "Heal takes Stats& (reference, not copy)"],[/const\s+Stats\s*&/, "Report takes const Stats& (read-only, no copy)"]],
-hint:"void Heal(Stats& S, ...) — one character, completely different behavior. Rule of thumb from the lessons: pass by value for tiny types, const& for reading, & (or a pointer) for mutating."}]},
+hint:"void Heal(Stats& S, ...) — one character, completely different behavior. Rule of thumb from the lessons: pass by value for tiny types, const& for reading, & (or a pointer) for mutating."},
 
-{cat:"CH 2 · Unreal types & reflection", items:[
+{id:"lab-arr", t:"Arrays & pointer arithmetic", xp:40, shim:false,
+p:"C arrays are not C# arrays: no <code>.Length</code>, no bounds checks, and the name <em>decays</em> into a pointer to element zero when passed around. Write <code>Sum</code> taking a pointer + count (the classic C++ signature), then read the first and last element with pointer arithmetic.",
+starter:`#include <cstdio>
+
+// TODO: int Sum(const int* Values, int Count)
+//   loop i < Count and add Values[i]
+//   (indexing IS pointer math: Values[i] == *(Values + i))
+
+int main() {
+    int Damage[4] = { 10, 25, 5, 60 };   // fixed size, lives on the stack
+
+    // TODO: print -> total: 100          via Sum(Damage, 4)  <- array decays to pointer
+    // TODO: pointer arithmetic:
+    //   const int* P = Damage;
+    //   printf("first: %d last: %d\\n", *P, *(P + 3));
+
+    return 0;
+}`,
+expect:["total: 100","first: 10 last: 60"],
+checks:[[/int\s+Sum\s*\(\s*const\s+int\s*\*\s*Values\s*,\s*int\s+Count\s*\)/, "Sum takes const int* + count"],[/Values\[i\]|\*\s*\(\s*Values\s*\+\s*i\s*\)/, "Sums via indexing / pointer math"],[/\*\s*\(\s*P\s*\+\s*3\s*\)/, "Reads the last element with *(P + 3)"]],
+hint:"This is why C++ functions always take a count alongside a raw array — the pointer alone has no idea how big it is. TArray fixes this (it carries Num()), which is why UE code uses it instead."},
+
+{id:"lab-heap", t:"new / delete: manual memory", xp:45, shim:false,
+p:"No garbage collector. What you <code>new</code>, you <code>delete</code> — and arrays need <code>delete[]</code>, mismatching them is undefined behavior. Allocate a Boss on the heap, free it, null the pointer (dangling-pointer discipline), then do the same dance with a heap array.",
+starter:`#include <cstdio>
+
+struct Boss { int HP = 5000; };
+
+int main() {
+    // TODO: Boss* B = new Boss();        <- heap allocation, returns a pointer
+    // print -> boss hp: 5000             (through the pointer: B->HP)
+    // TODO: delete B;  then  B = nullptr;   <- never leave it dangling
+    // print -> boss freed
+
+    // TODO: int* Wave = new int[3]{ 3, 5, 8 };
+    // print -> wave sizes: 3 5 8
+    // TODO: delete[] Wave;               <- ARRAY delete. plain delete here = UB
+    // print -> wave freed
+
+    return 0;
+}`,
+expect:["boss hp: 5000","boss freed","wave sizes: 3 5 8","wave freed"],
+checks:[[/Boss\s*\*\s*B\s*=\s*new\s+Boss/, "Heap-allocates with new"],[/B\s*->\s*HP/, "Accesses through the pointer with ->"],[/delete\s+B\s*;/, "Frees with delete"],[/B\s*=\s*nullptr/, "Nulls the pointer after delete"],[/new\s+int\s*\[\s*3\s*\]/, "Heap array with new[]"],[/delete\s*\[\s*\]\s*Wave/, "Frees the array with delete[]"]],
+hint:"In real Unreal you'll almost never write new/delete — NewObject/SpawnActor plus the garbage collector handle UObjects. But every crash log you'll ever read speaks this language, so write it once by hand."},
+
+{id:"lab-smart", t:"unique_ptr & std::move", xp:50, shim:false,
+p:"Modern C++'s answer to the GC: <em>ownership</em>. A <code>unique_ptr</code> deletes its object the instant it goes out of scope (watch the destructor prints prove it), and it can't be copied — only <strong>moved</strong>. Create a quest with <code>make_unique</code>, hand ownership to <code>Complete</code> with <code>std::move</code>, and observe your original handle is now empty.",
+starter:`#include <cstdio>
+#include <memory>
+#include <utility>
+
+struct Quest {
+    const char* Name;
+    Quest(const char* N) : Name(N) { printf("quest '%s' created\\n", Name); }
+    ~Quest()                       { printf("quest '%s' destroyed\\n", Name); }
+};
+
+void Complete(std::unique_ptr<Quest> Q) {      // takes OWNERSHIP by value
+    printf("completing '%s'\\n", Q->Name);
+}   // <- Q dies here, destructor fires automatically. That's RAII.
+
+int main() {
+    // TODO: auto Main = std::make_unique<Quest>("MainStory");
+    // TODO: Complete(Main);              <- won't compile! unique = no copies
+    //        Complete(std::move(Main));  <- transfer ownership explicitly
+    // TODO: if (!Main) printf("main quest handle is now empty\\n");
+    return 0;
+}`,
+expect:["quest 'MainStory' created","completing 'MainStory'","quest 'MainStory' destroyed","handle is now empty"],
+checks:[[/std::make_unique<\s*Quest\s*>\s*\(\s*"MainStory"\s*\)/, "Creates with std::make_unique"],[/Complete\s*\(\s*std::move\s*\(\s*Main\s*\)\s*\)/, "Transfers ownership with std::move"],[/if\s*\(\s*!\s*Main\s*\)/, "Checks the moved-from handle is empty"]],
+hint:"Destruction is deterministic here — no GC sweep 'eventually', the destructor runs at the closing brace. UE's TUniquePtr is this exact idea; UObjects use the engine GC instead, and now you know the difference."}]},
+
+{cat:"Unreal types & reflection", items:[
 {id:"lab-fstring", t:"FString / Printf drills", xp:35, shim:true,
 p:"Build a kill-feed line with <code>FString::Printf</code> (Unreal's <code>string.Format</code>). Compose <code>Killer</code>, <code>Victim</code> and a distance into one FString, then log it.",
 starter:`int main() {
@@ -1204,7 +1392,7 @@ expect:["bang, ammo: 29","bang, ammo: 28"],
 checks:[[/UPROPERTY\s*\(\s*EditAnywhere[\s\S]{0,80}?float\s+Damage/, "Damage is EditAnywhere"],[/BlueprintReadOnly[\s\S]{0,80}?float\s+Damage/, "Damage is BlueprintReadOnly"],[/Category\s*=\s*"Combat"/, "Damage has Category = \"Combat\""],[/UPROPERTY\s*\(\s*VisibleAnywhere[\s\S]{0,90}?int32\s+CurrentAmmo/, "CurrentAmmo is VisibleAnywhere (not editable)"],[/UFUNCTION\s*\(\s*BlueprintCallable/, "Fire is BlueprintCallable"]],
 hint:"UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = \"Combat\") for Damage; UPROPERTY(VisibleAnywhere, BlueprintReadOnly) for ammo; UFUNCTION(BlueprintCallable) for Fire. Compare: [SerializeField] never carried this much meaning."}]},
 
-{cat:"CH 3–4 · Classes, delegates, lifecycle", items:[
+{cat:"Classes, delegates, lifecycle", items:[
 {id:"lab-super", t:"Inheritance & Super::", xp:40, shim:true,
 p:"Unreal's <code>base.Method()</code> is <code>Super::Method()</code> — and forgetting it in <code>BeginPlay</code> is the classic UE bug. Derive <code>AEnemy</code> from <code>AActorBase</code>, override <code>BeginPlay</code>, and call the parent <em>first</em>.",
 starter:`class AActorBase {
@@ -1766,6 +1954,54 @@ function renderLesson(id){
 }
 
 
+
+/* ----- lab autocomplete (mini IntelliSense) ----- */
+const AC_KEYWORDS = "auto bool break case catch char class const constexpr continue default delete do double else enum explicit false float for friend if inline int long mutable namespace new nullptr operator override private protected public return short signed sizeof static struct switch template this throw true try typedef typename union unsigned using virtual void while".split(" ");
+const AC_TYPES = "std::string std::vector std::unique_ptr std::make_unique std::move std::function size_t int32 printf".split(" ");
+const AC_UE = "UE_LOG UPROPERTY UFUNCTION UCLASS USTRUCT GENERATED_BODY TEXT FString TArray TMap FVector Cast LogTemp EditAnywhere VisibleAnywhere BlueprintReadOnly BlueprintReadWrite BlueprintCallable Category BeginPlay Tick EndPlay Super DeltaTime DECLARE_DELEGATE DECLARE_MULTICAST_DELEGATE_OneParam".split(" ");
+const AC_MEMBERS = "Add Num Remove Contains Find Len Broadcast AddLambda BindLambda Execute ExecuteIfBound IsBound Size X Y Z HP Health c_str push_back size get reset".split(" ");
+const AC_NS = {
+  FString: ["Printf"],
+  std: ["string","vector","map","unique_ptr","make_unique","move","function","printf"],
+  Super: ["BeginPlay()","Tick(DeltaTime)","EndPlay()"]
+};
+const AC_SNIPPETS = [
+  {displayText:"for (int i…)  ⟶ index loop",      text:"for (int i = 0; i < Count; ++i) {\n    \n}"},
+  {displayText:"for (auto&…)  ⟶ range-for",       text:"for (const auto& Item : Container) {\n    \n}"},
+  {displayText:"UE_LOG(…)  ⟶ log line",           text:"UE_LOG(LogTemp, Log, \"%s\", *Value);"},
+  {displayText:"UPROPERTY(…)  ⟶ designer-tunable", text:"UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = \"Gameplay\")"},
+  {displayText:"UFUNCTION(…)  ⟶ BP-callable",     text:"UFUNCTION(BlueprintCallable)"},
+  {displayText:"if (ptr)…  ⟶ null-checked branch", text:"if (Ptr != nullptr) {\n    \n}"},
+  {displayText:"class : AActorBase  ⟶ actor skeleton", text:"class AMyActor : public AActorBase {\npublic:\n    using Super = AActorBase;\n    void BeginPlay() override {\n        Super::BeginPlay();\n    }\n};"}
+];
+function bridgeHint(cm){
+  const cur = cm.getCursor(), line = cm.getLine(cur.line);
+  let start = cur.ch;
+  while (start > 0 && /\w/.test(line.charAt(start - 1))) start--;
+  const word = line.slice(start, cur.ch);
+  const before = line.slice(0, start);
+  const lw = word.toLowerCase();
+  let pool;
+
+  const ns = before.match(/(\w+)::\s*$/);
+  if (ns && AC_NS[ns[1]]) pool = AC_NS[ns[1]].map(t => ({ text: t }));
+  else if (/(\.|->)\s*$/.test(before)) pool = AC_MEMBERS.map(t => ({ text: t }));
+  else {
+    if (word.length < 2) return null;                    // don't spam on single chars
+    const docWords = new Set();
+    cm.getValue().replace(/[A-Za-z_]\w{2,}/g, w => { docWords.add(w); return w; });
+    pool = [...new Set([...AC_UE, ...AC_KEYWORDS, ...AC_TYPES, ...docWords])].map(t => ({ text: t }));
+    pool = pool.concat(AC_SNIPPETS);
+  }
+  const list = pool.filter(c => {
+    const t = (c.text || "").toLowerCase();
+    if (t === lw) return false;
+    return !lw || t.startsWith(lw) || (c.displayText || "").toLowerCase().startsWith(lw);
+  }).sort((a, b) => (a.displayText ? 1 : 0) - (b.displayText ? 1 : 0) || (a.text < b.text ? -1 : 1)).slice(0, 50);
+  if (!list.length) return null;
+  return { list, from: CodeMirror.Pos(cur.line, start), to: CodeMirror.Pos(cur.line, cur.ch) };
+}
+
 /* ----- C++ lab ----- */
 let labCur = null;          // current exercise id
 let labEditor = null;       // CodeMirror instance or null
@@ -1781,7 +2017,7 @@ function renderLab(){
 
   content.innerHTML = `
   <h1 class="page">⌨️ C++ Lab</h1>
-  <p class="sub">Write real code, get it checked, run it for real. Unreal-only idioms compile via a tiny shim that's auto-prepended (peek at it below). ${solved}/${all.length} solved.</p>
+  <p class="sub">Write real code with autocomplete (it pops as you type — or Ctrl+Space), get it checked, run it for real. Unreal-only idioms compile via a tiny shim that's auto-prepended (peek at it below). ${solved}/${all.length} solved.</p>
   <div class="lab-layout">
     <div class="card lab-list">
       ${LAB.map(c => `<div class="lab-cat">${esc(c.cat)}</div>` + c.items.map(e =>
@@ -1824,9 +2060,21 @@ function renderLab(){
       value: code, mode: "text/x-c++src", lineNumbers: true,
       indentUnit: 4, tabSize: 4, indentWithTabs: false,
       viewportMargin: Infinity,
-      extraKeys: { Tab: cm => cm.replaceSelection("    ") }
+      extraKeys: {
+        Tab: cm => cm.somethingSelected() ? cm.indentSelection("add") : cm.replaceSelection("    "),
+        "Ctrl-Space": cm => cm.showHint({ hint: bridgeHint, completeSingle: false })
+      }
     });
     labEditor.on("change", () => { labDrafts[ex.id] = labEditor.getValue(); });
+    // IntelliSense-style: pop completions as you type
+    labEditor.on("inputRead", (cm, change) => {
+      if (cm.state.completionActive) return;
+      const t = change.text && change.text[0];
+      if (!t || !/[\w.:>]/.test(t)) return;
+      const cur = cm.getCursor(), lineTo = cm.getLine(cur.line).slice(0, cur.ch);
+      if (/(\.|->|::)\s*$/.test(lineTo) || /[A-Za-z_]\w{1,}$/.test(lineTo))
+        cm.showHint({ hint: bridgeHint, completeSingle: false });
+    });
   } else {
     labEditor = null;
     host.innerHTML = `<textarea class="lab-fallback" id="lab-ta" spellcheck="false"></textarea>`;
