@@ -269,6 +269,50 @@ h1.page{font-family:var(--disp);font-size:26px;font-weight:700;letter-spacing:.3
 .lab-hint p{font-size:13px;color:var(--muted);padding:8px 0 0}
 .gl-link{font-family:var(--disp);font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--ue);text-decoration:none;margin-left:10px;padding:3px 9px;border:1px solid var(--line2);border-radius:20px;vertical-align:2px;transition:background .15s,border-color .15s}
 .gl-link:hover{background:var(--ue-soft);border-color:var(--ue)}
+
+/* ===== command palette ===== */
+.palbtn{display:flex;align-items:center;gap:8px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;color:var(--muted);padding:8px 12px;font-family:var(--body);font-size:13px;transition:border-color .15s,color .15s}
+.palbtn:hover{border-color:var(--ue-line);color:var(--text)}
+.palbtn .pk{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line2);border-radius:5px;padding:1px 6px;color:var(--dim)}
+.palette{position:fixed;inset:0;background:rgba(4,6,12,.72);backdrop-filter:blur(3px);z-index:140;display:grid;justify-items:center;align-items:start;padding-top:12vh;animation:fadein .12s ease}
+.pal-box{width:min(620px,92vw);background:var(--panel);border:1px solid var(--line2);border-radius:14px;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.6)}
+.pal-input{width:100%;background:var(--panel2);border:none;border-bottom:1px solid var(--line);color:var(--text);font-family:var(--body);font-size:15px;padding:15px 18px;outline:none}
+.pal-list{max-height:52vh;overflow-y:auto;padding:6px}
+.pal-item{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:9px;cursor:pointer;font-size:13.5px;color:#CBD4E4}
+.pal-item .pi{flex:none;width:22px;text-align:center}
+.pal-item small{color:var(--dim);margin-left:auto;font-size:11px;white-space:nowrap}
+.pal-item.active{background:var(--ue-soft);color:var(--ue)}
+.pal-item.active small{color:var(--ue)}
+.pal-empty{padding:18px;text-align:center;color:var(--muted);font-size:13px}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+
+/* ===== weakness heatmap ===== */
+.heat{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.heatchip{display:flex;align-items:center;gap:8px;background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:7px 12px;font-size:12.5px;color:var(--muted);cursor:pointer;transition:border-color .15s}
+.heatchip:hover{border-color:var(--ue-line)}
+.heatchip b{font-family:var(--disp);font-size:13px}
+.heatchip.h-ok b{color:var(--ok)}.heatchip.h-mid b{color:var(--gold)}.heatchip.h-bad b{color:var(--bad)}
+
+/* ===== lesson notes ===== */
+.notesbox{margin-top:22px;background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:12px;padding:16px 20px}
+.notesbox h2{font-family:var(--disp);font-size:15px;margin-bottom:10px}
+.notesbox textarea{width:100%;min-height:84px;background:var(--panel2);border:1px solid var(--line);border-radius:9px;color:var(--text);font-family:var(--body);font-size:13.5px;line-height:1.6;padding:11px 13px;resize:vertical;outline:none}
+.notesbox textarea:focus{border-color:var(--ue-line)}
+.notesbox .saved{font-size:11px;color:var(--dim);margin-top:6px;height:14px}
+
+/* ===== capstone ===== */
+.cap-phase{margin-bottom:16px}
+.cap-phase .cp-head{display:flex;align-items:center;gap:12px;margin-bottom:4px}
+.cap-phase .cp-num{font-family:var(--disp);font-size:11px;letter-spacing:1.5px;color:var(--ue);border:1px solid var(--ue-line);border-radius:6px;padding:3px 8px;background:var(--ue-soft)}
+.cap-phase.done .cp-num{color:var(--ok);border-color:var(--ok);background:var(--ok-soft)}
+.cap-step{display:flex;gap:12px;align-items:flex-start;padding:11px 4px;border-bottom:1px solid var(--line)}
+.cap-step:last-child{border-bottom:none}
+.cap-step input{margin-top:3px;accent-color:var(--ok);width:16px;height:16px;flex:none}
+.cap-step .cs-txt{font-size:13.5px;color:#CBD4E4;line-height:1.55}
+.cap-step.done .cs-txt{color:var(--dim);text-decoration:line-through;text-decoration-color:var(--line2)}
+.cap-step .cs-links{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.lesson-chip{font-family:var(--disp);font-size:10px;letter-spacing:.8px;text-transform:uppercase;color:var(--ue);background:var(--ue-soft);border:1px solid var(--ue-line);border-radius:20px;padding:2px 9px;cursor:pointer}
+.lesson-chip.locked{color:var(--dim);background:none;border-color:var(--line);cursor:default}
 .CodeMirror-hints{background:var(--panel2)!important;border:1px solid var(--line2)!important;border-radius:9px!important;box-shadow:0 12px 40px rgba(0,0,0,.55)!important;font-family:var(--mono)!important;font-size:12.5px!important;padding:5px!important;z-index:130!important;max-height:230px!important}
 .CodeMirror-hint{color:#C4D3EE!important;padding:4px 12px!important;border-radius:6px!important}
 li.CodeMirror-hint-active{background:var(--ue-soft)!important;color:var(--ue)!important}
@@ -303,6 +347,7 @@ li.CodeMirror-hint-active{background:var(--ue-soft)!important;color:var(--ue)!im
     <div class="navlabel">Practice</div>
     <button class="navbtn" data-view="lab"><span class="ic">⌨</span>C++ Lab<span class="pct" id="pct-lab"></span></button>
     <button class="navbtn" data-view="review"><span class="ic">🔁</span>Daily Review<span class="pct" id="pct-review" style="color:var(--gold)"></span></button>
+    <button class="navbtn" data-view="capstone"><span class="ic">🚢</span>Capstone<span class="pct" id="pct-cap"></span></button>
     <div class="navlabel">Reference</div>
     <button class="navbtn" data-view="translator"><span class="ic">⇄</span>Unity → Unreal map</button>
     <button class="navbtn" data-view="glossary"><span class="ic">📖</span>Glossary</button>
@@ -318,6 +363,7 @@ li.CodeMirror-hint-active{background:var(--ue-soft)!important;color:var(--ue)!im
         <div class="lvlmeta"><div class="rank" id="lvl-rank">Unity Expat</div><div class="xptext" id="lvl-xp">0 / 100 XP</div></div>
       </div>
       <div class="xpwrap"><div class="xpbar"><div id="xp-fill" style="width:0%"></div></div></div>
+      <button class="palbtn" id="pal-btn" title="Search everything (Ctrl+K)">🔍 <span class="pk">Ctrl K</span></button>
       <div class="streak" id="streak-pill" title="Daily streak">🔥 <span id="streak-n">0</span></div>
     </header>
     <main class="content" id="content" tabindex="-1"></main>
@@ -1049,6 +1095,10 @@ const ACHIEVEMENTS = [
 {id:"fixit",   ico:"🩹", t:"Exterminator",       d:"Fix every broken-code exercise", xp:100},
 {id:"review5", ico:"🔁", t:"Refresher",          d:"Complete 5 review sessions", xp:60},
 {id:"review20",ico:"🧠", t:"Iron Memory",        d:"Complete 20 review sessions", xp:150},
+{id:"shipped", ico:"🚢", t:"Actually Shipped It", d:"Complete the entire Neon Arena capstone", xp:250},
+{id:"phase1",  ico:"🏗️", t:"It Moves",            d:"Complete a capstone phase", xp:40},
+{id:"scribe",  ico:"✍️", t:"Scribe",              d:"Write notes on 5 lessons", xp:40},
+{id:"palette", ico:"🔍", t:"Speed Reader",         d:"Jump somewhere via the command palette", xp:15},
 {id:"lexicon", ico:"📖", t:"Lexicographer",     d:"Search the glossary", xp:15},
 {id:"rosetta", ico:"⇄",  t:"Rosetta Stone",     d:"Open the Unity → Unreal map", xp:15}
 ];
@@ -1694,6 +1744,39 @@ starter:`int main() {
 expect:null, checks:[], hint:"Anything goes here. Try the FVector operators, or declare a delegate and broadcast it."}]}
 ];
 
+/* ===== Capstone: Neon Arena ===== */
+const CAPSTONE = {
+title: "Neon Arena", tagline: "A top-down survivor slice, built for real in Unreal — every step maps back to lessons you've already passed.",
+phases: [
+{id:"cap1", t:"Skeleton & movement", xp:60, steps:[
+{id:"cap1a", txt:"Create a Blank C++ project (no starter content). Make a folder scheme you won't regret: Content/NeonArena/{Blueprints,Input,Materials,VFX,Data,UI}.", lessons:["ue1a"]},
+{id:"cap1b", txt:"C++ AArenaCharacter derived from ACharacter: capsule tuned, top-down camera on a Spring Arm (rotation locked, ~1400 units up, pitched -60°).", lessons:["ue2a","int1a"]},
+{id:"cap1c", txt:"Blueprint child BP_ArenaCharacter — mesh, camera polish, all visuals live here. C++ owns logic, BP owns looks. Say it again.", lessons:["int1a"]},
+{id:"cap1d", txt:"Enhanced Input in C++: IMC_Arena with IA_Move (Axis2D) and IA_Aim; bind in SetupPlayerInputComponent, AddMovementInput from the callbacks.", lessons:["ue3c","int2b"]},
+{id:"cap1e", txt:"GameMode BP_ArenaGameMode set in World Settings: DefaultPawn = BP_ArenaCharacter. Delete the wondering-why-the-wrong-pawn-spawns hour from your future.", lessons:["ue2c"]}]},
+{id:"cap2", t:"Combat core", xp:60, steps:[
+{id:"cap2a", txt:"UHealthComponent (UActorComponent, C++): MaxHealth/CurrentHealth UPROPERTYs, ApplyDamage BlueprintCallable, OnHealthChanged + OnDied dynamic multicast delegates.", lessons:["ue1c","cpp3c","fix-virtual"]},
+{id:"cap2b", txt:"AProjectile: collision sphere root + ProjectileMovementComponent, spawned from the character with SpawnActor<AProjectile>, initial speed from a UPROPERTY.", lessons:["int2a","cpp4b"]},
+{id:"cap2c", txt:"Hit handling via OnComponentBeginOverlap → find target's HealthComponent (FindComponentByClass) → ApplyDamage → Destroy(). Null-check like you mean it.", lessons:["int2c","lab-ptr"]},
+{id:"cap2d", txt:"Fire on IA_Attack with a cooldown timer (SetTimer, no Tick). Muzzle socket on the mesh for spawn transform.", lessons:["cpp4c","lab-lifecycle"]}]},
+{id:"cap3", t:"Enemies & waves", xp:60, steps:[
+{id:"cap3a", txt:"AEnemyPawn: floating pawn that chases the player — every Tick, AddMovementInput toward (PlayerLocation - MyLocation).GetSafeNormal(). Dumb is fine; dumb ships.", lessons:["ue2a","cpp4a"]},
+{id:"cap3b", txt:"Enemy carries the same UHealthComponent (that's the whole point of components) — OnDied → award score, spawn death FX, Destroy.", lessons:["ue1c"]},
+{id:"cap3c", txt:"AWaveSpawner actor: TArray of spawn points, SetTimer loop spawning enemies, wave count in GameState so the whole world can read it.", lessons:["ue2c","int2a"]},
+{id:"cap3d", txt:"GameMode owns the rules: wave N size = 4 + N*2, next wave when alive-count hits zero, game-over when player's OnDied fires.", lessons:["ue2c"]}]},
+{id:"cap4", t:"Feedback & UI", xp:60, steps:[
+{id:"cap4a", txt:"WBP_ArenaHUD on a UUserWidget C++ base: health bar + wave counter via BindWidget. Created and added to viewport by the PlayerController.", lessons:["ue7c","ue2b"]},
+{id:"cap4b", txt:"Wire OnHealthChanged → HUD update. Event-driven. If you catch yourself making a property binding, do ten push-ups and read ue7b again.", lessons:["ue7b","lab-delegate"]},
+{id:"cap4c", txt:"Niagara: one hit-impact system, one death burst. Spawn at location from the overlap/death events.", lessons:["ue4c"]},
+{id:"cap4d", txt:"Game feel pass: camera shake on hit, a dynamic material instance flash on damaged enemies, SFX on fire/hit/death.", lessons:["ue4a"]}]},
+{id:"cap5", t:"Data, save & ship", xp:80, steps:[
+{id:"cap5a", txt:"UEnemyTypeData (Primary Data Asset): mesh, health, speed, score value. WaveSpawner takes TArray<UEnemyTypeData*> — designers add enemy types with zero code.", lessons:["ue5a","cpp2a"]},
+{id:"cap5b", txt:"Gameplay Tags for damage immunity windows (State.Invulnerable) checked in ApplyDamage.", lessons:["ue5b"]},
+{id:"cap5c", txt:"USaveGame storing high score; load on GameInstance init, save on game over, show on the HUD.", lessons:["ue6a"]},
+{id:"cap5d", txt:"Package a Shipping build. Run the .exe outside the editor. Find the one bug that only happens in packaged builds (there's always one).", lessons:["ue6b"]},
+{id:"cap5e", txt:"Victory lap: profile it with stat unit and Unreal Insights. If it's not 60fps with 50 enemies, hunt Tick abuse first.", lessons:["ue6c"]}]}
+]};
+
 /* =====================================================================
    APP LOGIC
 ===================================================================== */
@@ -1739,6 +1822,9 @@ let S = {
   missed: {},      // lessonId -> [question indices answered wrong]
   reviews: 0,      // completed review sessions
   lastReviewXP: null, // date (ms) XP was last awarded for a review
+  notes: {},       // lessonId -> user's note text
+  capstone: {},    // capstone stepId -> true
+  capPhase: {},    // capstone phaseId -> XP awarded
   streak: 0,
   lastActive: null,
   seenLevel: 1
@@ -1817,6 +1903,7 @@ function checkGlobalAchievements(){
   grant("labmaster", labN === labAll.length);
   const fixAll = LAB.flatMap(c => c.items).filter(e => e.id.startsWith("fix-"));
   grant("fixit", fixAll.length > 0 && fixAll.every(e => S.lab[e.id]));
+  grant("scribe", Object.values(S.notes).filter(n => n && n.trim().length >= 10).length >= 5);
   grant("streak3", S.streak >= 3); grant("streak7", S.streak >= 7);
 }
 
@@ -1869,6 +1956,9 @@ function renderChrome(){
   const missedN = Object.values(S.missed).reduce((a, arr) => a + arr.length, 0);
   const revEl = $("#pct-review");
   if (revEl) revEl.textContent = missedN ? missedN + "!" : "";
+  const capSteps = CAPSTONE.phases.flatMap(p => p.steps);
+  const capEl = $("#pct-cap");
+  if (capEl) capEl.textContent = Math.round(100 * capSteps.filter(st => S.capstone[st.id]).length / capSteps.length) + "%";
 }
 function persist(){ Store.save(S); }
 
@@ -1903,6 +1993,7 @@ function render(){
   if (view.startsWith("lesson:")) return renderLesson(view.slice(7));
   if (view === "lab") return renderLab();
   if (view === "review") return renderReview();
+  if (view === "capstone") return renderCapstone();
   if (view === "translator") return renderTranslator();
   if (view === "glossary") return renderGlossary();
   if (view === "achievements") return renderAch();
@@ -1934,6 +2025,22 @@ function renderDash(){
     <div class="stat ok"><b>${Object.keys(S.tasks).length}</b><span>Tasks done</span></div>
     <div class="stat"><b>${achGot}<span style="font-size:14px;color:var(--muted)">/${ACHIEVEMENTS.length}</span></b><span>Achievements</span></div>
   </div>
+  ${(() => {
+    const chips = [];
+    PATHS.forEach(p => p.chapters.forEach(c => {
+      const doneL = c.lessons.filter(l => S.done[l.id] && S.quiz[l.id] !== undefined);
+      if (!doneL.length) return;
+      const got = doneL.reduce((a, l) => a + S.quiz[l.id], 0);
+      const tot = doneL.reduce((a, l) => a + l.quiz.length, 0);
+      const pct = Math.round(100 * got / tot);
+      const cls = pct >= 90 ? "h-ok" : pct >= 70 ? "h-mid" : "h-bad";
+      chips.push(`<div class="heatchip ${cls}" data-go="path:${p.id}" role="button" tabindex="0"><b>${pct}%</b>${esc(c.t)}</div>`);
+    }));
+    return chips.length ? `<div class="card" style="margin-bottom:16px;padding:16px 20px">
+      <h3 style="font-family:var(--disp);font-size:14px;margin-bottom:2px">🎯 Quiz accuracy by chapter</h3>
+      <p style="font-size:12px;color:var(--dim)">Anything below green deserves a Daily Review visit.</p>
+      <div class="heat">${chips.join("")}</div></div>` : "";
+  })()}
   <div class="grid3">
     ${PATHS.map(p => {
       const dn = pathDone(p), tot = pathLessons(p).length, pct = pathPct(p);
@@ -1945,6 +2052,16 @@ function renderDash(){
       </div>`;
     }).join("")}
   </div>
+  ${(() => {
+    const steps = CAPSTONE.phases.flatMap(p => p.steps);
+    const done = steps.filter(st => S.capstone[st.id]).length;
+    const pct = Math.round(100 * done / steps.length);
+    return `<div class="card pathcard" data-go="capstone" role="button" tabindex="0" style="margin-top:16px;border-left:3px solid var(--gold)">
+      <div class="ph"><div class="pico">🚢</div><div><h3>Capstone: ${esc(CAPSTONE.title)}</h3><div class="pmeta">${done}/${steps.length} steps · the thing that goes in your portfolio</div></div></div>
+      <p style="font-size:13px;color:var(--muted)">${esc(CAPSTONE.tagline)}</p>
+      <div class="pbar${pct === 100 ? " gold" : ""}"><div style="width:${pct}%"></div></div>
+    </div>`;
+  })()}
   <div class="grid2" style="margin-top:16px">
     <div class="card pathcard" data-go="review" role="button" tabindex="0">
       <div class="ph"><div class="pico">🔁</div><div><h3>Daily Review</h3><div class="pmeta" id="rev-meta"></div></div></div>
@@ -2098,6 +2215,11 @@ function renderLesson(id){
     <p>${esc(l.task)}</p>
     <label><input type="checkbox" id="taskck" ${S.tasks[id] ? "checked disabled" : ""}> I actually did this in the editor — no cheating your future self.</label>
   </div>
+  <div class="notesbox">
+    <h2>✍️ My notes</h2>
+    <textarea id="lesson-notes" placeholder="Gotchas, aha-moments, things future-you will Google otherwise… Searchable from Ctrl+K.">${esc(S.notes[id] || "")}</textarea>
+    <div class="saved" id="notes-saved"></div>
+  </div>
   <div class="lesson-nav">
     <button class="btn ghost" id="nav-prev" ${prevSame ? "" : "disabled"}>← ${prevSame ? esc(prevSame.lesson.t) : "Previous"}</button>
     <button class="btn" id="nav-next" ${done ? "" : "disabled"} title="${done ? "" : "Pass the quiz to continue"}">${nxt ? (nxt.path === p ? "Next: " + esc(nxt.lesson.t) : "Next path: " + esc(nxt.path.title)) + " →" : "Finish 🎉"}</button>
@@ -2168,6 +2290,19 @@ function renderLesson(id){
     persist();
   });
 
+  let notesTimer = null;
+  $("#lesson-notes").addEventListener("input", e => {
+    clearTimeout(notesTimer);
+    $("#notes-saved").textContent = "…";
+    notesTimer = setTimeout(() => {
+      const v = e.target.value;
+      if (v.trim()) S.notes[id] = v; else delete S.notes[id];
+      persist(); checkGlobalAchievements();
+      $("#notes-saved").textContent = "saved ✓";
+      setTimeout(() => { const el = $("#notes-saved"); if (el) el.textContent = ""; }, 1600);
+    }, 500);
+  });
+
   $("#nav-prev").onclick = () => prevSame && nav("lesson:" + prevSame.lesson.id);
   $("#nav-next").onclick = () => {
     if (!S.done[id]) return;
@@ -2190,14 +2325,21 @@ const AC_NS = {
   Super: ["BeginPlay()","Tick(DeltaTime)","EndPlay()"]
 };
 const AC_SNIPPETS = [
-  {displayText:"for (int i…)  ⟶ index loop",      text:"for (int i = 0; i < Count; ++i) {\n    \n}"},
-  {displayText:"for (auto&…)  ⟶ range-for",       text:"for (const auto& Item : Container) {\n    \n}"},
-  {displayText:"UE_LOG(…)  ⟶ log line",           text:"UE_LOG(LogTemp, Log, \"%s\", *Value);"},
-  {displayText:"UPROPERTY(…)  ⟶ designer-tunable", text:"UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = \"Gameplay\")"},
+  {displayText:"for (int i…)  ⟶ index loop",      text:"for (int i = 0; i < Count; ++i) {\n    \n}", sel:"Count"},
+  {displayText:"for (auto&…)  ⟶ range-for",       text:"for (const auto& Item : Container) {\n    \n}", sel:"Container"},
+  {displayText:"UE_LOG(…)  ⟶ log line",           text:"UE_LOG(LogTemp, Log, \"%s\", *Value);", sel:"Value"},
+  {displayText:"UPROPERTY(…)  ⟶ designer-tunable", text:"UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = \"Gameplay\")", sel:"Gameplay"},
   {displayText:"UFUNCTION(…)  ⟶ BP-callable",     text:"UFUNCTION(BlueprintCallable)"},
-  {displayText:"if (ptr)…  ⟶ null-checked branch", text:"if (Ptr != nullptr) {\n    \n}"},
-  {displayText:"class : AActorBase  ⟶ actor skeleton", text:"class AMyActor : public AActorBase {\npublic:\n    using Super = AActorBase;\n    void BeginPlay() override {\n        Super::BeginPlay();\n    }\n};"}
-];
+  {displayText:"if (ptr)…  ⟶ null-checked branch", text:"if (Ptr != nullptr) {\n    \n}", sel:"Ptr"},
+  {displayText:"class : AActorBase  ⟶ actor skeleton", text:"class AMyActor : public AActorBase {\npublic:\n    using Super = AActorBase;\n    void BeginPlay() override {\n        Super::BeginPlay();\n    }\n};", sel:"AMyActor"}
+].map(sn => sn.sel ? Object.assign(sn, { hint: (cm, self, data) => {
+  cm.replaceRange(data.text, self.from, self.to);
+  const pre = data.text.slice(0, data.text.indexOf(data.sel));
+  const preLines = pre.split("\n");
+  const line = self.from.line + preLines.length - 1;
+  const ch = (preLines.length === 1 ? self.from.ch : 0) + preLines[preLines.length - 1].length;
+  cm.setSelection(CodeMirror.Pos(line, ch), CodeMirror.Pos(line, ch + data.sel.length));
+}}) : sn);
 function bridgeHint(cm){
   const cur = cm.getCursor(), line = cm.getLine(cur.line);
   let start = cur.ch;
@@ -2517,6 +2659,123 @@ function renderReviewSummary(){
   revDeck = null;
 }
 
+
+/* ----- capstone ----- */
+function renderCapstone(){
+  const steps = CAPSTONE.phases.flatMap(p => p.steps);
+  const doneN = steps.filter(st => S.capstone[st.id]).length;
+  const pct = Math.round(100 * doneN / steps.length);
+  content.innerHTML = `
+  <h1 class="page">🚢 Capstone: ${esc(CAPSTONE.title)}</h1>
+  <p class="sub">${esc(CAPSTONE.tagline)}</p>
+  <div style="display:flex;align-items:center;gap:14px;margin-bottom:22px">
+    <div class="pbar${pct === 100 ? " gold" : ""}" style="flex:1;max-width:420px"><div style="width:${pct}%"></div></div>
+    <span class="tag${pct === 100 ? " gold" : " ue"}">${doneN}/${steps.length} steps</span>
+  </div>
+  ${CAPSTONE.phases.map((ph, pi) => {
+    const phDone = ph.steps.every(st => S.capstone[st.id]);
+    return `<div class="card cap-phase${phDone ? " done" : ""}">
+      <div class="cp-head"><span class="cp-num">${phDone ? "✓ " : ""}PHASE ${pi + 1}</span>
+        <h3 style="font-family:var(--disp);font-size:16px">${esc(ph.t)}</h3>
+        <span class="tag gold" style="margin-left:auto">+${ph.xp} XP</span></div>
+      ${ph.steps.map(st => `<div class="cap-step${S.capstone[st.id] ? " done" : ""}">
+        <input type="checkbox" data-step="${st.id}" data-phase="${ph.id}" ${S.capstone[st.id] ? "checked" : ""}>
+        <div><div class="cs-txt">${esc(st.txt)}</div>
+          <div class="cs-links">${st.lessons.map(lid => {
+            const r = L_INDEX[lid];
+            if (r) return `<span class="lesson-chip${lessonUnlocked(lid) ? "" : " locked"}" ${lessonUnlocked(lid) ? `data-go="lesson:${lid}"` : `title="Locked — finish earlier lessons first"`}>${esc(r.lesson.t)}</span>`;
+            const ex = labExercise(lid);
+            return ex ? `<span class="lesson-chip" data-lab="${lid}">⌨ ${esc(ex.t)}</span>` : "";
+          }).join("")}</div>
+        </div>
+      </div>`).join("")}
+    </div>`;
+  }).join("")}
+  <div class="note" style="margin-top:4px">🧭 Do the phases in order — each one produces a playable build. If a step feels foggy, its lesson chips are the exact prep material.</div>`;
+
+  content.querySelectorAll('.cap-step input').forEach(ck => ck.addEventListener("change", e => {
+    const stId = ck.dataset.step, phId = ck.dataset.phase;
+    if (ck.checked) S.capstone[stId] = true; else delete S.capstone[stId];
+    touchStreak();
+    const ph = CAPSTONE.phases.find(p => p.id === phId);
+    if (ck.checked && !S.capPhase[phId] && ph.steps.every(st => S.capstone[st.id])){
+      S.capPhase[phId] = true;
+      addXP(ph.xp, "Capstone phase: " + ph.t);
+      grant("phase1");
+    }
+    grant("shipped", CAPSTONE.phases.flatMap(p => p.steps).every(st => S.capstone[st.id]));
+    persist(); renderChrome(); renderCapstone();
+  }));
+  content.querySelectorAll('[data-lab]').forEach(el => el.addEventListener("click", () => { labCur = el.dataset.lab; nav("lab"); }));
+  wireGo();
+}
+
+/* ----- command palette ----- */
+let palIndex = null, palOpen = false, pendingGlossaryQ = null, pendingTranslatorQ = null;
+
+function buildPalIndex(){
+  const ix = [];
+  ALL_LESSONS.forEach(r => ix.push({ ico: pathIcon(r.path), t: r.lesson.t, sub: r.path.title + " · CH" + (r.ci + 1), k: (r.lesson.t + " " + r.chapter.t).toLowerCase(), go: () => lessonUnlocked(r.lesson.id) ? nav("lesson:" + r.lesson.id) : nav("path:" + r.path.id), lock: () => !lessonUnlocked(r.lesson.id) }));
+  GLOSSARY.forEach(g => ix.push({ ico: "📖", t: g[0], sub: "Glossary · Unity: " + g[1], k: (g[0] + " " + g[1]).toLowerCase(), go: () => { pendingGlossaryQ = g[0]; nav("glossary"); } }));
+  TRANSLATOR.forEach(([cat, rows]) => rows.forEach(r => ix.push({ ico: "⇄", t: r[0] + " → " + r[1], sub: "Translator · " + cat, k: (r[0] + " " + r[1]).toLowerCase(), go: () => { pendingTranslatorQ = r[0]; nav("translator"); } })));
+  LAB.forEach(c => c.items.forEach(e => ix.push({ ico: "⌨", t: e.t, sub: "C++ Lab · " + c.cat, k: (e.t + " " + c.cat + " lab").toLowerCase(), go: () => { labCur = e.id; nav("lab"); } })));
+  [["◈","Dashboard","dash"],["🔁","Daily Review","review"],["🚢","Capstone: " + CAPSTONE.title,"capstone"],["🏆","Achievements","achievements"]]
+    .forEach(([ico, t, v]) => ix.push({ ico, t, sub: "View", k: t.toLowerCase(), go: () => nav(v) }));
+  return ix;
+}
+
+function openPalette(){
+  if (palOpen) return;
+  palOpen = true;
+  if (!palIndex) palIndex = buildPalIndex();
+  const ov = document.createElement("div");
+  ov.className = "palette";
+  ov.innerHTML = `<div class="pal-box">
+    <input class="pal-input" placeholder="Search lessons, terms, translations, lab exercises, notes…" autocomplete="off">
+    <div class="pal-list"></div></div>`;
+  document.body.appendChild(ov);
+  const inp = ov.querySelector(".pal-input"), list = ov.querySelector(".pal-list");
+  let results = [], active = 0;
+  const close = () => { ov.remove(); palOpen = false; };
+
+  function draw(q){
+    q = q.trim().toLowerCase();
+    // notes are dynamic, search them live
+    const noteHits = q.length >= 2 ? Object.entries(S.notes)
+      .filter(([lid, n]) => n && n.toLowerCase().includes(q) && L_INDEX[lid])
+      .map(([lid]) => ({ ico: "✍️", t: "Your note on “" + L_INDEX[lid].lesson.t + "”", sub: "Notes", go: () => nav("lesson:" + lid), lock: () => !lessonUnlocked(lid) })) : [];
+    const base = !q ? palIndex.slice(0, 9) : palIndex
+      .filter(it => it.k.includes(q))
+      .sort((a, b) => (b.k.startsWith(q) ? 1 : 0) - (a.k.startsWith(q) ? 1 : 0))
+      .slice(0, 12);
+    results = noteHits.concat(base);
+    active = 0;
+    list.innerHTML = results.length ? results.map((it, i) =>
+      `<div class="pal-item${i === 0 ? " active" : ""}" data-i="${i}">
+        <span class="pi">${it.ico}</span><span>${esc(it.t)}${it.lock && it.lock() ? " 🔒" : ""}</span><small>${esc(it.sub)}</small>
+      </div>`).join("") : `<div class="pal-empty">Nothing matches “${esc(q)}”.</div>`;
+    list.querySelectorAll(".pal-item").forEach(el => {
+      el.addEventListener("mouseenter", () => { active = +el.dataset.i; paint(); });
+      el.addEventListener("click", () => pick(+el.dataset.i));
+    });
+  }
+  function paint(){ list.querySelectorAll(".pal-item").forEach((el, i) => el.classList.toggle("active", i === active)); }
+  function pick(i){
+    const it = results[i]; if (!it) return;
+    close(); it.go(); grant("palette");
+  }
+  inp.addEventListener("input", () => draw(inp.value));
+  inp.addEventListener("keydown", e => {
+    if (e.key === "ArrowDown"){ e.preventDefault(); active = Math.min(active + 1, results.length - 1); paint(); list.querySelector(".pal-item.active")?.scrollIntoView({ block: "nearest" }); }
+    else if (e.key === "ArrowUp"){ e.preventDefault(); active = Math.max(active - 1, 0); paint(); list.querySelector(".pal-item.active")?.scrollIntoView({ block: "nearest" }); }
+    else if (e.key === "Enter") pick(active);
+    else if (e.key === "Escape") close();
+  });
+  ov.addEventListener("click", e => { if (e.target === ov) close(); });
+  draw("");
+  inp.focus();
+}
+
 /* ----- translator ----- */
 function renderTranslator(){
   grant("rosetta");
@@ -2537,7 +2796,9 @@ function renderTranslator(){
       </div>`;
     }).join("") || `<p style="color:var(--muted)">No matches for “${esc(q)}”.</p>`;
   };
-  draw("");
+  const q0 = pendingTranslatorQ || ""; pendingTranslatorQ = null;
+  $("#trs").value = q0;
+  draw(q0);
   $("#trs").addEventListener("input", e => draw(e.target.value));
   $("#trs").focus();
 }
@@ -2563,7 +2824,9 @@ function renderGlossary(){
       <div class="gl-def">${g[2]}</div>
     </div>`).join("") || `<p style="color:var(--muted);padding:14px 0">No matches.</p>`;
   };
-  draw("");
+  const q0 = pendingGlossaryQ || ""; pendingGlossaryQ = null;
+  $("#gls").value = q0;
+  draw(q0);
   $("#gls").addEventListener("input", e => draw(e.target.value));
   $("#gls").focus();
 }
@@ -2597,6 +2860,10 @@ function wireGo(){
 /* ---------- boot ---------- */
 document.querySelectorAll(".navbtn").forEach(b => b.addEventListener("click", () => nav(b.dataset.view)));
 $("#hamb").addEventListener("click", () => { $("#sidebar").classList.add("open"); $("#scrim").classList.add("on"); });
+$("#pal-btn").addEventListener("click", openPalette);
+document.addEventListener("keydown", e => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k"){ e.preventDefault(); openPalette(); }
+});
 $("#scrim").addEventListener("click", () => { $("#sidebar").classList.remove("open"); $("#scrim").classList.remove("on"); });
 
 (async () => {
