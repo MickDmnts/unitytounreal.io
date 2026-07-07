@@ -267,6 +267,8 @@ h1.page{font-family:var(--disp);font-size:26px;font-weight:700;letter-spacing:.3
 .lab-hint{margin-top:10px}
 .lab-hint summary{cursor:pointer;color:var(--gold);font-size:13px}
 .lab-hint p{font-size:13px;color:var(--muted);padding:8px 0 0}
+.gl-link{font-family:var(--disp);font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--ue);text-decoration:none;margin-left:10px;padding:3px 9px;border:1px solid var(--line2);border-radius:20px;vertical-align:2px;transition:background .15s,border-color .15s}
+.gl-link:hover{background:var(--ue-soft);border-color:var(--ue)}
 .CodeMirror-hints{background:var(--panel2)!important;border:1px solid var(--line2)!important;border-radius:9px!important;box-shadow:0 12px 40px rgba(0,0,0,.55)!important;font-family:var(--mono)!important;font-size:12.5px!important;padding:5px!important;z-index:130!important;max-height:230px!important}
 .CodeMirror-hint{color:#C4D3EE!important;padding:4px 12px!important;border-radius:6px!important}
 li.CodeMirror-hint-active{background:var(--ue-soft)!important;color:var(--ue)!important}
@@ -890,76 +892,76 @@ quiz:[
 ];
 /* ===== glossary ===== */
 const GLOSSARY = [
-["Actor","GameObject (but subclassable)","Any object that can be placed or spawned in a Level. Base class <code>AActor</code>. Gains transform via its Root Component and behaviour via subclassing and components."],
-["Pawn","Player/AI-controllable object","An Actor that can be possessed by a Controller. Base for anything a player or AI drives."],
-["Character","CharacterController + humanoid kit","A Pawn with capsule, skeletal mesh and CharacterMovementComponent: walking, jumping, crouching, swimming, network prediction."],
-["PlayerController","Input + camera scripts on the player","The persistent 'will' of a player. Owns input routing, camera management and UI; possesses Pawns."],
-["AIController","NavMeshAgent driver script","Controller that possesses Pawns for AI, typically running Behavior Trees."],
-["GameMode","GameManager (rules)","Server-only referee: spawn rules, match flow, win conditions. Chosen per Level in World Settings."],
-["GameState","Shared match manager","Replicated match-wide facts every client sees: scores, timers, phase."],
-["PlayerState","Per-player public data","Replicated per-player info (name, score, ping) that survives Pawn death."],
-["GameInstance","DontDestroyOnLoad singleton","One object for the entire app session, surviving level loads. Home for meta-state and subsystem hosting."],
-["Level / Map","Scene","A world you load (.umap). Streamed additively via Level Streaming or automatically via World Partition."],
-["Level Blueprint","Scene-specific manager script","Script graph bound to one Level, for one-off scripted moments."],
-["World Settings","Per-scene project settings","Per-Level configuration panel: GameMode override, physics, lightmass settings."],
-["Blueprint (BP)","Prefab + MonoBehaviour fused","A visual-scripted class asset: components, variables, functions, event graphs. Compiles to bytecode; subclasses C++ or other BPs."],
-["Blueprint Interface","C# interface (asset form)","Function declarations any BP can implement; enables message calls without casting."],
-["Event Dispatcher","C# event / UnityEvent","Multicast delegate exposed on a Blueprint; listeners bind, owner broadcasts."],
-["Cast To","'as' operator with branch","Runtime typed conversion node with an execution branch for failure."],
-["Component (UActorComponent)","MonoBehaviour (logic-only)","Reusable behaviour attached to an Actor, no transform."],
-["Scene Component","Transform-bearing component","Component with a transform, attachable into trees (USceneComponent)."],
-["Root Component","The Transform","The scene component that gives an Actor its transform."],
-["Socket","Named attach transform on a rig","Named attach point on a mesh/skeleton for weapons, effects, cameras."],
-["Possession","(no equivalent)","A Controller taking control of a Pawn; the mechanism behind respawning and body-swapping."],
-["Enhanced Input","New Input System package","UE5's input framework: Input Actions, Mapping Contexts, Triggers, Modifiers."],
-["Input Action (IA)","InputAction","A typed input event asset (bool / Axis1D / Axis2D value)."],
-["Input Mapping Context (IMC)","Action Map","A stackable set of key→action bindings with priority."],
-["UCLASS","(reflection registration)","Macro registering a class with Unreal's reflection system; enables GC, serialization, BP exposure."],
-["UPROPERTY","[SerializeField] and friends","Macro exposing a field to reflection: editor editing, serialization, GC tracking, replication."],
-["UFUNCTION","(method exposure)","Macro exposing a method to reflection: Blueprint nodes, RPCs, delegate binding."],
-["UHT (Unreal Header Tool)","Roslyn's hidden work","Pre-compile code generator that parses reflection macros and emits .generated files."],
-["UBT (UnrealBuildTool)","Unity's invisible build pipeline","Orchestrates module compilation, UHT, linking across platforms."],
-["Module","Assembly Definition","A compilation unit with a Build.cs declaring dependencies."],
-["CDO (Class Default Object)","Prefab asset defaults","The template instance of every UCLASS holding default property values; constructors run for it at startup."],
-["TSubclassOf","Type-restricted prefab slot","A class reference limited to a base type — designer-safe class picking."],
-["Soft Reference (TSoftObjectPtr)","Addressables handle","Asset path reference that doesn't load the asset until requested."],
-["FString","string (working)","Mutable general-purpose string for manipulation and formatting."],
-["FName","Hashed string ID","Immutable interned identifier with integer-fast comparison."],
-["FText","Localized display string","Localization-aware text; the only correct type for player-facing UI."],
-["TArray","List<T>","Unreal's dynamic array; UPROPERTY-compatible."],
-["TMap","Dictionary<K,V>","Key-value container; editable in the Details panel unlike Unity's Dictionary."],
-["Delegate","C# delegate/event","Type-safe callback holder; multicast variants broadcast to many listeners; dynamic variants bind to BP."],
-["Timeline","Coroutine lerp / DOTween","Curve-driven value animation component firing update events."],
-["Timer (TimerManager)","Invoke / InvokeRepeating","Scheduled callbacks with cancellable handles — the standard coroutine-delay replacement."],
-["Material","Shader (Graph)","Node graph compiling to the actual shader; outputs PBR pins."],
-["Material Instance","Material asset","Cheap parameter-override child of a Material, no shader recompile."],
-["Niagara","VFX Graph","Programmable particle system: Systems → Emitters → Module stacks."],
-["Animation Blueprint","Animator Controller + its feeder script","Asset with an Event Graph (gather data) and AnimGraph (state machines & blends) producing the final pose."],
-["Blend Space","Blend Tree","Asset blending animations across 1–2 input axes."],
-["Anim Montage","Triggered clip section player","Play-on-demand animation container with sections and notifies (attacks, emotes)."],
-["Anim Notify","Animation Event","Event fired at a time point in an animation."],
-["World Partition","Hand-rolled scene streaming","Automatic grid-based streaming of one large persistent Level."],
-["Data Layer","Conditional scene content sets","Named actor grouping loaded/activated conditionally (quests, variants)."],
-["HLOD","Impostor/LOD system","Auto-generated merged proxy meshes representing unloaded distant cells."],
-["One File Per Actor","Scene-merge conflict fix","Stores each actor as its own file so teams can co-edit maps."],
-["Nanite","LOD Groups (rethought)","Virtualized geometry rendering micro-detail without authored LODs."],
-["Lumen","Realtime GI (no baking)","UE5's dynamic global illumination and reflections."],
-["Gameplay Tag","tag (but hierarchical, multiple)","Hierarchical label (A.B.C) in project-wide registry; attached in containers, queried with hierarchy matching."],
-["Primary Data Asset","ScriptableObject","Typed data container asset; scannable/loadable via the Asset Manager."],
-["DataTable","CSV importer you wrote","Struct-typed row table importable from CSV/JSON."],
-["Subsystem","Auto-managed singleton","Engine-instantiated singleton scoped to GameInstance, World, or LocalPlayer."],
-["SaveGame (USaveGame)","JSON save system you wrote","Snapshot object with automatic property serialization to named slots."],
-["Cooking","Asset import pipeline (at build)","Converting editor assets into platform-optimized runtime formats during packaging."],
-["Shipping build","Release build","Fully optimized configuration with debug features stripped."],
-["PIE (Play In Editor)","Play Mode","Running the game inside the editor viewport."],
-["Live Coding","Domain reload (but patching)","Hot-patching compiled function bodies into the running editor."],
-["UE_LOG","Debug.Log","Categorized, verbosity-leveled logging macro."],
-["Scalability","Quality Settings","Preset quality tiers (Low→Epic) driven by console variables."],
-["Unreal Insights","Profiler window","Deep tracing profiler for CPU/GPU/memory/loading."],
-["UMG","UI Toolkit / UGUI","Unreal Motion Graphics: widget-Blueprint UI framework over Slate."],
-["GAS","Custom ability frameworks","Gameplay Ability System: production framework for abilities, effects, attributes."],
-["Sequencer","Timeline","Cinematic authoring tool for cutscenes and scripted sequences."],
-["Lyra","(reference project)","Epic's sample game demonstrating modern architecture best practices."]
+["Actor","GameObject (but subclassable)","Any object that can be placed or spawned in a Level. Base class <code>AActor</code>. Gains transform via its Root Component and behaviour via subclassing and components.","actors-in-unreal-engine"],
+["Pawn","Player/AI-controllable object","An Actor that can be possessed by a Controller. Base for anything a player or AI drives.","pawn-in-unreal-engine"],
+["Character","CharacterController + humanoid kit","A Pawn with capsule, skeletal mesh and CharacterMovementComponent: walking, jumping, crouching, swimming, network prediction.","characters-in-unreal-engine"],
+["PlayerController","Input + camera scripts on the player","The persistent 'will' of a player. Owns input routing, camera management and UI; possesses Pawns.","player-controllers-in-unreal-engine"],
+["AIController","NavMeshAgent driver script","Controller that possesses Pawns for AI, typically running Behavior Trees.","behavior-trees-in-unreal-engine"],
+["GameMode","GameManager (rules)","Server-only referee: spawn rules, match flow, win conditions. Chosen per Level in World Settings.","game-mode-and-game-state-in-unreal-engine"],
+["GameState","Shared match manager","Replicated match-wide facts every client sees: scores, timers, phase.","game-mode-and-game-state-in-unreal-engine"],
+["PlayerState","Per-player public data","Replicated per-player info (name, score, ping) that survives Pawn death.","API/Runtime/Engine/GameFramework/APlayerState"],
+["GameInstance","DontDestroyOnLoad singleton","One object for the entire app session, surviving level loads. Home for meta-state and subsystem hosting.","API/Runtime/Engine/Engine/UGameInstance"],
+["Level / Map","Scene","A world you load (.umap). Streamed additively via Level Streaming or automatically via World Partition.","levels-in-unreal-engine"],
+["Level Blueprint","Scene-specific manager script","Script graph bound to one Level, for one-off scripted moments.","level-blueprint-in-unreal-engine"],
+["World Settings","Per-scene project settings","Per-Level configuration panel: GameMode override, physics, lightmass settings.","world-settings-in-unreal-engine"],
+["Blueprint (BP)","Prefab + MonoBehaviour fused","A visual-scripted class asset: components, variables, functions, event graphs. Compiles to bytecode; subclasses C++ or other BPs.","blueprints-visual-scripting-in-unreal-engine"],
+["Blueprint Interface","C# interface (asset form)","Function declarations any BP can implement; enables message calls without casting.","blueprint-interface-in-unreal-engine"],
+["Event Dispatcher","C# event / UnityEvent","Multicast delegate exposed on a Blueprint; listeners bind, owner broadcasts.","event-dispatchers-in-unreal-engine"],
+["Cast To","'as' operator with branch","Runtime typed conversion node with an execution branch for failure.",null],
+["Component (UActorComponent)","MonoBehaviour (logic-only)","Reusable behaviour attached to an Actor, no transform.","components-in-unreal-engine"],
+["Scene Component","Transform-bearing component","Component with a transform, attachable into trees (USceneComponent).","API/Runtime/Engine/Components/USceneComponent"],
+["Root Component","The Transform","The scene component that gives an Actor its transform.","components-in-unreal-engine"],
+["Socket","Named attach transform on a rig","Named attach point on a mesh/skeleton for weapons, effects, cameras.",null],
+["Possession","(no equivalent)","A Controller taking control of a Pawn; the mechanism behind respawning and body-swapping.","possessing-pawns-in-unreal-engine"],
+["Enhanced Input","New Input System package","UE5's input framework: Input Actions, Mapping Contexts, Triggers, Modifiers.","enhanced-input-in-unreal-engine"],
+["Input Action (IA)","InputAction","A typed input event asset (bool / Axis1D / Axis2D value).","enhanced-input-in-unreal-engine"],
+["Input Mapping Context (IMC)","Action Map","A stackable set of key→action bindings with priority.","enhanced-input-in-unreal-engine"],
+["UCLASS","(reflection registration)","Macro registering a class with Unreal's reflection system; enables GC, serialization, BP exposure.","gameplay-classes-in-unreal-engine"],
+["UPROPERTY","[SerializeField] and friends","Macro exposing a field to reflection: editor editing, serialization, GC tracking, replication.","unreal-engine-uproperties"],
+["UFUNCTION","(method exposure)","Macro exposing a method to reflection: Blueprint nodes, RPCs, delegate binding.","ufunctions-in-unreal-engine"],
+["UHT (Unreal Header Tool)","Roslyn's hidden work","Pre-compile code generator that parses reflection macros and emits .generated files.",null],
+["UBT (UnrealBuildTool)","Unity's invisible build pipeline","Orchestrates module compilation, UHT, linking across platforms.","unreal-build-tool-in-unreal-engine"],
+["Module","Assembly Definition","A compilation unit with a Build.cs declaring dependencies.","unreal-engine-modules"],
+["CDO (Class Default Object)","Prefab asset defaults","The template instance of every UCLASS holding default property values; constructors run for it at startup.","objects-in-unreal-engine"],
+["TSubclassOf","Type-restricted prefab slot","A class reference limited to a base type — designer-safe class picking.",null],
+["Soft Reference (TSoftObjectPtr)","Addressables handle","Asset path reference that doesn't load the asset until requested.","referencing-assets-in-unreal-engine"],
+["FString","string (working)","Mutable general-purpose string for manipulation and formatting.","string-handling-in-unreal-engine"],
+["FName","Hashed string ID","Immutable interned identifier with integer-fast comparison.","string-handling-in-unreal-engine"],
+["FText","Localized display string","Localization-aware text; the only correct type for player-facing UI.","string-handling-in-unreal-engine"],
+["TArray","List<T>","Unreal's dynamic array; UPROPERTY-compatible.","array-containers-in-unreal-engine"],
+["TMap","Dictionary<K,V>","Key-value container; editable in the Details panel unlike Unity's Dictionary.","map-containers-in-unreal-engine"],
+["Delegate","C# delegate/event","Type-safe callback holder; multicast variants broadcast to many listeners; dynamic variants bind to BP.","delegates-and-lambda-functions-in-unreal-engine"],
+["Timeline","Coroutine lerp / DOTween","Curve-driven value animation component firing update events.","timelines-in-unreal-engine"],
+["Timer (TimerManager)","Invoke / InvokeRepeating","Scheduled callbacks with cancellable handles — the standard coroutine-delay replacement.","gameplay-timers-in-unreal-engine"],
+["Material","Shader (Graph)","Node graph compiling to the actual shader; outputs PBR pins.",null],
+["Material Instance","Material asset","Cheap parameter-override child of a Material, no shader recompile.","instanced-materials-in-unreal-engine"],
+["Niagara","VFX Graph","Programmable particle system: Systems → Emitters → Module stacks.",null],
+["Animation Blueprint","Animator Controller + its feeder script","Asset with an Event Graph (gather data) and AnimGraph (state machines & blends) producing the final pose.","animation-blueprints-in-unreal-engine"],
+["Blend Space","Blend Tree","Asset blending animations across 1–2 input axes.","blend-spaces-in-unreal-engine"],
+["Anim Montage","Triggered clip section player","Play-on-demand animation container with sections and notifies (attacks, emotes).","animation-montage-in-unreal-engine"],
+["Anim Notify","Animation Event","Event fired at a time point in an animation.","animation-notifies-in-unreal-engine"],
+["World Partition","Hand-rolled scene streaming","Automatic grid-based streaming of one large persistent Level.","world-partition-in-unreal-engine"],
+["Data Layer","Conditional scene content sets","Named actor grouping loaded/activated conditionally (quests, variants).",null],
+["HLOD","Impostor/LOD system","Auto-generated merged proxy meshes representing unloaded distant cells.",null],
+["One File Per Actor","Scene-merge conflict fix","Stores each actor as its own file so teams can co-edit maps.","one-file-per-actor-in-unreal-engine"],
+["Nanite","LOD Groups (rethought)","Virtualized geometry rendering micro-detail without authored LODs.","nanite-virtualized-geometry-in-unreal-engine"],
+["Lumen","Realtime GI (no baking)","UE5's dynamic global illumination and reflections.","lumen-global-illumination-and-reflections-in-unreal-engine"],
+["Gameplay Tag","tag (but hierarchical, multiple)","Hierarchical label (A.B.C) in project-wide registry; attached in containers, queried with hierarchy matching.","gameplay-tags-in-unreal-engine"],
+["Primary Data Asset","ScriptableObject","Typed data container asset; scannable/loadable via the Asset Manager.","data-assets-in-unreal-engine"],
+["DataTable","CSV importer you wrote","Struct-typed row table importable from CSV/JSON.","data-driven-gameplay-elements-in-unreal-engine"],
+["Subsystem","Auto-managed singleton","Engine-instantiated singleton scoped to GameInstance, World, or LocalPlayer.","programming-subsystems-in-unreal-engine"],
+["SaveGame (USaveGame)","JSON save system you wrote","Snapshot object with automatic property serialization to named slots.","saving-and-loading-your-game-in-unreal-engine"],
+["Cooking","Asset import pipeline (at build)","Converting editor assets into platform-optimized runtime formats during packaging.",null],
+["Shipping build","Release build","Fully optimized configuration with debug features stripped.","packaging-unreal-engine-projects"],
+["PIE (Play In Editor)","Play Mode","Running the game inside the editor viewport.",null],
+["Live Coding","Domain reload (but patching)","Hot-patching compiled function bodies into the running editor.",null],
+["UE_LOG","Debug.Log","Categorized, verbosity-leveled logging macro.","logging-in-unreal-engine"],
+["Scalability","Quality Settings","Preset quality tiers (Low→Epic) driven by console variables.","scalability-reference-for-unreal-engine"],
+["Unreal Insights","Profiler window","Deep tracing profiler for CPU/GPU/memory/loading.","unreal-insights-in-unreal-engine"],
+["UMG","UI Toolkit / UGUI","Unreal Motion Graphics: widget-Blueprint UI framework over Slate.","umg-ui-designer-for-unreal-engine"],
+["GAS","Custom ability frameworks","Gameplay Ability System: production framework for abilities, effects, attributes.","gameplay-ability-system-for-unreal-engine"],
+["Sequencer","Timeline","Cinematic authoring tool for cutscenes and scripted sequences.","cinematics-and-movie-making-in-unreal-engine"],
+["Lyra","(reference project)","Epic's sample game demonstrating modern architecture best practices.","lyra-sample-game-in-unreal-engine"]
 ];
 
 /* ===== translator table ===== */
@@ -2207,7 +2209,7 @@ function renderTranslator(){
 function renderGlossary(){
   content.innerHTML = `
   <h1 class="page">📖 Unreal glossary</h1>
-  <p class="sub">${GLOSSARY.length} terms, each with its closest Unity equivalent.</p>
+  <p class="sub">${GLOSSARY.length} terms, each with its closest Unity equivalent and a link to the official Epic docs.</p>
   <input class="search" id="gls" placeholder="Search terms… e.g. CDO, Pawn, Niagara" autocomplete="off">
   <div class="card" style="padding:6px 20px" id="glbody"></div>`;
   const body = $("#glbody");
@@ -2215,8 +2217,11 @@ function renderGlossary(){
     q = q.trim().toLowerCase();
     if (q.length >= 2) grant("lexicon");
     const hit = GLOSSARY.filter(g => !q || g[0].toLowerCase().includes(q) || g[1].toLowerCase().includes(q) || g[2].toLowerCase().includes(q));
+    const docURL = g => g[3]
+      ? "https://dev.epicgames.com/documentation/en-us/unreal-engine/" + g[3]
+      : "https://dev.epicgames.com/community/search?query=" + encodeURIComponent(g[0].replace(/\s*\(.*\)$/, ""));
     body.innerHTML = hit.map(g => `<div class="gl-item">
-      <h3>${esc(g[0])}</h3>
+      <h3>${esc(g[0])}<a class="gl-link" href="${docURL(g)}" target="_blank" rel="noopener" title="Official Unreal Engine documentation">${g[3] ? "docs" : "docs 🔎"} ↗</a></h3>
       <div class="gl-eq">Unity: ${esc(g[1])}</div>
       <div class="gl-def">${g[2]}</div>
     </div>`).join("") || `<p style="color:var(--muted);padding:14px 0">No matches.</p>`;
