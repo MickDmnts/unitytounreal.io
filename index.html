@@ -302,6 +302,7 @@ li.CodeMirror-hint-active{background:var(--ue-soft)!important;color:var(--ue)!im
     <button class="navbtn" data-view="path:int"><span class="ic">⚙</span>Unreal + C++<span class="pct" id="pct-int"></span></button>
     <div class="navlabel">Practice</div>
     <button class="navbtn" data-view="lab"><span class="ic">⌨</span>C++ Lab<span class="pct" id="pct-lab"></span></button>
+    <button class="navbtn" data-view="review"><span class="ic">🔁</span>Daily Review<span class="pct" id="pct-review" style="color:var(--gold)"></span></button>
     <div class="navlabel">Reference</div>
     <button class="navbtn" data-view="translator"><span class="ic">⇄</span>Unity → Unreal map</button>
     <button class="navbtn" data-view="glossary"><span class="ic">📖</span>Glossary</button>
@@ -541,9 +542,62 @@ quiz:[
 {q:"Which command tells you Game-thread vs GPU bound at a glance?",o:["stat fps","stat unit","stat memory","showflag"],a:1,x:"stat unit shows frame, game, draw and GPU times side by side."},
 {q:"A dangerous C++ default Unity devs miss:",o:["Actors don't render","Actors tick every frame unless disabled","Materials recompile per frame","GC runs per tick"],a:1,x:"Set PrimaryActorTick.bCanEverTick=false (or disable in BP) for everything event-driven."},
 {q:"Unity's Quality Settings map to…",o:["World Settings","Scalability settings","Device profiles only","stat commands"],a:1,x:"Scalability groups (sg.*) drive preset quality tiers."}]}
-]}
 ]},
-{
+{id:"ue7", t:"UMG — UI That Ships", skills:["Build a HUD widget with proper anchoring","Wire button clicks and update text event-driven","Push data into UI via delegates instead of bindings","Drive a Widget Blueprint from a C++ base class"], lessons:[
+
+{id:"ue7a", t:"Widget Blueprints & layout", min:8,
+body:`<p>Unreal's UI framework is <strong>UMG</strong> (Unreal Motion Graphics). Where Unity gives you a Canvas GameObject in the scene, UMG gives you a <strong>Widget Blueprint</strong> asset — a self-contained UI class with a <em>Designer</em> tab (visual layout) and a <em>Graph</em> tab (logic, a normal Blueprint event graph). Nothing appears on screen until someone creates the widget and calls <code>Add to Viewport</code> — think of every widget as a prefab that must be instantiated, never a scene object.</p>
+<p>Layout will feel familiar and then suddenly not. A <strong>Canvas Panel</strong> works like RectTransform-land: children get anchors, offsets, and absolute positioning. But idiomatic UMG leans on <strong>layout panels</strong> — Horizontal Box, Vertical Box, Grid, Overlay — which auto-arrange children like Unity's Layout Groups, except they're the default culture rather than an add-on. The big mental shift: a child's layout properties (padding, alignment, fill) don't live on the child. They live on the <strong>Slot</strong> — the connection object between parent and child. Same button behaves differently in a Vertical Box slot vs a Canvas slot.</p>
+<div class="note">💡 Rule of thumb from UI-heavy teams: Canvas Panel for the outermost HUD frame and free-floating elements; boxes and overlays for everything inside. Deep Canvas nesting is both slower and harder to make resolution-proof.</div>`,
+cmp:[["Canvas (scene object)|always visible in scene","Widget Blueprint|asset; instantiate + Add to Viewport"],["RectTransform anchors","Canvas Panel slot anchors"],["Layout Groups (add-on)","Horizontal/Vertical Box (the default)"],["Layout props on the child","Layout props on the Slot"],["Text / Image / Button (UGUI)","Text Block / Image / Button widgets"],["Canvas Scaler","DPI Scaling (Project Settings → UI)"]],
+task:"Create a Widget Blueprint WBP_HUD: Canvas Panel root, a Vertical Box anchored top-left with two Text Blocks (Health, Ammo). In the Level Blueprint or your Character, Create Widget → Add to Viewport on BeginPlay.",
+quiz:[
+{q:"A Widget Blueprint appears on screen…",o:["automatically, like a Unity Canvas","when placed in the level","after Create Widget + Add to Viewport","when its level loads"],a:2,x:"Widgets are classes, not scene objects — someone must instantiate and add them to the viewport."},
+{q:"Padding and alignment of a widget inside a Vertical Box live on…",o:["the child widget itself","the Vertical Box","the Slot connecting them","Project Settings"],a:2,x:"Slot objects hold per-child layout data — the property panel changes depending on the parent panel type."},
+{q:"Closest spiritual match to RectTransform anchoring:",o:["Overlay","Canvas Panel slots","Grid Panel","Size Box"],a:1,x:"Canvas Panel gives free-form anchored positioning; boxes auto-arrange instead."}]},
+
+{id:"ue7b", t:"Data flow: events over bindings", min:8,
+body:`<p>UMG offers <strong>property bindings</strong> — bind a Text Block to a function and it re-evaluates <em>every frame</em>. It's the first thing tutorials show and the first thing production teams ban: it's a hidden Update() per bound property. The idiomatic pattern is <strong>event-driven UI</strong>, and you already own every piece of it: your gameplay code exposes a delegate (<code>OnHealthChanged</code> from the C++ path!), the widget binds to it once, and updates only fire when the value actually changes — exactly how you'd wire a C# event to a UI refresh method in Unity.</p>
+<p>Getting data <em>in</em>: after <code>Create Widget</code> you hold a typed reference, so make a custom event or function on the widget (<code>UpdateHealth(float)</code>) and call it. Getting input <em>out</em>: Button widgets expose <code>OnClicked</code> as an event in the Details panel — no EventSystem, no raycaster config, it just works. Two more survival tools: <strong>Visibility</strong> (Collapsed reclaims layout space, Hidden keeps it — Unity's SetActive vs alpha 0 distinction, made explicit) and <strong>Input Modes</strong> on the PlayerController: <code>Set Input Mode Game Only / UI Only / Game and UI</code> plus <code>bShowMouseCursor</code> decide whether your pause menu eats input or your character keeps running while you click buttons.</p>`,
+cmp:[["C# event → UI refresh method","Delegate/Dispatcher → widget custom event"],["Update() polling a value","Property binding (avoid it the same way)"],["Button.onClick","Button → OnClicked event"],["SetActive(false)","Visibility: Collapsed"],["alpha 0 / CanvasGroup","Visibility: Hidden"],["EventSystem + Input Module config","Set Input Mode + Show Mouse Cursor"]],
+task:"Give your Character an OnHealthChanged Event Dispatcher. In WBP_HUD, bind to it after Create Widget and update the health Text Block from the event. Press play, damage yourself, watch it update — with zero Tick cost.",
+quiz:[
+{q:"Why do production teams avoid UMG property bindings?",o:["They break packaging","They re-evaluate every frame like a hidden Update()","They only work in C++","They can't display floats"],a:1,x:"Bound functions run per frame per binding. Event-driven updates cost nothing until data changes."},
+{q:"Collapsed vs Hidden visibility:",o:["identical","Collapsed reclaims layout space; Hidden keeps it","Hidden destroys the widget","Collapsed only works on buttons"],a:1,x:"Collapsed = SetActive(false)-ish for layout; Hidden = invisible but still occupying its slot."},
+{q:"Your pause menu buttons won't click. First suspect:",o:["Missing EventSystem","Input Mode still Game Only / cursor hidden","Widget not compiled","Wrong anchor"],a:1,x:"Set Input Mode UI Only (or Game and UI) and bShowMouseCursor on the PlayerController when opening menus."}]},
+
+{id:"ue7c", t:"C++ + UMG: the widget base class", min:9,
+body:`<p>The golden C++/Blueprint pattern applies to UI unchanged: <strong>C++ base class for logic, Widget Blueprint child for looks</strong>. Derive from <code>UUserWidget</code>, reparent your WBP to it (File → Reparent Blueprint), and the two halves connect through one magic specifier: <code>meta = (BindWidget)</code>. Declare a pointer whose <em>name exactly matches</em> a widget in the Designer, and the engine wires it up at construct time — the compiler even fails if the named widget is missing, turning broken UI references into build errors instead of silent nulls (GetComponent-style string lookups, eliminated).</p>
+<p>Lifecycle mapping: <code>NativeConstruct()</code> is your widget's BeginPlay (call <code>Super::NativeConstruct()</code> — you knew that), <code>NativeDestruct()</code> the teardown, and <code>NativeTick()</code> exists but you now know better than to live there. Bind button events in NativeConstruct via <code>MyButton-&gt;OnClicked.AddDynamic(this, &amp;UMyWidget::HandleClick)</code> — dynamic delegates need a <code>UFUNCTION()</code> on the handler. Expose polish points to designers with <code>BlueprintImplementableEvent</code> (\"OnHealthChanged happened — animate however you like\") and you get the full split: C++ owns data and flow, the WBP owns colors, fonts and juice.</p>`,
+code:`<span class="cm">// MyHUDWidget.h — the C++ half</span>
+<span class="mc">UCLASS</span>()
+<span class="kw">class</span> UMyHUDWidget : <span class="kw">public</span> UUserWidget {
+    <span class="mc">GENERATED_BODY</span>()
+<span class="kw">protected</span>:
+    <span class="cm">// name must match the Text Block in the Designer exactly</span>
+    <span class="mc">UPROPERTY</span>(meta = (BindWidget))
+    <span class="kw">class</span> UTextBlock* HealthText;
+
+    <span class="mc">UPROPERTY</span>(meta = (BindWidget))
+    <span class="kw">class</span> UButton* RespawnButton;
+
+    <span class="kw">virtual void</span> NativeConstruct() <span class="kw">override</span>;
+
+    <span class="mc">UFUNCTION</span>()  <span class="cm">// required for AddDynamic</span>
+    <span class="kw">void</span> HandleRespawnClicked();
+
+    <span class="mc">UFUNCTION</span>(BlueprintImplementableEvent)  <span class="cm">// designers animate this</span>
+    <span class="kw">void</span> OnHealthChanged(<span class="kw">float</span> NewHealth);
+};`,
+cmp:[["MonoBehaviour on the Canvas","UUserWidget C++ base + WBP child"],["GetComponent / transform.Find('Txt')","UPROPERTY(meta=(BindWidget)) — checked at compile"],["Awake/OnEnable","NativeConstruct (Super:: first!)"],["button.onClick.AddListener","OnClicked.AddDynamic + UFUNCTION handler"],["UnityEvent for designer hooks","BlueprintImplementableEvent"]],
+task:"Reparent WBP_HUD to a new UUserWidget C++ class. BindWidget your health Text Block, set its text from a BlueprintCallable UpdateHealth(float), and add a BlueprintImplementableEvent the WBP uses to flash the text red on damage.",
+quiz:[
+{q:"meta = (BindWidget) on a UTextBlock* means…",o:["the widget is created for you","a same-named Designer widget is wired in, verified at compile","the text auto-updates","it becomes a binding (per-frame)"],a:1,x:"Name-matched auto-wiring with compile-time verification — a null-proof GetComponent."},
+{q:"The widget equivalent of BeginPlay in C++ is…",o:["Construct","NativeConstruct","OnInitialized only","NativeTick"],a:1,x:"NativeConstruct — and like everything in UE, call Super::NativeConstruct() first."},
+{q:"AddDynamic on a button's OnClicked requires the handler to be…",o:["static","virtual","marked UFUNCTION()","public"],a:2,x:"Dynamic delegates bind by reflection, so the target function must be a UFUNCTION."}]}
+]}
+]
+},{
 id:"cpp", icon:"⟬⟭", title:"C++ for Unreal", blurb:"Modern C++ as Unreal actually uses it — headers, pointers, reflection macros, delegates and the build system, translated from C#.",
 chapters:[
 {id:"cpp1", t:"From C# to C++", skills:["Explain headers & the build model","Use pointers & references correctly","Reason about stack vs heap & ownership"], lessons:[
@@ -992,6 +1046,9 @@ const ACHIEVEMENTS = [
 {id:"all",     ico:"👑", t:"Bridge Crossed",    d:"Complete every lesson in every path", xp:300},
 {id:"labrat",  ico:"⌨️", t:"Lab Rat",           d:"Solve your first C++ Lab exercise", xp:30},
 {id:"labmaster",ico:"🧪", t:"Compiled & Shipped", d:"Solve every C++ Lab exercise", xp:150},
+{id:"fixit",   ico:"🩹", t:"Exterminator",       d:"Fix every broken-code exercise", xp:100},
+{id:"review5", ico:"🔁", t:"Refresher",          d:"Complete 5 review sessions", xp:60},
+{id:"review20",ico:"🧠", t:"Iron Memory",        d:"Complete 20 review sessions", xp:150},
 {id:"lexicon", ico:"📖", t:"Lexicographer",     d:"Search the glossary", xp:15},
 {id:"rosetta", ico:"⇄",  t:"Rosetta Stone",     d:"Open the Unity → Unreal map", xp:15}
 ];
@@ -1509,6 +1566,117 @@ expect:["turret online","fire! (1)","fire! (2)","fire! (3)","offline after 3 sho
 checks:[[/Cooldown\s*=\s*FireInterval/, "BeginPlay arms the cooldown"],[/Cooldown\s*-=\s*DeltaTime/, "Tick subtracts DeltaTime (frame-rate independent!)"],[/Cooldown\s*<=\s*0/, "Checks expiry with <= 0"],[/Shots\+\+|\+\+Shots/, "Counts shots"]],
 hint:"This is exactly what TimerManager does for you in real UE — but writing it once makes DeltaTime click. In Tick: Cooldown -= DeltaTime; if (Cooldown <= 0.f) { Shots++; UE_LOG(...); Cooldown = FireInterval; }"}]},
 
+{cat:"Fix the compile error", items:[
+{id:"fix-semicolon", t:"The cascade of doom", xp:35, shim:true,
+p:"This code has <strong>one missing character</strong>, but the compiler will scream about dozens of unrelated-looking errors. Classic C++ hazing ritual: a class definition must end with <code>};</code> — forget the semicolon and everything <em>after</em> the class breaks. Run it, read the errors <em>top-down</em>, fix only the first one.",
+starter:`class APickup {
+public:
+    int Value = 10;
+    void Collect() { UE_LOG(LogTemp, Log, "collected %d", Value); }
+}   // <- something is missing here…
+
+int main() {
+    APickup P;
+    P.Collect();      // -> collected 10
+    return 0;
+}`,
+expect:["collected 10"],
+checks:[[/\}\s*;/, "Class definition ends with };"]],
+hint:"Add the ; after the class's closing brace. Burn this into memory: when the compiler produces an avalanche of nonsense errors pointing at valid code, look one line ABOVE the first error — usually at the end of a class or struct."},
+
+{id:"fix-virtual", t:"override with nothing to override", xp:40, shim:true,
+p:"The derived class says <code>override</code>, but the compiler refuses: <em>'BeginPlay' marked 'override' but does not override</em>. In C# every method is overridable-ish with <code>virtual</code>/<code>new</code> warnings; C++ is strict — the <strong>base</strong> function must be declared <code>virtual</code> or polymorphism silently never happens. Fix the base class, not the child.",
+starter:`class AActorBase {
+public:
+    ~AActorBase() {}                 // hmm, destructors of base classes…
+    void BeginPlay() { UE_LOG(LogTemp, Log, "base ready"); }   // <- not virtual!
+};
+
+class ADoor : public AActorBase {
+public:
+    using Super = AActorBase;
+    void BeginPlay() override {      // ERROR: nothing virtual to override
+        Super::BeginPlay();
+        UE_LOG(LogTemp, Log, "door ready");
+    }
+};
+
+int main() {
+    AActorBase* A = new ADoor();
+    A->BeginPlay();                  // must print BOTH lines
+    delete A;                        // and destroy safely via base pointer
+    return 0;
+}`,
+expect:["base ready","door ready"],
+checks:[[/virtual\s+void\s+BeginPlay/, "Base BeginPlay is virtual"],[/virtual\s+~AActorBase/, "Base destructor is virtual (safe delete via base pointer)"]],
+hint:"Two fixes: virtual void BeginPlay() in the base, and virtual ~AActorBase() {} — deleting a derived object through a base pointer without a virtual destructor is undefined behavior. UE's AActor has both, which is why you never noticed."},
+
+{id:"fix-const", t:"const infection", xp:40, shim:true,
+p:"<code>Report</code> correctly takes the inventory by <code>const&amp;</code> — but now it won't compile: <em>'passing const TArray as this argument discards qualifiers'</em>. A <code>const</code> object may only call methods that <strong>promise</strong> not to modify it. Our shim's <code>Num()</code> makes that promise; the helper function below doesn't. Fix the promise, not the const.",
+starter:`int CountValuable(TArray<int>& Items) {   // <- takes non-const ref…
+    int N = 0;
+    for (int V : Items) if (V >= 50) N++;
+    return N;
+}
+
+void Report(const TArray<int>& Items) {       // const& — correct and idiomatic!
+    UE_LOG(LogTemp, Log, "items: %d", Items.Num());
+    UE_LOG(LogTemp, Log, "valuable: %d", CountValuable(Items));  // ERROR here
+}
+
+int main() {
+    TArray<int> Loot;
+    Loot.Add(10); Loot.Add(75); Loot.Add(90);
+    Report(Loot);        // -> items: 3 / valuable: 2
+    return 0;
+}`,
+expect:["items: 3","valuable: 2"],
+checks:[[/CountValuable\s*\(\s*const\s+TArray<int>\s*&/, "CountValuable takes const TArray<int>&"]],
+hint:"Change the helper's parameter to const TArray<int>&. This is 'const infection': once a caller holds const, everything it calls must accept const. Design rule — make parameters const& by default; loosen only when you truly mutate."},
+
+{id:"fix-arrow", t:"Dot, arrow, and a missing prototype", xp:45, shim:false,
+p:"Two distinct compile errors hide in here — a C# habit and a C++ rule. First: <code>Target.Health</code> on a <em>pointer</em> (C# uses dot for everything; C++ needs <code>-&gt;</code> through pointers). Second: <code>main</code> calls <code>Heal</code> before the compiler has ever heard of it — add a <strong>prototype</strong> above <code>main</code> or move the function. Read both errors, fix both.",
+starter:`#include <cstdio>
+
+struct Unit { int Health = 50; };
+
+int main() {
+    Unit Grunt;
+    Heal(&Grunt, 25);                        // ERROR: 'Heal' was not declared
+    printf("health: %d\\n", Grunt.Health);   // -> health: 75
+    return 0;
+}
+
+void Heal(Unit* Target, int Amount) {
+    Target.Health += Amount;                 // ERROR: '.' on a pointer
+    printf("healed for %d\\n", Amount);      // -> healed for 25
+}`,
+expect:["healed for 25","health: 75"],
+checks:[[/void\s+Heal\s*\(\s*Unit\s*\*\s*\w+\s*,\s*int\s+\w+\s*\)\s*;/, "Heal has a prototype before main (or was moved above it)"],[/Target\s*->\s*Health/, "Accesses Health through the pointer with ->"]],
+hint:"Add 'void Heal(Unit* Target, int Amount);' above main, and change Target.Health to Target->Health. The declare-before-use rule is why every UE .cpp starts by including its own .h."},
+
+{id:"fix-types", t:"Format string lies", xp:40, shim:true,
+p:"It compiles… with warnings — and prints garbage. Every <code>printf</code>-family format specifier is an unchecked promise about the bytes you pass: <code>%d</code> for an <code>FString</code> reads a pointer as an integer, <code>%s</code> without <code>*</code> hands it a struct. Our compiler runs with <code>-Wall</code>: treat every warning as the error it morally is, and match all three specifiers to their arguments.",
+starter:`int main() {
+    FString Player = TEXT("Nyx");
+    int Kills = 7;
+    float Accuracy = 0.62f;
+
+    // All three of these are wrong. The compiler only WARNS. The output lies.
+    UE_LOG(LogTemp, Log, "player: %d", Player);        // FString is not %d… and no *
+    UE_LOG(LogTemp, Log, "kills: %f", Kills);          // int printed as float
+    UE_LOG(LogTemp, Log, "accuracy: %d%%", Accuracy);  // float printed as int
+
+    // expected:
+    //   player: Nyx
+    //   kills: 7
+    //   accuracy: 62%   (multiply by 100, print with %.0f)
+    return 0;
+}`,
+expect:["player: Nyx","kills: 7","accuracy: 62%"],
+checks:[[/%s"\s*,\s*\*\s*Player/, "Player printed with %s and the * dereference"],[/kills:\s*%d/, "Kills printed with %d"],[/%\.0f%%/, "Accuracy as %.0f%% (and scaled ×100)"]],
+hint:"UE_LOG(LogTemp, Log, \"accuracy: %.0f%%\", Accuracy * 100.f); — %% prints a literal percent sign. In real UE the TCHAR mismatch version of this bug crashes at runtime, so the habit of matching specifiers exactly pays rent forever."}]},
+
 {cat:"Free play", items:[
 {id:"lab-scratch", t:"Scratchpad", xp:0, shim:true, scratch:true,
 p:"Blank slate with the UE shim loaded — <code>UE_LOG</code>, <code>FString</code>, <code>TArray</code>, <code>TMap</code>, <code>FVector</code>, <code>Cast&lt;&gt;</code> and the delegate macros all work. Paste snippets from any lesson and poke at them.",
@@ -1568,6 +1736,9 @@ let S = {
   tasks: {},       // lessonId -> true (mini-task checked)
   ach: {},         // achievementId -> true
   lab: {},         // exerciseId -> true (lab exercise solved)
+  missed: {},      // lessonId -> [question indices answered wrong]
+  reviews: 0,      // completed review sessions
+  lastReviewXP: null, // date (ms) XP was last awarded for a review
   streak: 0,
   lastActive: null,
   seenLevel: 1
@@ -1644,6 +1815,8 @@ function checkGlobalAchievements(){
   const labN = labAll.filter(e => S.lab[e.id]).length;
   grant("labrat", labN >= 1);
   grant("labmaster", labN === labAll.length);
+  const fixAll = LAB.flatMap(c => c.items).filter(e => e.id.startsWith("fix-"));
+  grant("fixit", fixAll.length > 0 && fixAll.every(e => S.lab[e.id]));
   grant("streak3", S.streak >= 3); grant("streak7", S.streak >= 7);
 }
 
@@ -1693,6 +1866,9 @@ function renderChrome(){
   const labAll = LAB.flatMap(c => c.items).filter(e => !e.scratch);
   const labEl = $("#pct-lab");
   if (labEl) labEl.textContent = labAll.filter(e => S.lab[e.id]).length + "/" + labAll.length;
+  const missedN = Object.values(S.missed).reduce((a, arr) => a + arr.length, 0);
+  const revEl = $("#pct-review");
+  if (revEl) revEl.textContent = missedN ? missedN + "!" : "";
 }
 function persist(){ Store.save(S); }
 
@@ -1712,6 +1888,7 @@ function pathIcon(p){ return { ue: "🏰", cpp: "⟬⟭", int: "⚙️" }[p.id] 
 /* ---------- views ---------- */
 let view = "dash";
 function nav(v){
+  if (view === "review" && v !== "review") revDeck = null;
   view = v;
   document.querySelectorAll(".navbtn").forEach(b => b.classList.toggle("active", b.dataset.view === v));
   $("#sidebar").classList.remove("open"); $("#scrim").classList.remove("on");
@@ -1725,6 +1902,7 @@ function render(){
   if (view.startsWith("path:")) return renderPath(view.slice(5));
   if (view.startsWith("lesson:")) return renderLesson(view.slice(7));
   if (view === "lab") return renderLab();
+  if (view === "review") return renderReview();
   if (view === "translator") return renderTranslator();
   if (view === "glossary") return renderGlossary();
   if (view === "achievements") return renderAch();
@@ -1767,7 +1945,13 @@ function renderDash(){
       </div>`;
     }).join("")}
   </div>
-  <div class="grid3" style="margin-top:16px">
+  <div class="grid2" style="margin-top:16px">
+    <div class="card pathcard" data-go="review" role="button" tabindex="0">
+      <div class="ph"><div class="pico">🔁</div><div><h3>Daily Review</h3><div class="pmeta" id="rev-meta"></div></div></div>
+      <p style="font-size:13px;color:var(--muted)">${Object.values(S.missed).reduce((a,m)=>a+m.length,0)
+        ? Object.values(S.missed).reduce((a,m)=>a+m.length,0) + " question" + (Object.values(S.missed).reduce((a,m)=>a+m.length,0)>1?"s":"") + " you got wrong are waiting for a rematch — clear them before they calcify."
+        : "A quick mixed quiz from everything you've completed. First session each day pays XP and feeds the streak."}</p>
+    </div>
     <div class="card pathcard" data-go="lab" role="button" tabindex="0">
       <div class="ph"><div class="pico">⌨️</div><div><h3>C++ Lab</h3><div class="pmeta">Write & run real code</div></div></div>
       <p style="font-size:13px;color:var(--muted)">An in-browser IDE with Unreal-flavored exercises — UE_LOG, TArray, delegates and the lifecycle, compiled for real.</p>
@@ -1778,11 +1962,42 @@ function renderDash(){
     </div>
     <div class="card pathcard" data-go="glossary" role="button" tabindex="0">
       <div class="ph"><div class="pico">📖</div><div><h3>Glossary</h3><div class="pmeta">${GLOSSARY.length} Unreal terms</div></div></div>
-      <p style="font-size:13px;color:var(--muted)">Every Unreal term defined, each with its closest Unity equivalent.</p>
+      <p style="font-size:13px;color:var(--muted)">Every Unreal term defined, each with its closest Unity equivalent and Epic docs links.</p>
     </div>
+  </div>
+  <div style="display:flex;gap:10px;align-items:center;margin-top:18px;justify-content:flex-end">
+    <span style="font-size:12px;color:var(--dim)">Progress lives in this browser —</span>
+    <button class="btn ghost" id="save-export" style="font-size:12px;padding:7px 14px">⬇ Export save</button>
+    <button class="btn ghost" id="save-import" style="font-size:12px;padding:7px 14px">⬆ Import save</button>
+    <input type="file" id="save-file" accept=".json,application/json" style="display:none">
   </div>`;
   const cta = $("#cta-continue");
   if (cta) cta.onclick = () => nav("lesson:" + nxt.lesson.id);
+  $("#save-export").onclick = () => {
+    const blob = new Blob([JSON.stringify(S, null, 1)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "bridge-academy-save.json";
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    toast("xp", "💾", "Save exported", "bridge-academy-save.json");
+  };
+  $("#save-import").onclick = () => $("#save-file").click();
+  $("#save-file").addEventListener("change", e => {
+    const f = e.target.files[0];
+    if (!f) return;
+    const r = new FileReader();
+    r.onload = () => {
+      try {
+        const data = JSON.parse(r.result);
+        if (typeof data.xp !== "number" || typeof data.done !== "object") throw new Error("not a Bridge save");
+        S = Object.assign({}, S, data);
+        persist(); renderChrome(); renderDash();
+        toast("ach", "💾", "Save imported", "Welcome back — " + Object.keys(S.done).length + " lessons, " + S.xp + " XP");
+      } catch(err){ toast("ach", "⚠️", "Import failed", "That file isn't a valid Bridge save."); }
+    };
+    r.readAsText(f);
+  });
   content.querySelectorAll("[data-go]").forEach(el => {
     const go = () => nav(el.dataset.go);
     el.addEventListener("click", go);
@@ -1909,7 +2124,14 @@ function renderLesson(id){
         else if (sel.value == oi) o.classList.add("wrong");
         o.querySelector("input").disabled = true;
       });
-      if (+sel.value === q.a) correct++;
+      const wasRight = +sel.value === q.a;
+      if (wasRight) correct++;
+      // track misses for Review mode (dedup; clear on later correct answer)
+      const miss = S.missed[id] || [];
+      const pos = miss.indexOf(qi);
+      if (!wasRight && pos === -1) miss.push(qi);
+      if (wasRight && pos !== -1) miss.splice(pos, 1);
+      if (miss.length) S.missed[id] = miss; else delete S.missed[id];
     });
     if (answered < l.quiz.length){
       $("#qres").innerHTML = `<span style="color:var(--bad)">Answer all ${l.quiz.length} questions first (${answered}/${l.quiz.length}).</span>`;
@@ -2178,6 +2400,121 @@ function remapLines(msg, ex){
   if (!ex.shim) return msg;
   const off = UE_SHIM.split("\n").length - 1;
   return msg.replace(/prog\.cc:(\d+)/g, (m, n) => "your-code:" + Math.max(1, +n - off));
+}
+
+
+/* ----- review mode ----- */
+let revDeck = null, revIdx = 0, revCorrect = 0, revAnswered = false;
+
+function buildReviewDeck(){
+  const deck = [];
+  // 1) every missed question, oldest lessons first
+  for (const [lid, qs] of Object.entries(S.missed)){
+    const r = L_INDEX[lid];
+    if (!r) continue;
+    for (const qi of qs) deck.push({ lid, qi, q: r.lesson.quiz[qi], t: r.lesson.t, missed: true });
+  }
+  // 2) top up to 8 with random questions from completed lessons
+  const doneIds = Object.keys(S.done).filter(lid => L_INDEX[lid]);
+  const pool = [];
+  for (const lid of doneIds){
+    const l = L_INDEX[lid].lesson;
+    l.quiz.forEach((q, qi) => {
+      if (!deck.some(d => d.lid === lid && d.qi === qi)) pool.push({ lid, qi, q, t: l.t, missed: false });
+    });
+  }
+  for (let i = pool.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
+  while (deck.length < 8 && pool.length) deck.push(pool.pop());
+  // shuffle the final deck too
+  for (let i = deck.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [deck[i], deck[j]] = [deck[j], deck[i]]; }
+  return deck.slice(0, 12); // hard cap so a big miss-pile stays digestible
+}
+
+function renderReview(){
+  if (!totalDone()){
+    content.innerHTML = `<h1 class="page">🔁 Daily Review</h1>
+      <p class="sub">Nothing to review yet — complete a lesson or two first, then come back. Missed quiz questions land here automatically.</p>
+      <button class="btn" data-go="path:ue">Start learning →</button>`;
+    wireGo(); return;
+  }
+  if (!revDeck){ revDeck = buildReviewDeck(); revIdx = 0; revCorrect = 0; revAnswered = false; }
+  if (revIdx >= revDeck.length) return renderReviewSummary();
+  const item = revDeck[revIdx], q = item.q;
+  content.innerHTML = `
+  <h1 class="page">🔁 Daily Review</h1>
+  <p class="sub">Question ${revIdx + 1} of ${revDeck.length} · from “${esc(item.t)}” ${item.missed ? '<span class="tag gold">rematch — you missed this one</span>' : ""}</p>
+  <div class="pbar" style="max-width:420px;margin-bottom:20px"><div style="width:${Math.round(100 * revIdx / revDeck.length)}%"></div></div>
+  <div class="card quiz">
+    <div class="qq graded-pending" data-q="0">
+      <div class="qt">${esc(q.q)}</div>
+      ${q.o.map((o, oi) => `<label class="opt" data-oi="${oi}"><input type="radio" name="rq"><span>${esc(o)}</span></label>`).join("")}
+      <div class="qx">${esc(q.x)}</div>
+    </div>
+    <div class="quiz-result" id="rev-res"></div>
+    <button class="btn" id="rev-next" style="display:none"></button>
+  </div>`;
+  revAnswered = false;
+  content.querySelectorAll(".opt").forEach(opt => opt.addEventListener("click", e => {
+    if (revAnswered) return;
+    revAnswered = true;
+    const oi = +opt.dataset.oi;
+    const right = oi === q.a;
+    if (right) revCorrect++;
+    const qq = content.querySelector(".qq");
+    qq.classList.add("graded");
+    content.querySelectorAll(".opt").forEach((o, i) => {
+      o.querySelector("input").disabled = true;
+      if (i === q.a) o.classList.add("right");
+      else if (i === oi) o.classList.add("wrong");
+    });
+    // update the miss ledger
+    const miss = S.missed[item.lid] || [];
+    const pos = miss.indexOf(item.qi);
+    if (right && pos !== -1) miss.splice(pos, 1);
+    if (!right && pos === -1) miss.push(item.qi);
+    if (miss.length) S.missed[item.lid] = miss; else delete S.missed[item.lid];
+    persist(); renderChrome();
+    $("#rev-res").innerHTML = right ? `<span style="color:var(--ok)">Correct ✓${item.missed ? " — miss cleared" : ""}</span>` : `<span style="color:var(--bad)">Not this time — it goes back in the pile</span>`;
+    const btn = $("#rev-next");
+    btn.style.display = "";
+    btn.textContent = revIdx + 1 < revDeck.length ? "Next question →" : "Finish review 🏁";
+    btn.onclick = () => { revIdx++; renderReview(); };
+    btn.focus();
+  }));
+}
+
+function renderReviewSummary(){
+  const n = revDeck.length, score = revCorrect;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const firstToday = S.lastReviewXP !== today.getTime();
+  let xpLine = "Practice session — XP already earned today.";
+  S.reviews++;
+  touchStreak();
+  if (firstToday){
+    S.lastReviewXP = today.getTime();
+    const xp = score * 5 + (score === n ? 15 : 0);
+    addXP(xp, "Daily review " + score + "/" + n);
+    xpLine = "+" + xp + " XP earned" + (score === n ? " (perfect bonus!)" : "") + ".";
+  }
+  grant("review5", S.reviews >= 5);
+  grant("review20", S.reviews >= 20);
+  checkGlobalAchievements();
+  persist();
+  const remaining = Object.values(S.missed).reduce((a, m) => a + m.length, 0);
+  content.innerHTML = `
+  <h1 class="page">🏁 Review complete</h1>
+  <div class="card" style="max-width:520px">
+    <div style="font-family:var(--disp);font-size:42px;font-weight:700;color:${score === n ? "var(--ok)" : "var(--gold)"}">${score}/${n}</div>
+    <p style="color:var(--muted);font-size:13.5px;margin:8px 0 4px">${xpLine}</p>
+    <p style="color:var(--muted);font-size:13.5px">${remaining ? remaining + " missed question" + (remaining > 1 ? "s" : "") + " still in the pile." : "Miss pile empty — nothing haunting you. 👻"}</p>
+    <div style="display:flex;gap:10px;margin-top:16px">
+      <button class="btn" id="rev-again">Go again</button>
+      <button class="btn ghost" data-go="dash">Dashboard</button>
+    </div>
+  </div>`;
+  $("#rev-again").onclick = () => { revDeck = null; renderReview(); };
+  wireGo();
+  revDeck = null;
 }
 
 /* ----- translator ----- */
